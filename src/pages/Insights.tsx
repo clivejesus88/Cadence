@@ -1,68 +1,83 @@
-import React from 'react';
-import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
-import { ClockIcon, FlameIcon, ListChecksIcon, TrendingUpIcon } from 'lucide-react';
+import { Text, View } from 'react-native';
+import { ClockIcon, FlameIcon, ListChecksIcon, TrendingUpIcon } from 'lucide-react-native';
 import { useAppData } from '../contexts/AppDataContext';
 import { formatMinutes } from '../utils/time';
 import { distractionStats } from '../data/insightsTips';
 import { StatCard } from '../components/insights/StatCard';
 import { StreakHeatmap } from '../components/insights/StreakHeatmap';
+import { BarChart } from '../components/ui/BarChart';
+import { Screen } from '../components/ui/Screen';
+import { Glass } from '../components/ui/Glass';
+
+const appColors: Record<string, string> = {
+  Instagram: '#E1306C',
+  TikTok: '#25F4EE',
+  YouTube: '#FF0000',
+  Reddit: '#FF4500',
+};
 
 export function Insights() {
   const { weeklyData, currentStreak, totalSessionsCompleted, sessions } = useAppData();
   const weekTotal = weeklyData.reduce((sum, d) => sum + d.minutes, 0);
   const focusSessions = sessions.filter((s) => s.type === 'focus' && s.completed);
   const avgSession =
-  totalSessionsCompleted > 0 ?
-  Math.round(focusSessions.reduce((s, se) => s + se.durationMinutes, 0) / totalSessionsCompleted) :
-  0;
+    totalSessionsCompleted > 0
+      ? Math.round(focusSessions.reduce((s, se) => s + se.durationMinutes, 0) / totalSessionsCompleted)
+      : 0;
 
   return (
-    <div className="px-5 pt-8 pb-8">
-      <h1 className="font-display text-2xl text-white">Insights</h1>
-      <p className="text-neutral-400 text-sm mt-1">Your focus patterns, at a glance.</p>
+    <Screen>
+      <Text className="font-display text-2xl text-white">Insights</Text>
+      <Text className="mt-1 text-sm text-neutral-400">Your focus patterns, at a glance.</Text>
 
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <StatCard icon={ClockIcon} label="This Week" value={formatMinutes(weekTotal)} />
-        <StatCard icon={FlameIcon} label="Current Streak" value={`${currentStreak} days`} />
-        <StatCard icon={ListChecksIcon} label="Sessions" value={`${totalSessionsCompleted}`} />
-        <StatCard icon={TrendingUpIcon} label="Avg Session" value={formatMinutes(avgSession)} />
-      </div>
+      <View className="mt-6 gap-3">
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <StatCard icon={ClockIcon} label="This Week" value={formatMinutes(weekTotal)} />
+          </View>
+          <View className="flex-1">
+            <StatCard icon={FlameIcon} label="Current Streak" value={`${currentStreak} days`} />
+          </View>
+        </View>
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <StatCard icon={ListChecksIcon} label="Sessions" value={`${totalSessionsCompleted}`} />
+          </View>
+          <View className="flex-1">
+            <StatCard icon={TrendingUpIcon} label="Avg Session" value={formatMinutes(avgSession)} />
+          </View>
+        </View>
+      </View>
 
-      <section className="mt-6">
-        <p className="text-white font-semibold text-sm mb-3">Daily focus time</p>
-        <div className="glass rounded-2xl p-4 h-52">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weeklyData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <Tooltip
-                cursor={{ fill: 'rgba(251,146,60,0.08)' }}
-                contentStyle={{ background: '#181c22', border: '1px solid #2a3038', borderRadius: 12, fontSize: 12 }}
-                labelStyle={{ color: '#9ca3af' }}
-                itemStyle={{ color: '#fb923c' }}
-                formatter={(v: number) => [`${v} min`, 'Focused']} />
-              
-              <Bar dataKey="minutes" radius={[8, 8, 8, 8]} fill="#fb923c" maxBarSize={28} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+      <View className="mt-6">
+        <Text className="mb-3 text-sm font-semibold text-white">Daily focus time</Text>
+        <Glass className="rounded-2xl p-4">
+          <BarChart data={weeklyData} />
+        </Glass>
+      </View>
 
-      <section className="mt-6">
-        <p className="text-white font-semibold text-sm mb-3">Consistency</p>
+      <View className="mt-6">
+        <Text className="mb-3 text-sm font-semibold text-white">Consistency</Text>
         <StreakHeatmap sessions={sessions} />
-      </section>
+      </View>
 
-      <section className="mt-6">
-        <p className="text-white font-semibold text-sm mb-3">Distractions blocked</p>
-        <div className="glass rounded-2xl divide-y divide-white/5">
-          {distractionStats.map((d) =>
-          <div key={d.name} className="flex items-center justify-between px-4 py-3">
-              <p className="text-sm text-white">{d.name}</p>
-              <p className="text-xs text-neutral-500">{d.minutesSaved} min saved</p>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>);
-
+      <View className="mt-6">
+        <Text className="mb-3 text-sm font-semibold text-white">Minimized distractions</Text>
+        <Glass className="rounded-2xl">
+          {distractionStats.map((s, i) => (
+            <View
+              key={s.name}
+              className="flex-row items-center justify-between px-4 py-3"
+              style={i > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' } : undefined}>
+              <View className="flex-row items-center gap-3">
+                <View className="h-2 w-2 rounded-full" style={{ backgroundColor: appColors[s.name] ?? '#fb923c' }} />
+                <Text className="text-sm text-white">{s.name}</Text>
+              </View>
+              <Text className="text-xs text-neutral-400">{formatMinutes(s.minutesSaved)} saved</Text>
+            </View>
+          ))}
+        </Glass>
+      </View>
+    </Screen>
+  );
 }
