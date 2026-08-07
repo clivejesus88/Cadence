@@ -1,9 +1,10 @@
-import React from 'react';
-import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon } from 'lucide-react';
+import { Pressable, Text, View } from 'react-native';
+import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon } from 'lucide-react-native';
 import { CircularTimer } from '../CircularTimer';
 import { ambientSounds } from '../../data/ambientSounds';
 import { formatCountdown } from '../../utils/time';
 import { Task } from '../../types/task';
+import { Glass } from '../ui/Glass';
 
 interface ActiveSessionProps {
   sessionType: 'focus' | 'break';
@@ -26,65 +27,79 @@ export function ActiveSession({
   onEnd,
   soundId,
   blockingEnabled,
-  activeTask
+  activeTask,
 }: ActiveSessionProps) {
   const progress = 1 - secondsLeft / totalSeconds;
   const sound = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
   const SoundIcon = sound.icon;
 
   return (
-    <div className="px-5 pt-10 pb-6 flex flex-col items-center min-h-[calc(100vh-6rem)]">
-      <p className="text-neutral-400 text-sm uppercase tracking-wide font-medium">
+    <View className="flex-1 items-center px-5 pb-6 pt-10">
+      <Text className="text-sm font-medium uppercase tracking-wide text-neutral-400">
         {sessionType === 'focus' ? 'Focusing' : 'Break'}
-      </p>
-      {activeTask && sessionType === 'focus' &&
-      <p className="text-white text-sm mt-1 truncate max-w-[220px]">{activeTask.title}</p>
-      }
+      </Text>
+      {activeTask && sessionType === 'focus' && (
+        <Text className="mt-1 max-w-[220px] text-sm text-white" numberOfLines={1}>
+          {activeTask.title}
+        </Text>
+      )}
 
-      <div className="mt-8 relative">
-        <div className="absolute inset-6 rounded-full bg-ember-500/10 blur-2xl" />
+      <View className="relative mt-8">
+        <View
+          className="absolute rounded-full bg-ember-500/10 blur-2xl"
+          style={{ top: 24, bottom: 24, left: 24, right: 24 }}
+        />
         <CircularTimer progress={progress} size={240} strokeWidth={12}>
-          <div className="text-center">
-            <p className="font-display text-5xl text-white tabular-nums">{formatCountdown(secondsLeft)}</p>
-            {isPaused && <p className="text-xs text-ember-400 mt-1 font-medium">Paused</p>}
-          </div>
+          <View className="text-center">
+            <Text className="font-display text-5xl text-white" style={{ fontVariant: ['tabular-nums'] }}>
+              {formatCountdown(secondsLeft)}
+            </Text>
+            {isPaused && <Text className="mt-1 text-xs font-medium text-ember-400">Paused</Text>}
+          </View>
         </CircularTimer>
-      </div>
+      </View>
 
-      <div className="flex items-center gap-4 mt-10">
-        <button
-          onClick={onEnd}
-          aria-label="End session"
-          className="glass w-12 h-12 rounded-full flex items-center justify-center text-neutral-300 hover:text-white transition-colors">
-          
-          <SquareIcon className="w-4 h-4" />
-        </button>
-        <button
-          onClick={onTogglePause}
-          aria-label={isPaused ? 'Resume' : 'Pause'}
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 shadow-glow">
-          
-          {isPaused ? <PlayIcon className="w-6 h-6" /> : <PauseIcon className="w-6 h-6" />}
-        </button>
-        <div className="w-12 h-12" />
-      </div>
+      <View className="mt-10 flex-row items-center gap-4">
+        <Pressable
+          onPress={onEnd}
+          accessibilityLabel="End session"
+          className="h-12 w-12 items-center justify-center rounded-full"
+          style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)' }}>
+          <SquareIcon size={16} color="#d4d4d4" />
+        </Pressable>
+        <Pressable
+          onPress={onTogglePause}
+          accessibilityLabel={isPaused ? 'Resume' : 'Pause'}
+          className="h-16 w-16 items-center justify-center rounded-full"
+          style={{
+            backgroundColor: '#fb923c',
+            shadowColor: '#fb923c',
+            shadowOffset: { width: 0, height: 0 },
+            shadowRadius: 48,
+            shadowOpacity: 0.4,
+            elevation: 24,
+          }}>
+          {isPaused ? <PlayIcon size={24} color="#0a0d10" /> : <PauseIcon size={24} color="#0a0d10" />}
+        </Pressable>
+        <View className="h-12 w-12" />
+      </View>
 
-      {sessionType === 'focus' &&
-      <div className="mt-10 w-full space-y-2.5">
-          <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
-            <SoundIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
-            <p className="text-sm text-white flex-1">{sound.name}</p>
-            <span className="text-xs text-neutral-400">Playing</span>
-          </div>
-          {blockingEnabled &&
-        <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
-              <ShieldCheckIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
-              <p className="text-sm text-white flex-1">Distractions blocked</p>
-              <span className="text-xs text-neutral-400">Active</span>
-            </div>
-        }
-        </div>
-      }
-    </div>);
-
+      {sessionType === 'focus' && (
+        <View className="mt-10 w-full gap-2.5">
+          <Glass className="flex-row items-center gap-3 rounded-2xl px-4 py-3">
+            <SoundIcon size={16} color="#fb923c" className="shrink-0" />
+            <Text className="flex-1 text-sm text-white">{sound.name}</Text>
+            <Text className="text-xs text-neutral-400">Playing</Text>
+          </Glass>
+          {blockingEnabled && (
+            <Glass className="flex-row items-center gap-3 rounded-2xl px-4 py-3">
+              <ShieldCheckIcon size={16} color="#fb923c" className="shrink-0" />
+              <Text className="flex-1 text-sm text-white">Distractions blocked</Text>
+              <Text className="text-xs text-neutral-400">Active</Text>
+            </Glass>
+          )}
+        </View>
+      )}
+    </View>
+  );
 }

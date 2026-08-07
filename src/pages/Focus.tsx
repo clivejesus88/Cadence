@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { SessionSetup } from '../components/focus/SessionSetup';
 import { ActiveSession } from '../components/focus/ActiveSession';
 import { SessionComplete } from '../components/focus/SessionComplete';
 import { ambientSounds } from '../data/ambientSounds';
+import { Screen } from '../components/ui/Screen';
 
 type Phase = 'setup' | 'running' | 'complete';
 type SessionKind = 'focus' | 'break';
 
 export function Focus() {
   const { logSession, activeTaskId, tasks } = useAppData();
+  const activeTask = tasks.find((t) => t.id === activeTaskId);
   const [phase, setPhase] = useState<Phase>('setup');
   const [sessionType, setSessionType] = useState<SessionKind>('focus');
   const [durationMinutes, setDurationMinutes] = useState(25);
@@ -43,54 +45,67 @@ export function Focus() {
   const startSession = (minutes: number) => {
     setDurationMinutes(minutes);
     setSecondsLeft(minutes * 60);
-    setSessionType('focus');
-    setIsPaused(false);
     setPhase('running');
   };
 
   const startBreak = () => {
-    setSecondsLeft(5 * 60);
     setSessionType('break');
-    setIsPaused(false);
+    setSecondsLeft(5 * 60);
     setPhase('running');
   };
 
-  const endSession = () => {
+  const goSetup = () => {
     setPhase('setup');
+    setSessionType('focus');
+    setBlockingEnabled(true);
   };
 
-  const activeTask = tasks.find((t) => t.id === activeTaskId);
+  const endSession = () => {
+    logSession(durationMinutes, activeTaskId ?? undefined);
+    setCompletedMinutes(durationMinutes);
+    setPhase('complete');
+  };
+
+  const togglePause = () => setIsPaused((p) => !p);
 
   if (phase === 'setup') {
     return (
-      <SessionSetup
-        durationMinutes={durationMinutes}
-        onChangeDuration={setDurationMinutes}
-        soundId={soundId}
-        onChangeSound={setSoundId}
-        blockingEnabled={blockingEnabled}
-        onToggleBlocking={setBlockingEnabled}
-        activeTask={activeTask}
-        onStart={() => startSession(durationMinutes)} />);
-
-
+      <Screen>
+        <SessionSetup
+          durationMinutes={durationMinutes}
+          onChangeDuration={setDurationMinutes}
+          soundId={soundId}
+          onChangeSound={setSoundId}
+          blockingEnabled={blockingEnabled}
+          onToggleBlocking={setBlockingEnabled}
+          activeTask={activeTask}
+          onStart={() => startSession(durationMinutes)}
+        />
+      </Screen>
+    );
   }
 
   if (phase === 'running') {
     return (
-      <ActiveSession
-        sessionType={sessionType}
-        secondsLeft={secondsLeft}
-        totalSeconds={(sessionType === 'focus' ? durationMinutes : 5) * 60}
-        isPaused={isPaused}
-        onTogglePause={() => setIsPaused((p) => !p)}
-        onEnd={endSession}
-        soundId={soundId}
-        blockingEnabled={blockingEnabled && sessionType === 'focus'}
-        activeTask={activeTask} />);
-
-
+      <Screen scroll={false}>
+        <ActiveSession
+          sessionType={sessionType}
+          secondsLeft={secondsLeft}
+          totalSeconds={durationMinutes * 60}
+          isPaused={isPaused}
+          onTogglePause={togglePause}
+          onEnd={endSession}
+          soundId={soundId}
+          blockingEnabled={blockingEnabled}
+          activeTask={activeTask}
+        />
+      </Screen>
+    );
   }
 
-  return <SessionComplete minutes={completedMinutes} onBreak={startBreak} onDone={endSession} />;
+  return (
+    <Screen scroll={false}>
+      <SessionComplete minutes={completedMinutes} onBreak={startBreak} onDone={goSetup} />
+    </Screen>
+  );
 }
