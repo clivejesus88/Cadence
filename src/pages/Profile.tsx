@@ -29,10 +29,10 @@ import { Glass } from '../components/ui/Glass';
 const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
 
-function SettingsList({ children }: { children: ReactNode[] }) {
+function SettingsList({ children }: { children: ReactNode }) {
   return (
     <Glass className="rounded-2xl">
-      {Children.map(children, (child, i) => (
+      {Children.toArray(children).map((child, i) => (
         <View
           key={i}
           style={i > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' } : undefined}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState, ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, ReactNode } from 'react';
 import { format } from 'date-fns';
 import { Task } from '../types/task';
 import { FocusSession } from '../types/session';

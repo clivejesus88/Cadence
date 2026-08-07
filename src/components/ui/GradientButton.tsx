@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Pressable, StyleProp, Text, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { cssInterop } from 'nativewind';
