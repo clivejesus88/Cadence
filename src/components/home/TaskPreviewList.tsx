@@ -1,6 +1,7 @@
-import React from 'react';
-import { CircleIcon } from 'lucide-react';
+import { Text, View } from 'react-native';
+import { CircleIcon } from 'lucide-react-native';
 import { Task } from '../../types/task';
+import { Glass } from '../ui/Glass';
 
 interface TaskPreviewListProps {
   tasks: Task[];
@@ -8,21 +9,29 @@ interface TaskPreviewListProps {
 
 export function TaskPreviewList({ tasks }: TaskPreviewListProps) {
   if (tasks.length === 0) {
-    return <div className="glass rounded-2xl p-4 text-center text-sm text-neutral-500">All caught up — nothing due today.</div>;
+    return (
+      <Glass className="rounded-2xl p-4 text-center">
+        <Text className="text-center text-sm text-neutral-500">
+          All caught up — nothing due today.
+        </Text>
+      </Glass>
+    );
   }
   return (
-    <div className="space-y-2">
-      {tasks.map((t) =>
-      <div key={t.id} className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
-          <CircleIcon className="w-4 h-4 text-neutral-500 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-white truncate">{t.title}</p>
-            <p className="text-xs text-neutral-500">
+    <View className="gap-2">
+      {tasks.map((t) => (
+        <Glass key={t.id} className="flex-row items-center gap-3 rounded-2xl px-4 py-3">
+          <CircleIcon size={16} color="#737373" className="shrink-0" />
+          <View className="min-w-0 flex-1">
+            <Text className="text-sm text-white" numberOfLines={1}>
+              {t.title}
+            </Text>
+            <Text className="text-xs text-neutral-500">
               {t.subject} · {t.completedPomodoros}/{t.estimatedPomodoros} sessions
-            </p>
-          </div>
-        </div>
-      )}
-    </div>);
-
+            </Text>
+          </View>
+        </Glass>
+      ))}
+    </View>
+  );
 }

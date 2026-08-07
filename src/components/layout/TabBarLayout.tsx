@@ -1,10 +1,10 @@
-import React, { ReactNode, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ReactNode, useEffect } from 'react';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { HomeIcon, TimerIcon, BarChart3Icon, ListChecksIcon } from 'lucide-react-native';
-import type { BottomTabBarProps } from 'expo-router';
+import type { BottomTabBarProps } from 'expo-router/build/react-navigation/bottom-tabs';
 
 const NAV_H_PADDING = 6;
 const ITEMS = [
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     overflow: 'hidden',
-    ...(globalThis.Platform?.OS === 'web'
+    ...(Platform.OS === 'web'
       ? { boxShadow: '0 18px 40px -12px rgba(0,0,0,0.75), 0 2px 10px rgba(0,0,0,0.35)' }
       : {}),
   },

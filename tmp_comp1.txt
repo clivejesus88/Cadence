@@ -1,0 +1,387 @@
+=====FILE: src/components/focus/SessionSetup.tsx (1 lines)=====
+  1| import React from 'react';
+import { ShieldCheckIcon } from 'lucide-react';
+import { ambientSounds } from '../../data/ambientSounds';
+import { blockedApps } from '../../data/blockedApps';
+import { Task } from '../../types/task';
+
+interface SessionSetupProps {
+  durationMinutes: number;
+  onChangeDuration: (m: number) => void;
+  soundId: string;
+  onChangeSound: (id: string) => void;
+  blockingEnabled: boolean;
+  onToggleBlocking: (v: boolean) => void;
+  activeTask?: Task;
+  onStart: () => void;
+}
+
+const presets = [15, 25, 50, 90];
+
+export function SessionSetup({
+  durationMinutes,
+  onChangeDuration,
+  soundId,
+  onChangeSound,
+  blockingEnabled,
+  onToggleBlocking,
+  activeTask,
+  onStart
+}: SessionSetupProps) {
+  return (
+    <div className="px-5 pt-8 pb-4">
+      <h1 className="font-display text-2xl text-white">Focus Session</h1>
+      <p className="text-neutral-400 text-sm mt-1">Set up your session, then dive in.</p>
+
+      {activeTask &&
+      <div className="glass mt-5 flex items-center gap-3 rounded-2xl px-4 py-3">
+          <div className="w-2 h-2 rounded-full bg-ember-400 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm text-white truncate">{activeTask.title}</p>
+            <p className="text-xs text-neutral-400">{activeTask.subject}</p>
+          </div>
+        </div>
+      }
+
+      <div className="mt-6">
+        <p className="text-white font-semibold text-sm mb-3">Duration</p>
+        <div className="flex gap-2">
+          {presets.map((p) =>
+          <button
+            key={p}
+            onClick={() => onChangeDuration(p)}
+            className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-colors ${
+            durationMinutes === p ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
+            }>
+            
+              {p}m
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-white font-semibold text-sm mb-3">Focus Sound</p>
+        <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
+          {ambientSounds.map((s) => {
+            const Icon = s.icon;
+            const selected = soundId === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => onChangeSound(s.id)}
+                className={`flex-shrink-0 w-24 rounded-2xl p-3 text-left transition-colors ${
+                selected ? 'bg-ember-500/15 border border-ember-400' : 'glass-inset'}`
+                }>
+                
+                <Icon className={`w-5 h-5 ${selected ? 'text-ember-400' : 'text-neutral-400'}`} />
+                <p className={`text-xs font-medium mt-2 ${selected ? 'text-white' : 'text-neutral-300'}`}>{s.name}</p>
+              </button>);
+
+          })}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <button
+          onClick={() => onToggleBlocking(!blockingEnabled)}
+          className="glass w-full flex items-center justify-between rounded-2xl px-4 py-3.5">
+          
+          <div className="flex items-center gap-3">
+            <ShieldCheckIcon className={`w-5 h-5 ${blockingEnabled ? 'text-ember-400' : 'text-neutral-500'}`} />
+            <div className="text-left">
+              <p className="text-sm text-white font-medium">Block Distractions</p>
+              <p className="text-xs text-neutral-400">
+                {blockedApps.filter((a) => a.blockedByDefault).length} apps muted during focus
+              </p>
+            </div>
+          </div>
+          <div
+            className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
+            blockingEnabled ? 'bg-ember-500 justify-end' : 'bg-white/10 justify-start'}`
+            }>
+            
+            <div className="w-5 h-5 rounded-full bg-white" />
+          </div>
+        </button>
+      </div>
+
+      <button
+        onClick={onStart}
+        className="w-full mt-8 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
+        
+        Start Focusing
+      </button>
+    </div>);
+
+}
+=====FILE: src/components/focus/ActiveSession.tsx (1 lines)=====
+  1| import React from 'react';
+import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon } from 'lucide-react';
+import { CircularTimer } from '../CircularTimer';
+import { ambientSounds } from '../../data/ambientSounds';
+import { formatCountdown } from '../../utils/time';
+import { Task } from '../../types/task';
+
+interface ActiveSessionProps {
+  sessionType: 'focus' | 'break';
+  secondsLeft: number;
+  totalSeconds: number;
+  isPaused: boolean;
+  onTogglePause: () => void;
+  onEnd: () => void;
+  soundId: string;
+  blockingEnabled: boolean;
+  activeTask?: Task;
+}
+
+export function ActiveSession({
+  sessionType,
+  secondsLeft,
+  totalSeconds,
+  isPaused,
+  onTogglePause,
+  onEnd,
+  soundId,
+  blockingEnabled,
+  activeTask
+}: ActiveSessionProps) {
+  const progress = 1 - secondsLeft / totalSeconds;
+  const sound = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
+  const SoundIcon = sound.icon;
+
+  return (
+    <div className="px-5 pt-10 pb-6 flex flex-col items-center min-h-[calc(100vh-6rem)]">
+      <p className="text-neutral-400 text-sm uppercase tracking-wide font-medium">
+        {sessionType === 'focus' ? 'Focusing' : 'Break'}
+      </p>
+      {activeTask && sessionType === 'focus' &&
+      <p className="text-white text-sm mt-1 truncate max-w-[220px]">{activeTask.title}</p>
+      }
+
+      <div className="mt-8 relative">
+        <div className="absolute inset-6 rounded-full bg-ember-500/10 blur-2xl" />
+        <CircularTimer progress={progress} size={240} strokeWidth={12}>
+          <div className="text-center">
+            <p className="font-display text-5xl text-white tabular-nums">{formatCountdown(secondsLeft)}</p>
+            {isPaused && <p className="text-xs text-ember-400 mt-1 font-medium">Paused</p>}
+          </div>
+        </CircularTimer>
+      </div>
+
+      <div className="flex items-center gap-4 mt-10">
+        <button
+          onClick={onEnd}
+          aria-label="End session"
+          className="glass w-12 h-12 rounded-full flex items-center justify-center text-neutral-300 hover:text-white transition-colors">
+          
+          <SquareIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onTogglePause}
+          aria-label={isPaused ? 'Resume' : 'Pause'}
+          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 shadow-glow">
+          
+          {isPaused ? <PlayIcon className="w-6 h-6" /> : <PauseIcon className="w-6 h-6" />}
+        </button>
+        <div className="w-12 h-12" />
+      </div>
+
+      {sessionType === 'focus' &&
+      <div className="mt-10 w-full space-y-2.5">
+          <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+            <SoundIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
+            <p className="text-sm text-white flex-1">{sound.name}</p>
+            <span className="text-xs text-neutral-400">Playing</span>
+          </div>
+          {blockingEnabled &&
+        <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+              <ShieldCheckIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
+              <p className="text-sm text-white flex-1">Distractions blocked</p>
+              <span className="text-xs text-neutral-400">Active</span>
+            </div>
+        }
+        </div>
+      }
+    </div>);
+
+}
+=====FILE: src/components/focus/SessionComplete.tsx (1 lines)=====
+  1| import React from 'react';
+import { motion } from 'framer-motion';
+import { CheckCircle2Icon } from 'lucide-react';
+import { formatMinutes } from '../../utils/time';
+
+interface SessionCompleteProps {
+  minutes: number;
+  onBreak: () => void;
+  onDone: () => void;
+}
+
+export function SessionComplete({ minutes, onBreak, onDone }: SessionCompleteProps) {
+  return (
+    <div className="px-5 pt-16 pb-8 flex flex-col items-center text-center min-h-[calc(100vh-6rem)]">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 16 }}>
+        
+        <div className="w-20 h-20 rounded-full bg-ember-500/15 flex items-center justify-center">
+          <CheckCircle2Icon className="w-10 h-10 text-ember-400" />
+        </div>
+      </motion.div>
+      <p className="font-display text-2xl text-white mt-6">Nice work!</p>
+      <p className="text-neutral-400 text-sm mt-1.5">You focused for {formatMinutes(minutes)}. Keep the streak going.</p>
+
+      <div className="w-full mt-10 space-y-3">
+        <button
+          onClick={onBreak}
+          className="w-full py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
+          
+          Take a 5-min break
+        </button>
+        <button
+          onClick={onDone}
+          className="glass w-full py-4 rounded-full font-semibold text-[15px] text-white active:scale-[0.98] transition-transform">
+          
+          Done
+        </button>
+      </div>
+    </div>);
+
+}
+=====FILE: src/components/home/WelcomeModal.tsx (1 lines)=====
+  1| import React from 'react';
+import { motion } from 'framer-motion';
+import { TimerIcon, ShieldCheckIcon, FlameIcon, SparklesIcon } from 'lucide-react';
+
+interface WelcomeModalProps {
+  name: string;
+  onDismiss: () => void;
+}
+
+const highlights = [
+{ icon: TimerIcon, title: 'Focus in sprints', desc: 'Start a 25-minute session in one tap.' },
+{ icon: ShieldCheckIcon, title: 'Block distractions', desc: 'Your noisiest apps stay quiet while you work.' },
+{ icon: FlameIcon, title: 'Build your streak', desc: 'Small daily sessions compound fast.' }];
+
+
+export function WelcomeModal({ name, onDismiss }: WelcomeModalProps) {
+  const firstName = name.split(' ')[0];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-6" role="dialog" aria-modal="true" aria-label="Welcome">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-ink-950/70 backdrop-blur-md"
+        onClick={onDismiss} />
+      
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.94 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+        className="glass-strong relative w-full max-w-sm rounded-[28px] p-6 text-center">
+        
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ember-500/20">
+          <SparklesIcon className="h-6 w-6 text-ember-400" />
+        </div>
+
+        <h2 className="font-display mt-4 text-2xl text-white">Welcome, {firstName}</h2>
+        <p className="mx-auto mt-2 max-w-[260px] text-sm leading-6 text-neutral-400">
+          Cadence is set up and ready. Here's how to get the most out of your study time.
+        </p>
+
+        <div className="mt-6 space-y-3 text-left">
+          {highlights.map(({ icon: Icon, title, desc }) =>
+          <div key={title} className="glass-inset flex items-start gap-3 rounded-2xl px-3.5 py-3">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/[0.07]">
+                <Icon className="h-4 w-4 text-ember-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">{title}</p>
+                <p className="mt-0.5 text-xs text-neutral-400">{desc}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={onDismiss}
+          className="mt-6 w-full rounded-full bg-white py-3.5 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.98]">
+          
+          Let's focus
+        </button>
+      </motion.div>
+    </div>);
+
+}
+=====FILE: src/components/insights/StreakHeatmap.tsx (1 lines)=====
+  1| import React from 'react';
+import { format, subDays } from 'date-fns';
+import { FocusSession } from '../../types/session';
+
+interface StreakHeatmapProps {
+  sessions: FocusSession[];
+}
+
+export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
+  const days = Array.from({ length: 28 }, (_, i) => subDays(new Date(), 27 - i));
+  const minutesByDate = new Map<string, number>();
+  sessions.
+  filter((s) => s.type === 'focus' && s.completed).
+  forEach((s) => {
+    minutesByDate.set(s.date, (minutesByDate.get(s.date) ?? 0) + s.durationMinutes);
+  });
+  const max = Math.max(...Array.from(minutesByDate.values()), 1);
+
+  return (
+    <div className="glass rounded-2xl p-4">
+      <div className="grid grid-cols-7 gap-1.5">
+        {days.map((d, i) => {
+          const iso = format(d, 'yyyy-MM-dd');
+          const minutes = minutesByDate.get(iso) ?? 0;
+          const intensity = minutes === 0 ? 0 : Math.min(1, minutes / max);
+          return (
+            <div
+              key={i}
+              title={`${format(d, 'MMM d')}: ${minutes} min`}
+              className="aspect-square rounded-md"
+              style={{
+                backgroundColor: intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.25 + intensity * 0.75})`
+              }} />);
+
+
+        })}
+      </div>
+      <div className="flex items-center justify-end gap-1.5 mt-3">
+        <span className="text-[10px] text-neutral-500">Less</span>
+        <div className="w-2.5 h-2.5 rounded-sm bg-ink-700" />
+        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'rgba(251,146,60,0.4)' }} />
+        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'rgba(251,146,60,1)' }} />
+        <span className="text-[10px] text-neutral-500">More</span>
+      </div>
+    </div>);
+
+}
+=====FILE: src/components/insights/StatCard.tsx (1 lines)=====
+  1| import React from "react";
+import { BoxIcon } from "lucide-react";
+interface StatCardProps {
+  icon: BoxIcon;
+  label: string;
+  value: string;
+}
+export function StatCard({
+  icon: Icon,
+  label,
+  value
+}: StatCardProps) {
+  return <div className="glass rounded-2xl p-4">
+      <Icon className="w-4 h-4 text-ember-400" />
+      <p className="text-lg font-semibold text-white mt-2">{value}</p>
+      <p className="text-xs text-neutral-400 mt-0.5">{label}</p>
+    </div>;
+}

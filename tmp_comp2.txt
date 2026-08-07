@@ -1,0 +1,547 @@
+=====FILE: src/components/planner/TaskRow.tsx (1 lines)=====
+  1| import React from 'react';
+import { CheckIcon, PlayIcon } from 'lucide-react';
+import { Task } from '../../types/task';
+
+interface TaskRowProps {
+  task: Task;
+  onToggle: () => void;
+  onStartFocus: () => void;
+}
+
+export function TaskRow({ task, onToggle, onStartFocus }: TaskRowProps) {
+  return (
+    <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+      <button
+        onClick={onToggle}
+        aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
+        className={`w-5 h-5 rounded-full flex items-center justify-center border flex-shrink-0 ${
+        task.completed ? 'bg-ember-500 border-ember-500' : 'border-neutral-500'}`
+        }>
+        
+        {task.completed && <CheckIcon className="w-3 h-3 text-ink-950" />}
+      </button>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm truncate ${task.completed ? 'text-neutral-500 line-through' : 'text-white'}`}>{task.title}</p>
+        <p className="text-xs text-neutral-500">
+          {task.subject} · {task.completedPomodoros}/{task.estimatedPomodoros} sessions
+        </p>
+      </div>
+      {!task.completed &&
+      <button
+        onClick={onStartFocus}
+        aria-label="Start focus session"
+        className="glass-inset w-8 h-8 rounded-full flex items-center justify-center text-ember-400 flex-shrink-0">
+        
+          <PlayIcon className="w-3.5 h-3.5" />
+        </button>
+      }
+    </div>);
+
+}
+=====FILE: src/components/planner/AddTaskSheet.tsx (1 lines)=====
+  1| import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { XIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { useAppData } from '../../contexts/AppDataContext';
+
+interface AddTaskSheetProps {
+  onClose: () => void;
+}
+
+export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
+  const { addTask } = useAppData();
+  const [title, setTitle] = useState('');
+  const [subject, setSubject] = useState('');
+  const [pomodoros, setPomodoros] = useState(2);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    addTask({
+      title: title.trim(),
+      subject: subject.trim() || 'General',
+      estimatedPomodoros: pomodoros,
+      dueDate: format(new Date(), 'yyyy-MM-dd')
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+        className="glass-strong relative w-full max-w-md rounded-t-3xl px-5 pt-5 pb-8">
+        
+        <div className="flex items-center justify-between mb-5">
+          <p className="font-display text-lg text-white">New Task</p>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="glass-inset w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white transition-colors">
+            
+            <XIcon className="w-4 h-4" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs text-neutral-500 mb-1.5 block">Task</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Read Chapter 5"
+              className="glass-inset w-full rounded-xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+            
+          </div>
+          <div>
+            <label className="text-xs text-neutral-500 mb-1.5 block">Subject</label>
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="e.g. Biology"
+              className="glass-inset w-full rounded-xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+            
+          </div>
+          <div>
+            <label className="text-xs text-neutral-500 mb-1.5 block">Estimated sessions</label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((n) =>
+              <button
+                type="button"
+                key={n}
+                onClick={() => setPomodoros(n)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                pomodoros === n ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
+                }>
+                
+                  {n}
+                </button>
+              )}
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="w-full py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
+            
+            Add Task
+          </button>
+        </form>
+      </motion.div>
+    </div>);
+
+}
+=====FILE: src/components/home/WeeklyPreview.tsx (1 lines)=====
+  1| import React from 'react';
+
+interface WeeklyPreviewProps {
+  data: {day: string;minutes: number;}[];
+}
+
+export function WeeklyPreview({ data }: WeeklyPreviewProps) {
+  const max = Math.max(...data.map((d) => d.minutes), 1);
+  const total = data.reduce((sum, d) => sum + d.minutes, 0);
+
+  return (
+    <div className="glass rounded-2xl p-4">
+      <p className="text-lg font-semibold text-white">
+        {Math.floor(total / 60)}
+        <span className="text-sm text-neutral-500">h</span> {total % 60}
+        <span className="text-sm text-neutral-500">m</span>
+        <span className="text-sm text-neutral-500 font-normal"> focused this week</span>
+      </p>
+      <div className="flex items-end justify-between gap-2 h-20 mt-4">
+        {data.map((d, i) => {
+          const isToday = i === data.length - 1;
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+              <div
+                className={`w-full rounded-full ${isToday ? 'bg-ember-400' : 'bg-white/10'}`}
+                style={{ height: `${Math.max(d.minutes / max * 100, 4)}%` }} />
+              
+              <span className={`text-[10px] ${isToday ? 'text-ember-400 font-semibold' : 'text-neutral-500'}`}>
+                {d.day[0]}
+              </span>
+            </div>);
+
+        })}
+      </div>
+    </div>);
+
+}
+=====FILE: src/components/home/TaskPreviewList.tsx (1 lines)=====
+  1| import React from 'react';
+import { CircleIcon } from 'lucide-react';
+import { Task } from '../../types/task';
+
+interface TaskPreviewListProps {
+  tasks: Task[];
+}
+
+export function TaskPreviewList({ tasks }: TaskPreviewListProps) {
+  if (tasks.length === 0) {
+    return <div className="glass rounded-2xl p-4 text-center text-sm text-neutral-500">All caught up — nothing due today.</div>;
+  }
+  return (
+    <div className="space-y-2">
+      {tasks.map((t) =>
+      <div key={t.id} className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+          <CircleIcon className="w-4 h-4 text-neutral-500 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-white truncate">{t.title}</p>
+            <p className="text-xs text-neutral-500">
+              {t.subject} · {t.completedPomodoros}/{t.estimatedPomodoros} sessions
+            </p>
+          </div>
+        </div>
+      )}
+    </div>);
+
+}
+=====FILE: src/components/onboarding/OnboardingDots.tsx (1 lines)=====
+  1| import React from 'react';
+
+interface OnboardingDotsProps {
+  total: number;
+  current: number;
+}
+
+export function OnboardingDots({ total, current }: OnboardingDotsProps) {
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      {Array.from({ length: total }).map((_, i) =>
+      <span
+        key={i}
+        className={`h-1.5 rounded-full transition-all ${i === current ? 'w-5 bg-ember-400' : 'w-1.5 bg-ink-600'}`} />
+
+      )}
+    </div>);
+
+}
+=====FILE: src/components/onboarding/Paywall.tsx (1 lines)=====
+  1| import React, { useState } from 'react';
+import { XIcon, SparklesIcon, PaletteIcon, LineChartIcon, ShieldCheckIcon } from 'lucide-react';
+
+interface PaywallProps {
+  onStart: () => void;
+  onClose: () => void;
+}
+
+const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
+
+const benefits = [
+{ icon: SparklesIcon, title: 'Unlimited custom sessions', desc: 'Create any timer length for any subject.', bg: '#0ea5e9' },
+{ icon: ShieldCheckIcon, title: 'Advanced blocking rules', desc: 'Block by schedule, app, or website.', bg: '#059669' },
+{ icon: LineChartIcon, title: 'Deeper insights', desc: 'See patterns across months, not just weeks.', bg: '#8b5cf6' },
+{ icon: PaletteIcon, title: 'Premium soundscapes', desc: 'Unlock every focus sound in the library.', bg: '#f59e0b' }];
+
+
+export function Paywall({ onStart, onClose }: PaywallProps) {
+  const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-ink-950">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <img
+          src={HERO_IMAGE_URL}
+          alt=""
+          className="h-full w-full scale-110 object-cover object-bottom blur-2xl" />
+        
+        <div className="absolute inset-0 bg-ink-950/50" />
+        <div className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-ember-600/35 via-ember-500/10 to-transparent" />
+      </div>
+
+      <button
+        onClick={onClose}
+        aria-label="Skip Pro"
+        className="glass-inset absolute right-5 top-6 z-20 flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-70">
+        
+        <XIcon className="h-5 w-5" />
+      </button>
+
+      <div className="relative z-10 px-6 pb-36 pt-16">
+        <div className="mx-auto w-60 -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
+          <div className="flex justify-between">
+            {Array.from({ length: 9 }).map((_, i) =>
+            <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
+            )}
+          </div>
+          <div className="mt-2.5 flex items-center justify-between">
+            <p className="text-[13px] font-bold text-ink-950">
+              Focus Pass{' '}
+              <span className="ml-1 rounded bg-ember-500/15 px-1 py-0.5 text-[9px] font-bold text-ember-600">NEW</span>
+            </p>
+            <p className="font-display text-sm italic text-ink-950/50">Cadence</p>
+          </div>
+          <div className="mt-3 space-y-2 text-left">
+            <div>
+              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Student</p>
+              <p className="text-xs font-medium text-ink-950/80">Alex</p>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Focus goal</p>
+              <p className="text-xs font-medium text-ink-950/80">Deep Work</p>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Signed</p>
+              <p className="font-display text-sm italic text-ink-950/70">Alex R.</p>
+            </div>
+          </div>
+          <div className="mt-3 flex justify-between">
+            {Array.from({ length: 9 }).map((_, i) =>
+            <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
+            )}
+          </div>
+        </div>
+
+        <p className="mt-6 text-center font-display text-3xl tracking-tight text-white">
+          Cadence <span className="italic text-ember-400">pro</span>
+        </p>
+        <p className="mx-auto mt-2 max-w-[240px] text-center text-sm leading-6 text-neutral-400">
+          Launch special is on!
+          <br />
+          Unlock your best study habits now!
+        </p>
+
+        <div className="mt-7 space-y-3">
+          <div className="relative">
+            <span className="absolute -top-2.5 left-4 z-10 rounded-full bg-gradient-to-r from-ember-500 to-orange-600 px-2.5 py-1 text-[10px] font-bold text-white">
+              Save 40%
+            </span>
+            <button
+              onClick={() => setPlan('yearly')}
+              aria-pressed={plan === 'yearly'}
+              style={plan === 'yearly' ? { borderColor: 'rgba(255,255,255,0.85)' } : undefined}
+              className="glass-strong w-full rounded-2xl px-4 py-4 text-left transition-colors">
+              
+              <div className="flex items-center justify-between">
+                <p className="text-base font-bold text-white">Yearly</p>
+                <div className="flex items-center gap-2.5">
+                  <p className="text-xs text-neutral-300">$3.99/mo</p>
+                  {plan === 'yearly' ?
+                  <span className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-2 border-white">
+                      <span className="h-2 w-2 rounded-full bg-white" />
+                    </span> :
+
+                  <span className="h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-white/30" />
+                  }
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-neutral-400">$47.99/yr</p>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setPlan('monthly')}
+            aria-pressed={plan === 'monthly'}
+            style={plan === 'monthly' ? { borderColor: 'rgba(255,255,255,0.85)' } : undefined}
+            className="glass-strong w-full rounded-2xl px-4 py-4 text-left transition-colors">
+            
+            <div className="flex items-center justify-between">
+              <p className="text-base font-bold text-white">Monthly</p>
+              <div className="flex items-center gap-2.5">
+                <p className="text-xs text-neutral-300">$6.99/mo</p>
+                {plan === 'monthly' ?
+                <span className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-2 border-white">
+                    <span className="h-2 w-2 rounded-full bg-white" />
+                  </span> :
+
+                <span className="h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-white/30" />
+                }
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <section className="mt-8">
+          <p className="text-lg font-bold text-white">PRO Benefits</p>
+          <div className="mt-4 space-y-5">
+            {benefits.map(({ icon: Icon, title, desc, bg }) =>
+            <div key={title} className="flex items-start gap-3">
+                <div
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: bg }}>
+                
+                  <Icon className="h-[18px] w-[18px] text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{title}</p>
+                  <p className="text-xs text-neutral-400">{desc}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-ink-950 via-ink-950/95 to-transparent px-6 pb-8 pt-10">
+        <button
+          onClick={onStart}
+          className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98]">
+          
+          Start Cadence
+        </button>
+      </div>
+    </div>);
+
+}
+=====FILE: src/components/profile/SettingRow.tsx (1 lines)=====
+  1| import React, { ReactNode } from "react";
+import { ChevronRightIcon, BoxIcon } from "lucide-react";
+interface SettingRowProps {
+  icon: BoxIcon;
+  title: string;
+  description?: string;
+  control?: ReactNode;
+  onClick?: () => void;
+  danger?: boolean;
+}
+export function SettingRow({
+  icon: Icon,
+  title,
+  description,
+  control,
+  onClick,
+  danger = false
+}: SettingRowProps) {
+  const content = <>
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
+        <Icon className={`h-4 w-4 ${danger ? 'text-red-400' : 'text-neutral-300'}`} />
+      </div>
+      <div className="min-w-0 flex-1 text-left">
+        <p className={`text-sm font-medium ${danger ? 'text-red-400' : 'text-white'}`}>{title}</p>
+        {description && <p className="mt-0.5 text-xs text-neutral-500">{description}</p>}
+      </div>
+      {control ?? (onClick && <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-neutral-500" />)}
+    </>;
+  if (onClick) {
+    return <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03]">
+        {content}
+      </button>;
+  }
+  return <div className="flex w-full items-center gap-3 px-4 py-3.5">{content}</div>;
+}
+=====FILE: src/components/profile/ToggleSwitch.tsx (1 lines)=====
+  1| import React from 'react';
+
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label: string;
+}
+
+export function ToggleSwitch({ checked, onChange, label }: ToggleSwitchProps) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`flex h-6 w-11 flex-shrink-0 items-center rounded-full px-0.5 transition-colors duration-300 ${
+      checked ? 'bg-ember-500 justify-end' : 'bg-white/10 justify-start'}`
+      }>
+      
+      <span className="h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300" />
+    </button>);
+
+}
+=====FILE: src/components/onboarding/TimerVisual.tsx (1 lines)=====
+  1| import React from 'react';
+import { CircularTimer } from '../CircularTimer';
+
+export function TimerVisual() {
+  return (
+    <div className="flex items-center justify-center">
+      <CircularTimer progress={0.62} size={220} strokeWidth={12}>
+        <div className="text-center">
+          <p className="font-display text-4xl text-white">18:24</p>
+          <p className="text-xs text-neutral-400 mt-1 tracking-wide uppercase">Focus Session</p>
+        </div>
+      </CircularTimer>
+    </div>);
+
+}
+=====FILE: src/components/onboarding/BlockVisual.tsx (1 lines)=====
+  1| import React from 'react';
+import { LockIcon, BellOffIcon } from 'lucide-react';
+
+export function BlockVisual() {
+  return (
+    <div className="relative w-full max-w-[260px]">
+      <div className="glass-strong rounded-3xl p-5">
+        <div className="flex items-center justify-between text-neutral-500 text-xs mb-4">
+          <span>9:41</span>
+          <LockIcon className="w-3.5 h-3.5" />
+        </div>
+        <div className="glass-inset flex items-start gap-3 rounded-2xl p-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
+            style={{ backgroundColor: '#E1306C' }}>
+            
+            IG
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-white">Instagram — Blocked</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Stay focused. Reopens after your session.</p>
+          </div>
+          <BellOffIcon className="w-4 h-4 text-neutral-500 mt-0.5 flex-shrink-0" />
+        </div>
+      </div>
+    </div>);
+
+}
+=====FILE: src/components/onboarding/InsightsVisual.tsx (1 lines)=====
+  1| import React from 'react';
+
+const bars = [30, 55, 40, 80, 65, 90, 50];
+
+export function InsightsVisual() {
+  return (
+    <div className="w-full max-w-[260px]">
+      <div className="glass-strong rounded-3xl p-5">
+        <p className="text-xs text-neutral-400">This week</p>
+        <p className="font-display text-2xl text-white mt-1">6h 40m focused</p>
+        <div className="flex items-end gap-2 h-24 mt-5">
+          {bars.map((h, i) =>
+          <div key={i} className="flex-1 rounded-full bg-ember-400/80" style={{ height: `${h}%` }} />
+          )}
+        </div>
+      </div>
+    </div>);
+
+}
+=====FILE: src/components/onboarding/PlannerVisual.tsx (1 lines)=====
+  1| import React from 'react';
+import { CheckIcon } from 'lucide-react';
+
+const rows = [
+{ title: 'Problem Set 4', done: true },
+{ title: 'Read Chapter 7', done: false },
+{ title: 'Outline Essay', done: false }];
+
+
+export function PlannerVisual() {
+  return (
+    <div className="w-full max-w-[260px]">
+      <div className="glass-strong rounded-3xl p-5 space-y-2.5">
+        {rows.map((r, i) =>
+        <div key={i} className="glass-inset flex items-center gap-3 rounded-xl px-3 py-2.5">
+            <div
+            className={`w-5 h-5 rounded-full flex items-center justify-center border flex-shrink-0 ${
+            r.done ? 'bg-ember-500 border-ember-500' : 'border-neutral-500'}`
+            }>
+            
+              {r.done && <CheckIcon className="w-3 h-3 text-ink-950" />}
+            </div>
+            <p className={`text-sm ${r.done ? 'text-neutral-500 line-through' : 'text-white'}`}>{r.title}</p>
+          </div>
+        )}
+      </div>
+    </div>);
+
+}
