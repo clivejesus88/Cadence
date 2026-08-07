@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react-native';
 
 export interface AmbientSound {
   id: string;
