@@ -4,7 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { HomeIcon, TimerIcon, BarChart3Icon, ListChecksIcon } from 'lucide-react-native';
-import type { BottomTabBarProps } from 'expo-router/build/react-navigation/bottom-tabs';
+import type { ComponentProps } from 'react';
+import { Tabs } from 'expo-router';
+
+type TabsLayoutProps = NonNullable<ComponentProps<typeof Tabs>['layout']> extends (
+  props: infer P
+) => React.ReactElement
+  ? P
+  : never;
 
 const NAV_H_PADDING = 6;
 const ITEMS = [
@@ -14,7 +21,7 @@ const ITEMS = [
   { name: 'planner', label: 'Planner', Icon: ListChecksIcon },
 ];
 
-function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
+function FloatingTabBar({ state, navigation }: Pick<TabsLayoutProps, 'state' | 'navigation'>) {
   const insets = useSafeAreaInsets();
   const focusedIndex = state.index;
 
@@ -58,12 +65,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
               accessibilityRole="tab"
               accessibilityState={{ selected: isFocused }}
               onPress={() => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: state.routes[index].key,
-                  canPreventDefault: true,
-                });
-                if (!isFocused && !event.defaultPrevented) {
+                if (!isFocused) {
                   navigation.navigate(name);
                 }
               }}
@@ -85,18 +87,11 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   );
 }
 
-interface TabLayoutProps {
-  state: BottomTabBarProps['state'];
-  navigation: BottomTabBarProps['navigation'];
-  descriptors: BottomTabBarProps['descriptors'];
-  children: ReactNode;
-}
-
-export function TabBarLayout({ state, navigation, descriptors, children }: TabLayoutProps) {
+export function TabBarLayout({ state, navigation, children }: TabsLayoutProps & { children: ReactNode }) {
   return (
     <View style={styles.screen}>
       <View style={styles.content}>{children}</View>
-      <FloatingTabBar state={state} navigation={navigation} descriptors={descriptors} insets={{ top: 0, bottom: 0, left: 0, right: 0 }} />
+      <FloatingTabBar state={state} navigation={navigation} />
     </View>
   );
 }
