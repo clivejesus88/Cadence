@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInRight, FadeOutLeft } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { TimerIcon } from 'lucide-react-native';
 import { OnboardingDots } from '../components/onboarding/OnboardingDots';
 import { TimerVisual } from '../components/onboarding/TimerVisual';
@@ -51,7 +52,11 @@ export function OnboardingFlow() {
     return (
       <View className="relative flex-1 justify-end bg-ink-950">
         <Image source={heroImage} className="absolute inset-0 h-full w-full" />
-        <View className="absolute inset-0 bg-gradient-to-b from-ink-950/60 via-ink-950/30 to-ink-950" />
+        <LinearGradient
+          colors={['rgba(10,13,16,0.6)', 'rgba(10,13,16,0.3)', '#0a0d10']}
+          locations={[0, 0.5, 1]}
+          style={StyleSheet.absoluteFill}
+        />
         <View className="relative z-10 items-center px-10 pb-16 text-center">
           <View className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ember-500/20">
             <TimerIcon size={28} color="#fb923c" />

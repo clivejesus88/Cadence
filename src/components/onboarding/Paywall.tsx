@@ -30,7 +30,12 @@ export function Paywall({ onStart, onClose }: PaywallProps) {
         blurRadius={40}
       />
       <View className="absolute inset-0 bg-ink-950/50" />
-      <View className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-ember-600/35 via-ember-500/10 to-transparent" />
+      <LinearGradient
+        colors={['rgba(234,88,12,0.35)', 'rgba(245,158,11,0.1)', 'transparent']}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      />
 
       <Pressable
         onPress={onClose}
