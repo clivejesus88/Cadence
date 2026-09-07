@@ -1,15 +1,16 @@
-import { Pressable, Text, View } from 'react-native';
-import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon } from 'lucide-react-native';
+
+import { AnimatePresence, motion } from 'framer-motion';
+import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon } from 'lucide-react';
 import { CircularTimer } from '../CircularTimer';
+import { TickRing } from './TickRing';
 import { ambientSounds } from '../../data/ambientSounds';
 import { formatCountdown } from '../../utils/time';
 import { Task } from '../../types/task';
-import { Glass } from '../ui/Glass';
 
 interface ActiveSessionProps {
   sessionType: 'focus' | 'break';
-  secondsLeft: number;
-  totalSeconds: number;
+  elapsedSeconds: number;
+  targetSeconds: number;
   isPaused: boolean;
   onTogglePause: () => void;
   onEnd: () => void;
@@ -20,86 +21,101 @@ interface ActiveSessionProps {
 
 export function ActiveSession({
   sessionType,
-  secondsLeft,
-  totalSeconds,
+  elapsedSeconds,
+  targetSeconds,
   isPaused,
   onTogglePause,
   onEnd,
   soundId,
   blockingEnabled,
-  activeTask,
+  activeTask
 }: ActiveSessionProps) {
-  const progress = 1 - secondsLeft / totalSeconds;
+  const isOvertime = sessionType === 'focus' && elapsedSeconds >= targetSeconds;
+  const displaySeconds = isOvertime ? elapsedSeconds - targetSeconds : Math.max(0, targetSeconds - elapsedSeconds);
+  const progress = targetSeconds > 0 ? Math.min(1, elapsedSeconds / targetSeconds) : 0;
   const sound = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
   const SoundIcon = sound.icon;
+  const isBreathing = sessionType === 'focus' && !isPaused;
 
   return (
-    <View className="flex-1 items-center px-5 pb-6 pt-10">
-      <Text className="text-sm font-medium uppercase tracking-wide text-neutral-400">
+    <div className="px-5 pt-10 pb-6 flex flex-col items-center min-h-[calc(100vh-6rem)]">
+      <p className="text-neutral-400 text-sm uppercase tracking-wide font-medium">
         {sessionType === 'focus' ? 'Focusing' : 'Break'}
-      </Text>
-      {activeTask && sessionType === 'focus' && (
-        <Text className="mt-1 max-w-[220px] text-sm text-white" numberOfLines={1}>
-          {activeTask.title}
-        </Text>
-      )}
+      </p>
+      {activeTask && sessionType === 'focus' &&
+      <p className="text-white text-sm mt-1 truncate max-w-[220px]">{activeTask.title}</p>
+      }
 
-      <View className="relative mt-8">
-        <View
-          className="absolute rounded-full bg-ember-500/10 blur-2xl"
-          style={{ top: 24, bottom: 24, left: 24, right: 24 }}
-        />
-        <CircularTimer progress={progress} size={240} strokeWidth={12}>
-          <View className="text-center">
-            <Text className="font-display text-5xl text-white" style={{ fontVariant: ['tabular-nums'] }}>
-              {formatCountdown(secondsLeft)}
-            </Text>
-            {isPaused && <Text className="mt-1 text-xs font-medium text-ember-400">Paused</Text>}
-          </View>
-        </CircularTimer>
-      </View>
+      <div className="mt-8 relative">
+        <div className={`absolute inset-6 rounded-full bg-ember-500/10 blur-2xl ${isOvertime ? 'bg-ember-500/20' : ''}`} />
+        <motion.div
+          className="relative"
+          style={{ width: 240, height: 240 }}
+          animate={isBreathing ? { scale: [1, 1.015, 1] } : { scale: 1 }}
+          transition={isBreathing ? { duration: 4, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3, ease: 'easeOut' }}>
+          
+          <TickRing size={240} radius={95} progress={progress} tickCount={40} />
+          <CircularTimer progress={progress} size={240} strokeWidth={12}>
+            <div className="text-center">
+              <p className="font-display text-5xl text-white tabular-nums">
+                {isOvertime && <span className="text-ember-400">+</span>}
+                {formatCountdown(displaySeconds)}
+              </p>
+              {isPaused ?
+              <p className="text-xs text-ember-400 mt-1 font-medium">Paused</p> :
+              isOvertime ?
+              <p className="text-xs text-ember-400 mt-1 font-medium">Bonus focus time</p> :
+              null}
+            </div>
+          </CircularTimer>
+        </motion.div>
+      </div>
 
-      <View className="mt-10 flex-row items-center gap-4">
-        <Pressable
-          onPress={onEnd}
-          accessibilityLabel="End session"
-          className="h-12 w-12 items-center justify-center rounded-full"
-          style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)' }}>
-          <SquareIcon size={16} color="#d4d4d4" />
-        </Pressable>
-        <Pressable
-          onPress={onTogglePause}
-          accessibilityLabel={isPaused ? 'Resume' : 'Pause'}
-          className="h-16 w-16 items-center justify-center rounded-full"
-          style={{
-            backgroundColor: '#fb923c',
-            shadowColor: '#fb923c',
-            shadowOffset: { width: 0, height: 0 },
-            shadowRadius: 48,
-            shadowOpacity: 0.4,
-            elevation: 24,
-          }}>
-          {isPaused ? <PlayIcon size={24} color="#0a0d10" /> : <PauseIcon size={24} color="#0a0d10" />}
-        </Pressable>
-        <View className="h-12 w-12" />
-      </View>
+      <div className="flex items-center gap-4 mt-10">
+        <button
+          onClick={onEnd}
+          aria-label="End session"
+          className="glass w-12 h-12 rounded-full flex items-center justify-center text-neutral-300 hover:text-white transition-colors">
+          
+          <SquareIcon className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onTogglePause}
+          aria-label={isPaused ? 'Resume' : 'Pause'}
+          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 shadow-glow overflow-hidden">
+          
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={isPaused ? 'play' : 'pause'}
+              initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="flex items-center justify-center">
+              
+              {isPaused ? <PlayIcon className="w-6 h-6" /> : <PauseIcon className="w-6 h-6" />}
+            </motion.span>
+          </AnimatePresence>
+        </button>
+        <div className="w-12 h-12" />
+      </div>
 
-      {sessionType === 'focus' && (
-        <View className="mt-10 w-full gap-2.5">
-          <Glass className="flex-row items-center gap-3 rounded-2xl px-4 py-3">
-            <SoundIcon size={16} color="#fb923c" className="shrink-0" />
-            <Text className="flex-1 text-sm text-white">{sound.name}</Text>
-            <Text className="text-xs text-neutral-400">Playing</Text>
-          </Glass>
-          {blockingEnabled && (
-            <Glass className="flex-row items-center gap-3 rounded-2xl px-4 py-3">
-              <ShieldCheckIcon size={16} color="#fb923c" className="shrink-0" />
-              <Text className="flex-1 text-sm text-white">Distractions blocked</Text>
-              <Text className="text-xs text-neutral-400">Active</Text>
-            </Glass>
-          )}
-        </View>
-      )}
-    </View>
-  );
+      {sessionType === 'focus' &&
+      <div className="mt-10 w-full space-y-2.5">
+          <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+            <SoundIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
+            <p className="text-sm text-white flex-1">{sound.name}</p>
+            <span className="text-xs text-neutral-400">Playing</span>
+          </div>
+          {blockingEnabled &&
+        <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+              <ShieldCheckIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
+              <p className="text-sm text-white flex-1">Distractions blocked</p>
+              <span className="text-xs text-neutral-400">Active</span>
+            </div>
+        }
+        </div>
+      }
+    </div>);
+
 }

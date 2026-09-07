@@ -1,6 +1,4 @@
 import { ReactNode } from 'react';
-import { View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 
 interface CircularTimerProps {
   progress: number; // 0 to 1
@@ -17,7 +15,7 @@ export function CircularTimer({
   strokeWidth = 14,
   children,
   trackColor = 'rgba(255,255,255,0.08)',
-  progressColor = '#fb923c',
+  progressColor = '#fb923c'
 }: CircularTimerProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -25,38 +23,24 @@ export function CircularTimer({
   const offset = circumference * (1 - clamped);
 
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-      <Svg
-        width={size}
-        height={size}
-        style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={trackColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        <Circle
+    <div className="relative" style={{ width: size, height: size }}>
+      <div className="glass absolute inset-0 rounded-full" />
+      <svg width={size} height={size} className="relative -rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke={trackColor} strokeWidth={strokeWidth} fill="none" />
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           stroke={progressColor}
           strokeWidth={strokeWidth}
           fill="none"
-          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-        />
-      </Svg>
-      {children}
-    </View>
-  );
+          style={{ transition: 'stroke-dashoffset 0.3s linear' }} />
+        
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">{children}</div>
+    </div>);
+
 }

@@ -1,8 +1,7 @@
-import { Text, View } from 'react-native';
-import { Glass } from '../ui/Glass';
+
 
 interface WeeklyPreviewProps {
-  data: { day: string; minutes: number }[];
+  data: {day: string;minutes: number;}[];
 }
 
 export function WeeklyPreview({ data }: WeeklyPreviewProps) {
@@ -10,29 +9,29 @@ export function WeeklyPreview({ data }: WeeklyPreviewProps) {
   const total = data.reduce((sum, d) => sum + d.minutes, 0);
 
   return (
-    <Glass className="rounded-2xl p-4">
-      <Text className="text-lg font-semibold text-white">
+    <div className="glass rounded-2xl p-4">
+      <p className="text-lg font-semibold text-white">
         {Math.floor(total / 60)}
-        <Text className="text-sm text-neutral-500">h</Text> {total % 60}
-        <Text className="text-sm text-neutral-500">m</Text>
-        <Text className="text-sm font-normal text-neutral-500"> focused this week</Text>
-      </Text>
-      <View className="mt-4 h-20 flex-row items-end justify-between gap-2">
+        <span className="text-sm text-neutral-500">h</span> {total % 60}
+        <span className="text-sm text-neutral-500">m</span>
+        <span className="text-sm text-neutral-500 font-normal"> focused this week</span>
+      </p>
+      <div className="flex items-end justify-between gap-2 h-20 mt-4">
         {data.map((d, i) => {
           const isToday = i === data.length - 1;
           return (
-            <View key={i} className="h-full flex-1 flex-col items-center justify-end gap-2">
-              <View
+            <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+              <div
                 className={`w-full rounded-full ${isToday ? 'bg-ember-400' : 'bg-white/10'}`}
-                style={{ height: `${Math.max((d.minutes / max) * 100, 4)}%` }}
-              />
-              <Text className={`text-[10px] ${isToday ? 'font-semibold text-ember-400' : 'text-neutral-500'}`}>
+                style={{ height: `${Math.max(d.minutes / max * 100, 4)}%` }} />
+              
+              <span className={`text-[10px] ${isToday ? 'text-ember-400 font-semibold' : 'text-neutral-500'}`}>
                 {d.day[0]}
-              </Text>
-            </View>
-          );
+              </span>
+            </div>);
+
         })}
-      </View>
-    </Glass>
-  );
+      </div>
+    </div>);
+
 }

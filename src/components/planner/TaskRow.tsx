@@ -1,7 +1,6 @@
-import { Pressable, Text, View } from 'react-native';
-import { CheckIcon, PlayIcon } from 'lucide-react-native';
+
+import { CheckIcon, PlayIcon } from 'lucide-react';
 import { Task } from '../../types/task';
-import { Glass } from '../ui/Glass';
 
 interface TaskRowProps {
   task: Task;
@@ -11,35 +10,31 @@ interface TaskRowProps {
 
 export function TaskRow({ task, onToggle, onStartFocus }: TaskRowProps) {
   return (
-    <Glass className="flex-row items-center gap-3 rounded-2xl px-4 py-3">
-      <Pressable
-        onPress={onToggle}
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: task.completed }}
-        accessibilityLabel={task.completed ? 'Mark incomplete' : 'Mark complete'}
-        className={`h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-          task.completed ? 'border-ember-500 bg-ember-500' : 'border-neutral-500'
-        }`}>
-        {task.completed && <CheckIcon size={12} color="#0a0d10" />}
-      </Pressable>
-      <View className="min-w-0 flex-1">
-        <Text
-          numberOfLines={1}
-          className={`text-sm ${task.completed ? 'text-neutral-500 line-through' : 'text-white'}`}>
-          {task.title}
-        </Text>
-        <Text className="text-xs text-neutral-500">
+    <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+      <button
+        onClick={onToggle}
+        aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
+        className={`w-5 h-5 rounded-full flex items-center justify-center border flex-shrink-0 ${
+        task.completed ? 'bg-ember-500 border-ember-500' : 'border-neutral-500'}`
+        }>
+        
+        {task.completed && <CheckIcon className="w-3 h-3 text-ink-950" />}
+      </button>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm truncate ${task.completed ? 'text-neutral-500 line-through' : 'text-white'}`}>{task.title}</p>
+        <p className="text-xs text-neutral-500">
           {task.subject} · {task.completedPomodoros}/{task.estimatedPomodoros} sessions
-        </Text>
-      </View>
-      {!task.completed && (
-        <Pressable
-          onPress={onStartFocus}
-          accessibilityLabel="Start focus session"
-          className="h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
-          <PlayIcon size={14} color="#fb923c" />
-        </Pressable>
-      )}
-    </Glass>
-  );
+        </p>
+      </div>
+      {!task.completed &&
+      <button
+        onClick={onStartFocus}
+        aria-label="Start focus session"
+        className="glass-inset w-8 h-8 rounded-full flex items-center justify-center text-ember-400 flex-shrink-0">
+        
+          <PlayIcon className="w-3.5 h-3.5" />
+        </button>
+      }
+    </div>);
+
 }

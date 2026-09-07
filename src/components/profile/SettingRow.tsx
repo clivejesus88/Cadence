@@ -1,8 +1,5 @@
-import { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { ChevronRightIcon } from 'lucide-react-native';
-import type { LucideIcon } from 'lucide-react-native';
-
+import { ReactNode } from "react";
+import { ChevronRightIcon, type LucideIcon } from "lucide-react";
 interface SettingRowProps {
   icon: LucideIcon;
   title: string;
@@ -11,36 +8,28 @@ interface SettingRowProps {
   onClick?: () => void;
   danger?: boolean;
 }
-
 export function SettingRow({
   icon: Icon,
   title,
   description,
   control,
   onClick,
-  danger = false,
+  danger = false
 }: SettingRowProps) {
-  const content = (
-    <>
-      <View className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
-        <Icon size={16} color={danger ? '#f87171' : '#a3a3a3'} />
-      </View>
-      <View className="min-w-0 flex-1">
-        <Text className={`text-sm font-medium ${danger ? 'text-red-400' : 'text-white'}`}>
-          {title}
-        </Text>
-        {description && <Text className="mt-0.5 text-xs text-neutral-500">{description}</Text>}
-      </View>
-      {control ?? (onClick && <ChevronRightIcon size={16} color="#737373" className="shrink-0" />)}
-    </>
-  );
-
+  const content = <>
+      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
+        <Icon className={`h-4 w-4 ${danger ? 'text-red-400' : 'text-neutral-300'}`} />
+      </div>
+      <div className="min-w-0 flex-1 text-left">
+        <p className={`text-sm font-medium ${danger ? 'text-red-400' : 'text-white'}`}>{title}</p>
+        {description && <p className="mt-0.5 text-xs text-neutral-500">{description}</p>}
+      </div>
+      {control ?? (onClick && <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-neutral-500" />)}
+    </>;
   if (onClick) {
-    return (
-      <Pressable onPress={onClick} className="w-full flex-row items-center gap-3 px-4 py-3.5">
+    return <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03]">
         {content}
-      </Pressable>
-    );
+      </button>;
   }
-  return <View className="w-full flex-row items-center gap-3 px-4 py-3.5">{content}</View>;
+  return <div className="flex w-full items-center gap-3 px-4 py-3.5">{content}</div>;
 }

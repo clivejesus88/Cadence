@@ -1,267 +1,128 @@
-import { Children, ReactNode } from 'react';
-import { Image } from 'react-native';
-import { Pressable, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import {
-  ChevronLeftIcon,
-  FlameIcon,
-  ClockIcon,
-  ListChecksIcon,
-  TimerIcon,
-  CoffeeIcon,
-  PlayIcon,
-  BellIcon,
-  MailIcon,
-  ShieldCheckIcon,
-  LockIcon,
-  CreditCardIcon,
-  LogOutIcon,
-  BoxIcon,
-  SparklesIcon,
-} from 'lucide-react-native';
-import { useAppData } from '../contexts/AppDataContext';
-import { useSettings } from '../contexts/SettingsContext';
-import { SettingRow } from '../components/profile/SettingRow';
-import { ToggleSwitch } from '../components/profile/ToggleSwitch';
-import { Screen } from '../components/ui/Screen';
-import { Glass } from '../components/ui/Glass';
 
+import { useNavigate } from "react-router-dom";
+import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, LockIcon, CreditCardIcon, LogOutIcon, BoxIcon } from "lucide-react";
+import { useAppData } from "../contexts/AppDataContext";
+import { useSettings } from "../contexts/SettingsContext";
+import { formatMinutes } from "../utils/time";
+import { SettingRow } from "../components/profile/SettingRow";
+import { ToggleSwitch } from "../components/profile/ToggleSwitch";
 const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
-
-function SettingsList({ children }: { children: ReactNode }) {
-  return (
-    <Glass className="rounded-2xl">
-      {Children.toArray(children).map((child, i) => (
-        <View
-          key={i}
-          style={i > 0 ? { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)' } : undefined}>
-          {child}
-        </View>
-      ))}
-    </Glass>
-  );
-}
-
-function Pills({
-  options,
-  selected,
-  onSelect,
-}: {
-  options: number[];
-  selected: number;
-  onSelect: (value: number) => void;
-}) {
-  return (
-    <View className="flex-row gap-1.5">
-      {options.map((o) => (
-        <Pressable
-          key={o}
-          onPress={() => onSelect(o)}
-          className={`rounded-xl p-2 ${selected === o ? 'bg-ember-500' : 'bg-white/5'}`}>
-          <Text className={`text-xs font-semibold ${selected === o ? 'text-ink-950' : 'text-neutral-300'}`}>
-            {o}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
 export function Profile() {
-  const router = useRouter();
-  const { currentStreak, totalSessionsCompleted, sessions } = useAppData();
-  const { profile, preferences, updatePreference } = useSettings();
+  const navigate = useNavigate();
+  const {
+    currentStreak,
+    totalSessionsCompleted,
+    sessions
+  } = useAppData();
+  const {
+    profile,
+    preferences,
+    updatePreference
+  } = useSettings();
+  const totalMinutes = sessions.filter((s) => s.type === 'focus' && s.completed).reduce((sum, s) => sum + s.durationMinutes, 0);
+  return <div className="px-5 pt-8 pb-8">
+      <header className="flex items-center gap-3">
+        <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+          <ChevronLeftIcon className="h-5 w-5" />
+        </button>
+        <h1 className="font-display text-2xl text-white">Profile</h1>
+      </header>
 
-  const totalMinutes = sessions
-    .filter((s) => s.type === 'focus' && s.completed)
-    .reduce((sum, s) => sum + s.durationMinutes, 0);
+      <section className="glass-strong mt-6 rounded-3xl p-5">
+        <div className="flex items-center gap-4">
+          <img src={profile.avatarUrl} alt={profile.name} className="h-16 w-16 flex-shrink-0 rounded-full object-cover ring-2 ring-white/20" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="truncate text-lg font-semibold text-white">{profile.name}</p>
+              {profile.plan === 'pro' && <span className="rounded-full bg-ember-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ember-400">
+                  Pro
+                </span>}
+            </div>
+            <p className="truncate text-xs text-neutral-400">{profile.school}</p>
+            <p className="truncate text-xs text-neutral-500">{profile.email}</p>
+          </div>
+        </div>
 
-  const goBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.navigate('/home');
-    }
-  };
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="glass-inset rounded-2xl px-3 py-3 text-center">
+            <FlameIcon className="mx-auto h-4 w-4 text-ember-400" />
+            <p className="mt-1.5 text-sm font-semibold text-white">{currentStreak}</p>
+            <p className="text-[10px] text-neutral-500">Day streak</p>
+          </div>
+          <div className="glass-inset rounded-2xl px-3 py-3 text-center">
+            <ClockIcon className="mx-auto h-4 w-4 text-neutral-300" />
+            <p className="mt-1.5 text-sm font-semibold text-white">{formatMinutes(totalMinutes)}</p>
+            <p className="text-[10px] text-neutral-500">Focused</p>
+          </div>
+          <div className="glass-inset rounded-2xl px-3 py-3 text-center">
+            <ListChecksIcon className="mx-auto h-4 w-4 text-neutral-300" />
+            <p className="mt-1.5 text-sm font-semibold text-white">{totalSessionsCompleted}</p>
+            <p className="text-[10px] text-neutral-500">Sessions</p>
+          </div>
+        </div>
+      </section>
 
-  return (
-    <Screen>
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          onPress={goBack}
-          accessibilityLabel="Back to dashboard"
-          className="h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5">
-          <ChevronLeftIcon size={20} color="#d4d4d4" />
-        </Pressable>
-        <Text className="font-display text-2xl text-white">Profile</Text>
-      </View>
+      <section className="mt-7">
+        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus preferences</h2>
+        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+          <div className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
+                <TimerIcon className="h-4 w-4 text-neutral-300" />
+              </div>
+              <p className="flex-1 text-sm font-medium text-white">Default session</p>
+            </div>
+            <div className="mt-3 flex gap-2">
+              {durationOptions.map((d) => <button key={d} onClick={() => updatePreference('defaultDuration', d)} className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-colors ${preferences.defaultDuration === d ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
+                  {d}m
+                </button>)}
+            </div>
+          </div>
 
-      <View
-        className="mt-6 rounded-3xl p-5"
-        style={{
-          backgroundColor: 'rgba(255,255,255,0.08)',
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.14)',
-        }}>
-        <View className="flex-row items-center gap-4">
-          <Image
-            source={profile.avatarUrl}
-            className="h-16 w-16 shrink-0 rounded-full"
-            style={{ borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)' }}
-          />
-          <View className="min-w-0 flex-1">
-            <Text className="text-xs uppercase tracking-wide text-neutral-400">
-              Member since {profile.memberSince}
-            </Text>
-            <Text className="font-display mt-0.5 text-xl text-white">{profile.name}</Text>
-            <Text className="mt-0.5 text-sm text-neutral-400">{profile.email}</Text>
-            <Text className="mt-0.5 text-sm text-neutral-500">{profile.school}</Text>
-          </View>
-          <View className="flex-row items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
-            <SparklesIcon size={14} color="#fb923c" />
-            <Text className="text-xs font-semibold text-white">
-              {profile.plan === 'pro' ? 'Pro' : 'Free'}
-            </Text>
-          </View>
-        </View>
-      </View>
+          <div className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
+                <CoffeeIcon className="h-4 w-4 text-neutral-300" />
+              </div>
+              <p className="flex-1 text-sm font-medium text-white">Break length</p>
+            </div>
+            <div className="mt-3 flex gap-2">
+              {breakOptions.map((b) => <button key={b} onClick={() => updatePreference('breakLength', b)} className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-colors ${preferences.breakLength === b ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
+                  {b}m
+                </button>)}
+            </div>
+          </div>
 
-      <View className="mt-6">
-        <Text className="mb-3 text-sm font-semibold text-white">Today</Text>
-        <View className="flex-row gap-2">
-          <View className="flex-1 items-center rounded-2xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)' }}>
-            <FlameIcon size={16} color="#fb923c" />
-            <Text className="mt-1 text-2xl font-semibold text-white">{currentStreak}</Text>
-            <Text className="mt-0.5 text-xs text-neutral-400">Day streak</Text>
-          </View>
-          <View className="flex-1 items-center rounded-2xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)' }}>
-            <ClockIcon size={16} color="#fb923c" />
-            <Text className="mt-1 text-2xl font-semibold text-white">{totalMinutes}</Text>
-            <Text className="mt-0.5 text-xs text-neutral-400">Minutes focused</Text>
-          </View>
-          <View className="flex-1 items-center rounded-2xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)' }}>
-            <ListChecksIcon size={16} color="#fb923c" />
-            <Text className="mt-1 text-2xl font-semibold text-white">{totalSessionsCompleted}</Text>
-            <Text className="mt-0.5 text-xs text-neutral-400">Sessions</Text>
-          </View>
-        </View>
-      </View>
+          <SettingRow icon={PlayIcon} title="Auto-start breaks" description="Roll straight into a break when a session ends." control={<ToggleSwitch label="Auto-start breaks" checked={preferences.autoStartBreaks} onChange={(v) => updatePreference('autoStartBreaks', v)} />} />
+        </div>
+      </section>
 
-      <View className="mt-6">
-        <Text className="mb-3 text-sm font-semibold text-white">Focus sessions</Text>
-        <SettingsList>
-          <SettingRow
-            icon={TimerIcon}
-            title="Default session"
-            description="Duration for new sessions"
-            control={<Pills options={durationOptions} selected={preferences.defaultDuration} onSelect={(v) => updatePreference('defaultDuration', v)} />}
-          />
-          <SettingRow
-            icon={CoffeeIcon}
-            title="Break length"
-            description="How long breaks last"
-            control={<Pills options={breakOptions} selected={preferences.breakLength} onSelect={(v) => updatePreference('breakLength', v)} />}
-          />
-          <SettingRow
-            icon={PlayIcon}
-            title="Auto-start breaks"
-            description="Begin breaks automatically"
-            control={
-              <ToggleSwitch
-                checked={preferences.autoStartBreaks}
-                onChange={(v) => updatePreference('autoStartBreaks', v)}
-                label="Auto-start breaks"
-              />
-            }
-          />
-        </SettingsList>
-      </View>
+      <section className="mt-7">
+        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Notifications</h2>
+        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+          <SettingRow icon={BellIcon} title="Session reminders" description="Nudge me when it's time to study." control={<ToggleSwitch label="Session reminders" checked={preferences.sessionReminders} onChange={(v) => updatePreference('sessionReminders', v)} />} />
+          <SettingRow icon={MailIcon} title="Daily summary" description="A recap of your focus time each evening." control={<ToggleSwitch label="Daily summary" checked={preferences.dailySummary} onChange={(v) => updatePreference('dailySummary', v)} />} />
+        </div>
+      </section>
 
-      <View className="mt-6">
-        <Text className="mb-3 text-sm font-semibold text-white">Notifications</Text>
-        <SettingsList>
-          <SettingRow
-            icon={BellIcon}
-            title="Session reminders"
-            description="Ping when your session starts and ends"
-            control={
-              <ToggleSwitch
-                checked={preferences.sessionReminders}
-                onChange={(v) => updatePreference('sessionReminders', v)}
-                label="Session reminders"
-              />
-            }
-          />
-          <SettingRow
-            icon={SparklesIcon}
-            title="Daily summary"
-            description="Morning recap of yesterday's focus"
-            control={
-              <ToggleSwitch
-                checked={preferences.dailySummary}
-                onChange={(v) => updatePreference('dailySummary', v)}
-                label="Daily summary"
-              />
-            }
-          />
-        </SettingsList>
-      </View>
+      <section className="mt-7">
+        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus shield</h2>
+        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+          <SettingRow icon={ShieldCheckIcon} title="Block during focus" description="Mute distracting apps while a session runs." control={<ToggleSwitch label="Block during focus" checked={preferences.blockDuringFocus} onChange={(v) => updatePreference('blockDuringFocus', v)} />} />
+          <SettingRow icon={LockIcon} title="Strict mode" description="Sessions can't be ended early." control={<ToggleSwitch label="Strict mode" checked={preferences.strictMode} onChange={(v) => updatePreference('strictMode', v)} />} />
+        </div>
+      </section>
 
-      <View className="mt-6">
-        <Text className="mb-3 text-sm font-semibold text-white">Blocking</Text>
-        <SettingsList>
-          <SettingRow
-            icon={ShieldCheckIcon}
-            title="Block during focus"
-            description="Silence apps while you focus"
-            control={
-              <ToggleSwitch
-                checked={preferences.blockDuringFocus}
-                onChange={(v) => updatePreference('blockDuringFocus', v)}
-                label="Block during focus"
-              />
-            }
-          />
-          <SettingRow
-            icon={LockIcon}
-            title="Strict mode"
-            description="No skipping a session before it ends"
-            control={
-              <ToggleSwitch
-                checked={preferences.strictMode}
-                onChange={(v) => updatePreference('strictMode', v)}
-                label="Strict mode"
-              />
-            }
-          />
-          <SettingRow icon={ListChecksIcon} title="Managed apps" description="Choose which apps get blocked" />
-        </SettingsList>
-      </View>
+      <section className="mt-7">
+        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Account</h2>
+        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+          <SettingRow icon={CreditCardIcon} title="Manage subscription" description={`Cadence Pro · member since ${profile.memberSince}`} onClick={() => navigate('/')} />
+          <SettingRow icon={BoxIcon} title="Help & support" onClick={() => navigate('/app/home')} />
+          <SettingRow icon={LogOutIcon} title="Sign out" onClick={() => navigate('/')} danger />
+        </div>
+      </section>
 
-      <View className="mt-6">
-        <Text className="mb-3 text-sm font-semibold text-white">Account</Text>
-        <SettingsList>
-          <SettingRow icon={MailIcon} title="Email" description={profile.email} />
-          <SettingRow icon={ShieldCheckIcon} title="Security" description="Manage password & 2FA" />
-          <SettingRow icon={BoxIcon} title="Help & support" description="Tips, FAQs, and contact us" />
-        </SettingsList>
-      </View>
-
-      <View className="mt-6">
-        <Text className="mb-3 text-sm font-semibold text-white">Subscription</Text>
-        <SettingsList>
-          <SettingRow
-            icon={CreditCardIcon}
-            title={profile.plan === 'pro' ? 'Cadence Pro' : 'Free plan'}
-            description="Manage billing & plans"
-          />
-        </SettingsList>
-      </View>
-
-      <View className="mb-4 mt-6">
-        <SettingRow icon={LogOutIcon} title="Log out" danger />
-      </View>
-    </Screen>
-  );
+      <p className="mt-6 text-center text-[11px] text-neutral-600">Cadence v1.0 · Made for focused students</p>
+    </div>;
 }

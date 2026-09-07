@@ -1,19 +1,17 @@
-import { Text } from 'react-native';
-import type { LucideIcon } from 'lucide-react-native';
-import { Glass } from '../ui/Glass';
-
+import type { LucideIcon } from "lucide-react";
 interface StatCardProps {
   icon: LucideIcon;
   label: string;
   value: string;
 }
-
-export function StatCard({ icon: Icon, label, value }: StatCardProps) {
-  return (
-    <Glass className="rounded-2xl p-4">
-      <Icon size={16} color="#fb923c" />
-      <Text className="mt-2 text-lg font-semibold text-white">{value}</Text>
-      <Text className="mt-0.5 text-xs text-neutral-400">{label}</Text>
-    </Glass>
-  );
+export function StatCard({
+  icon: Icon,
+  label,
+  value
+}: StatCardProps) {
+  return <div className="glass rounded-2xl p-4">
+      <Icon className="w-4 h-4 text-ember-400" />
+      <p className="text-lg font-semibold text-white mt-2">{value}</p>
+      <p className="text-xs text-neutral-400 mt-0.5">{label}</p>
+    </div>;
 }

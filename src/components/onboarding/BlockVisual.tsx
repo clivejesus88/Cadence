@@ -1,34 +1,28 @@
-import { Text, View } from 'react-native';
-import { LockIcon, BellOffIcon } from 'lucide-react-native';
-import { Glass } from '../ui/Glass';
+
+import { LockIcon, BellOffIcon } from 'lucide-react';
 
 export function BlockVisual() {
   return (
-    <View className="w-full max-w-[260px]">
-      <Glass variant="strong" className="rounded-3xl p-5">
-        <View className="mb-4 flex-row items-center justify-between">
-          <Text className="text-xs text-neutral-500">9:41</Text>
-          <LockIcon size={14} color="#737373" />
-        </View>
-        <Glass variant="inset" className="rounded-2xl p-3">
-          <View className="flex-row items-start gap-3">
-            <View
-              className="h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              style={{ backgroundColor: '#E1306C' }}>
-              <Text className="text-sm font-semibold text-white">IG</Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-medium text-white">
-                Instagram — Blocked
-              </Text>
-              <Text className="mt-0.5 text-xs text-neutral-400">
-                Stay focused. Reopens after your session.
-              </Text>
-            </View>
-            <BellOffIcon size={16} color="#737373" className="mt-0.5 shrink-0" />
-          </View>
-        </Glass>
-      </Glass>
-    </View>
-  );
+    <div className="relative w-full max-w-[260px]">
+      <div className="glass-strong rounded-3xl p-5">
+        <div className="flex items-center justify-between text-neutral-500 text-xs mb-4">
+          <span>9:41</span>
+          <LockIcon className="w-3.5 h-3.5" />
+        </div>
+        <div className="glass-inset flex items-start gap-3 rounded-2xl p-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
+            style={{ backgroundColor: '#E1306C' }}>
+            
+            IG
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-white">Instagram — Blocked</p>
+            <p className="text-xs text-neutral-400 mt-0.5">Stay focused. Reopens after your session.</p>
+          </div>
+          <BellOffIcon className="w-4 h-4 text-neutral-500 mt-0.5 flex-shrink-0" />
+        </div>
+      </div>
+    </div>);
+
 }

@@ -1,11 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { avatarImage } from '../constants/theme';
 
 export interface UserProfile {
   name: string;
   email: string;
   school: string;
-  avatarUrl: number;
+  avatarUrl: string;
   plan: 'free' | 'pro';
   memberSince: string;
 }
@@ -32,9 +31,9 @@ const defaultProfile: UserProfile = {
   name: 'Alex Rivera',
   email: 'alex.rivera@university.edu',
   school: 'Second year · Biology',
-  avatarUrl: avatarImage,
+  avatarUrl: "/41934678-ca28-4660-a31a-3e5350bae9d7.jpg",
   plan: 'pro',
-  memberSince: 'March 2026',
+  memberSince: 'March 2026'
 };
 
 const defaultPreferences: Preferences = {
@@ -44,16 +43,16 @@ const defaultPreferences: Preferences = {
   sessionReminders: true,
   dailySummary: false,
   blockDuringFocus: true,
-  strictMode: false,
+  strictMode: false
 };
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
+export function SettingsProvider({ children }: {children: ReactNode;}) {
   const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
 
-  const updatePreference = <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
+  const updatePreference = <K extends keyof Preferences,>(key: K, value: Preferences[K]) => {
     setPreferences((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -62,9 +61,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   return (
     <SettingsContext.Provider
       value={{ profile: defaultProfile, preferences, updatePreference, hasSeenWelcome, dismissWelcome }}>
+      
       {children}
-    </SettingsContext.Provider>
-  );
+    </SettingsContext.Provider>);
+
 }
 
 export function useSettings() {

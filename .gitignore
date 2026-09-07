@@ -7,28 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# dependencies
-node_modules/
-
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
-
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-/ios
-/android
-
-# Metro
-.metro-health-check*
+node_modules
+dist
+dist-ssr
+*.local
 
 # Editor directories and files
 .vscode/*
@@ -40,9 +22,3 @@ expo-env.d.ts
 *.njsproj
 *.sln
 *.sw?
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
