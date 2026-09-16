@@ -97,12 +97,15 @@ export async function adoptLocalData(uid: string): Promise<void> {
   setSyncUserId(uid);
   const now = Date.now();
   await db.transaction('rw', db.tasks, db.focusSessions, db.preferences, db.profile, db.syncQueue, async () => {
+    const adopted: string[] = [];
+
     const localTasks = await db.tasks.where('userId').equals(null).toArray();
     for (const t of localTasks) {
       t.userId = uid;
       t.updatedAt = now;
       await db.tasks.put(t);
       enqueueOutbox('tasks', t.id, 'upsert', t);
+      adopted.push(t.id);
     }
 
     const localSessions = await db.focusSessions.where('userId').equals(null).toArray();
@@ -111,6 +114,7 @@ export async function adoptLocalData(uid: string): Promise<void> {
       s.updatedAt = now;
       await db.focusSessions.put(s);
       enqueueOutbox('focusSessions', s.id, 'upsert', s);
+      adopted.push(s.id);
     }
 
     const localPrefs = await db.preferences.get('local');
@@ -119,6 +123,7 @@ export async function adoptLocalData(uid: string): Promise<void> {
       await db.preferences.put(moved);
       await db.preferences.delete('local');
       enqueueOutbox('preferences', uid, 'upsert', moved);
+      adopted.push('local');
     }
 
     const localProfile = await db.profile.get('local');
@@ -127,6 +132,13 @@ export async function adoptLocalData(uid: string): Promise<void> {
       await db.profile.put(moved);
       await db.profile.delete('local');
       enqueueOutbox('profile', uid, 'upsert', moved);
+      adopted.push('local');
+    }
+
+    if (adopted.length > 0) {
+      const stale = await db.syncQueue.where('userId').equals(null).toArray();
+      const kill = stale.filter((e) => adopted.includes(e.entityId)).map((e) => e.id!);
+      if (kill.length > 0) await db.syncQueue.bulkDelete(kill);
     }
   });
 }
