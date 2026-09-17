@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, SparklesIcon, AlertTriangleIcon } from 'lucide-react';
+import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, SparklesIcon, AlertTriangleIcon, BellIcon, SunIcon } from 'lucide-react';
 import { SessionToast } from '../components/notifications/SessionToast';
 import { formatMinutes } from './time';
 
@@ -42,10 +42,37 @@ export function notifyOvertime() {
   );
 }
 
-export function notifyBreakStarted() {
-  toast.custom(() => <SessionToast icon={CoffeeIcon} title="Break started" description="5 minutes to recharge." />, {
+export function notifyBreakStarted(minutes: number) {
+  toast.custom(() => <SessionToast icon={CoffeeIcon} title="Break started" description={`${minutes} minutes to recharge.`} />, {
     duration: 2500
   });
+}
+
+export function notifySessionReminder() {
+  toast.custom(
+    () =>
+    <SessionToast
+      icon={BellIcon}
+      title="Ready to focus?"
+      description="You haven't logged a session today. A few minutes still count."
+      tone="warning" />,
+
+
+    { duration: 5000 }
+  );
+}
+
+export function notifyDailySummary(totalMinutes: number, sessionCount: number) {
+  toast.custom(
+    () =>
+    <SessionToast
+      icon={SunIcon}
+      title="Today at a glance"
+      description={`You focused ${formatMinutes(totalMinutes)} across ${sessionCount} session${sessionCount === 1 ? '' : 's'}.`} />,
+
+
+    { duration: 6000 }
+  );
 }
 
 export function notifyBreakEnded() {

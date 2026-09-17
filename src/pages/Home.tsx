@@ -1,4 +1,6 @@
 
+import { useEffect } from 'react';
+import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { FlameIcon, ArrowRightIcon, ChevronRightIcon, TimerIcon, LightbulbIcon } from 'lucide-react';
@@ -6,6 +8,8 @@ import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes, getGreeting } from '../utils/time';
 import { focusTips } from '../data/insightsTips';
+import { notifySessionReminder, notifyDailySummary } from '../utils/notify';
+import { markNudgeSeen, isNudgeSeen } from '../db/repo';
 import { WeeklyPreview } from '../components/home/WeeklyPreview';
 import { TaskPreviewList } from '../components/home/TaskPreviewList';
 import { WelcomeModal } from '../components/home/WelcomeModal';
@@ -13,9 +17,23 @@ import { WelcomeModal } from '../components/home/WelcomeModal';
 export function Home() {
   const navigate = useNavigate();
   const { currentStreak, todayMinutes, totalSessionsCompleted, tasks, weeklyData } = useAppData();
-  const { profile, hasSeenWelcome, dismissWelcome } = useSettings();
+  const { profile, preferences, hasSeenWelcome, dismissWelcome } = useSettings();
   const todaysTasks = tasks.filter((t) => !t.completed).slice(0, 3);
   const firstName = profile.name.split(' ')[0];
+
+  useEffect(() => {
+    const day = format(new Date(), 'yyyy-MM-dd');
+    if (preferences.sessionReminders && todayMinutes === 0 && !isNudgeSeen('reminder', day)) {
+      markNudgeSeen('reminder', day);
+      notifySessionReminder();
+    }
+    if (preferences.dailySummary && new Date().getHours() >= 18 && !isNudgeSeen('summary', day)) {
+      if (totalSessionsCompleted > 0 || todayMinutes > 0) {
+        markNudgeSeen('summary', day);
+        notifyDailySummary(todayMinutes, totalSessionsCompleted);
+      }
+    }
+  }, [preferences.sessionReminders, preferences.dailySummary, todayMinutes, totalSessionsCompleted]);
 
   return (
     <div className="px-5 pt-8">

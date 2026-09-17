@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { SessionSetup } from '../components/focus/SessionSetup';
 import { ActiveSession } from '../components/focus/ActiveSession';
 import { SessionComplete } from '../components/focus/SessionComplete';
@@ -18,34 +19,46 @@ type Phase = 'setup' | 'running' | 'complete';
 type SessionKind = 'focus' | 'break';
 
 const MAX_SESSION_SECONDS = 24 * 60 * 60; // a focus session can run for hours, but never past a full day
-const BREAK_SECONDS = 5 * 60;
 const MIN_LOGGABLE_SECONDS = 60; // ending almost instantly shouldn't count as a session
 
 export function Focus() {
   const { logSession, activeTaskId, tasks } = useAppData();
+  const { preferences } = useSettings();
   const [phase, setPhase] = useState<Phase>('setup');
   const [sessionType, setSessionType] = useState<SessionKind>('focus');
-  const [durationMinutes, setDurationMinutes] = useState(25);
-  const [targetSeconds, setTargetSeconds] = useState(25 * 60);
+  const [durationMinutes, setDurationMinutes] = useState(preferences.defaultDuration);
+  const [targetSeconds, setTargetSeconds] = useState(preferences.defaultDuration * 60);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [soundId, setSoundId] = useState(ambientSounds[0].id);
-  const [blockingEnabled, setBlockingEnabled] = useState(true);
+  const [blockingEnabled, setBlockingEnabled] = useState(preferences.blockDuringFocus);
   const [isPaused, setIsPaused] = useState(false);
   const [completedMinutes, setCompletedMinutes] = useState(0);
   const overtimeNotifiedRef = useRef(false);
 
-  // A single interval per running/paused state — never recreated every tick, so long
-  // sessions stay accurate for hours instead of drifting or churning timers.
+  // Wall-clock timing instead of tick counting: elapsed is derived from
+  // Date.now() minus accumulated pause time, so background tabs and throttled
+  // intervals stay accurate. The interval below only forces re-renders.
+  const startedAtRef = useRef<number | null>(null);
+  const pausedTotalRef = useRef(0);
+  const pauseStartedAtRef = useRef<number | null>(null);
+
+  const computeElapsed = useCallback((): number => {
+    if (startedAtRef.current == null) return 0;
+    const now = Date.now();
+    const pausedMs = pausedTotalRef.current + (pauseStartedAtRef.current != null ? now - pauseStartedAtRef.current : 0);
+    return Math.max(0, Math.floor((now - startedAtRef.current - pausedMs) / 1000));
+  }, []);
+
+  // Re-render tick — only while actively running.
   useEffect(() => {
     if (phase !== 'running' || isPaused) return;
     const id = setInterval(() => {
-      setElapsedSeconds((s) => s >= MAX_SESSION_SECONDS ? s : s + 1);
-    }, 1000);
+      setElapsedSeconds(computeElapsed());
+    }, 500);
     return () => clearInterval(id);
-  }, [phase, isPaused]);
+  }, [phase, isPaused, computeElapsed]);
 
-  // Breaks are fixed-length and end themselves. Focus sessions only stop at the 24h hard cap —
-  // going past the chosen duration just rolls into bonus "overtime" instead of forcing a stop.
+  // Break auto-end, overtime nudge, and the 24h hard cap.
   useEffect(() => {
     if (phase !== 'running') return;
 
@@ -53,6 +66,7 @@ export function Focus() {
       if (elapsedSeconds >= targetSeconds) {
         notifyBreakEnded();
         setElapsedSeconds(0);
+        startedAtRef.current = null;
         setPhase('setup');
         setSessionType('focus');
       }
@@ -70,6 +84,7 @@ export function Focus() {
       logSession(minutes, activeTaskId ?? undefined);
       setCompletedMinutes(minutes);
       setElapsedSeconds(0);
+      startedAtRef.current = null;
       setPhase('complete');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,8 +93,11 @@ export function Focus() {
   const startSession = (minutes: number) => {
     overtimeNotifiedRef.current = false;
     setDurationMinutes(minutes);
-    setTargetSeconds(minutes * 60);
+    setTargetSeconds(Math.min(minutes * 60, MAX_SESSION_SECONDS));
     setElapsedSeconds(0);
+    startedAtRef.current = Date.now();
+    pausedTotalRef.current = 0;
+    pauseStartedAtRef.current = null;
     setSessionType('focus');
     setIsPaused(false);
     setPhase('running');
@@ -87,31 +105,35 @@ export function Focus() {
   };
 
   const startBreak = () => {
-    setTargetSeconds(BREAK_SECONDS);
+    setTargetSeconds(Math.max(60, preferences.breakLength * 60));
     setElapsedSeconds(0);
+    startedAtRef.current = Date.now();
+    pausedTotalRef.current = 0;
+    pauseStartedAtRef.current = null;
     setSessionType('break');
     setIsPaused(false);
     setPhase('running');
-    notifyBreakStarted();
+    notifyBreakStarted(preferences.breakLength);
   };
 
   const togglePause = () => {
-    setIsPaused((prev) => {
-      const next = !prev;
-      if (sessionType === 'focus') {
-        if (next) {
-          notifySessionPaused();
-        } else {
-          notifySessionResumed();
-        }
-      }
-      return next;
-    });
+    const now = Date.now();
+    if (isPaused) {
+      pausedTotalRef.current += now - (pauseStartedAtRef.current ?? now);
+      pauseStartedAtRef.current = null;
+      if (sessionType === 'focus') notifySessionResumed();
+    } else {
+      pauseStartedAtRef.current = now;
+      setElapsedSeconds(computeElapsed());
+      if (sessionType === 'focus') notifySessionPaused();
+    }
+    setIsPaused(!isPaused);
   };
 
   const endSession = () => {
     if (sessionType === 'break') {
       setElapsedSeconds(0);
+      startedAtRef.current = null;
       setPhase('setup');
       setSessionType('focus');
       return;
@@ -121,10 +143,16 @@ export function Focus() {
       const minutes = Math.max(1, Math.round(elapsedSeconds / 60));
       logSession(minutes, activeTaskId ?? undefined);
       setCompletedMinutes(minutes);
+      startedAtRef.current = null;
+      if (preferences.autoStartBreaks) {
+        startBreak();
+        return;
+      }
       setElapsedSeconds(0);
       setPhase('complete');
     } else {
       setElapsedSeconds(0);
+      startedAtRef.current = null;
       setPhase('setup');
     }
   };
@@ -142,8 +170,6 @@ export function Focus() {
         onToggleBlocking={setBlockingEnabled}
         activeTask={activeTask}
         onStart={() => startSession(durationMinutes)} />);
-
-
   }
 
   if (phase === 'running') {
@@ -155,12 +181,11 @@ export function Focus() {
         isPaused={isPaused}
         onTogglePause={togglePause}
         onEnd={endSession}
+        strictMode={preferences.strictMode}
         soundId={soundId}
         blockingEnabled={blockingEnabled && sessionType === 'focus'}
         activeTask={activeTask} />);
-
-
   }
 
-  return <SessionComplete minutes={completedMinutes} onBreak={startBreak} onDone={endSession} />;
+  return <SessionComplete minutes={completedMinutes} breakMinutes={preferences.breakLength} onBreak={startBreak} onDone={endSession} />;
 }

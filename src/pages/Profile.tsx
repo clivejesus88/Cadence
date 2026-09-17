@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, LockIcon, CreditCardIcon, LogOutIcon, BoxIcon } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
 import { useSettings } from "../contexts/SettingsContext";
+import { useAuth } from "../contexts/AuthContext";
 import { formatMinutes } from "../utils/time";
 import { SettingRow } from "../components/profile/SettingRow";
 import { ToggleSwitch } from "../components/profile/ToggleSwitch";
@@ -10,6 +11,7 @@ const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
 export function Profile() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const {
     currentStreak,
     totalSessionsCompleted,
@@ -21,6 +23,11 @@ export function Profile() {
     updatePreference
   } = useSettings();
   const totalMinutes = sessions.filter((s) => s.type === 'focus' && s.completed).reduce((sum, s) => sum + s.durationMinutes, 0);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/', { replace: true });
+  };
   return <div className="px-5 pt-8 pb-8">
       <header className="flex items-center gap-3">
         <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
@@ -119,7 +126,7 @@ export function Profile() {
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={CreditCardIcon} title="Manage subscription" description={`Cadence Pro · member since ${profile.memberSince}`} onClick={() => navigate('/')} />
           <SettingRow icon={BoxIcon} title="Help & support" onClick={() => navigate('/app/home')} />
-          <SettingRow icon={LogOutIcon} title="Sign out" onClick={() => navigate('/')} danger />
+          <SettingRow icon={LogOutIcon} title="Sign out" onClick={handleSignOut} danger />
         </div>
       </section>
 

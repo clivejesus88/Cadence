@@ -1,23 +1,12 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db/db';
+import { updatePreferences, dismissWelcome, hasSeenWelcome } from '../db/repo';
+import { scheduleSync } from '../db/sync';
+import { useAuth } from './AuthContext';
+import { UserProfile, Preferences, defaultProfile, defaultPreferences } from '../types/user';
 
-export interface UserProfile {
-  name: string;
-  email: string;
-  school: string;
-  avatarUrl: string;
-  plan: 'free' | 'pro';
-  memberSince: string;
-}
-
-export interface Preferences {
-  defaultDuration: number;
-  breakLength: number;
-  autoStartBreaks: boolean;
-  sessionReminders: boolean;
-  dailySummary: boolean;
-  blockDuringFocus: boolean;
-  strictMode: boolean;
-}
+export type { UserProfile, Preferences };
 
 interface SettingsContextValue {
   profile: UserProfile;
@@ -27,44 +16,54 @@ interface SettingsContextValue {
   dismissWelcome: () => void;
 }
 
-const defaultProfile: UserProfile = {
-  name: 'Alex Rivera',
-  email: 'alex.rivera@university.edu',
-  school: 'Second year · Biology',
-  avatarUrl: "/41934678-ca28-4660-a31a-3e5350bae9d7.jpg",
-  plan: 'pro',
-  memberSince: 'March 2026'
-};
-
-const defaultPreferences: Preferences = {
-  defaultDuration: 25,
-  breakLength: 5,
-  autoStartBreaks: true,
-  sessionReminders: true,
-  dailySummary: false,
-  blockDuringFocus: true,
-  strictMode: false
-};
-
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
 export function SettingsProvider({ children }: {children: ReactNode;}) {
-  const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
-  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const { user } = useAuth();
+  const uid = user?.id ?? null;
 
-  const updatePreference = <K extends keyof Preferences,>(key: K, value: Preferences[K]) => {
-    setPreferences((prev) => ({ ...prev, [key]: value }));
+  const profile = useLiveQuery(
+    async () => {
+      if (uid === null) return defaultProfile;
+      const row = await db.profile.get(uid);
+      return row && !row.deleted ? row.value : defaultProfile;
+    },
+    [uid],
+    defaultProfile
+  );
+
+  const preferences = useLiveQuery(
+    async () => {
+      const row = await db.preferences.get(uid ?? 'local');
+      return row && !row.deleted ? row.value : defaultPreferences;
+    },
+    [uid],
+    defaultPreferences
+  );
+
+  const [seenWelcome, setSeenWelcome] = useState(() => hasSeenWelcome());
+
+  const handleUpdatePreference = <K extends keyof Preferences,>(key: K, value: Preferences[K]) => {
+    void updatePreferences({ [key]: value }).then(() => scheduleSync());
   };
 
-  const dismissWelcome = () => setHasSeenWelcome(true);
+  const handleDismissWelcome = () => {
+    setSeenWelcome(true);
+    void dismissWelcome();
+  };
 
   return (
     <SettingsContext.Provider
-      value={{ profile: defaultProfile, preferences, updatePreference, hasSeenWelcome, dismissWelcome }}>
-      
+      value={{
+        profile,
+        preferences,
+        updatePreference: handleUpdatePreference,
+        hasSeenWelcome: seenWelcome,
+        dismissWelcome: handleDismissWelcome
+      }}>
       {children}
-    </SettingsContext.Provider>);
-
+    </SettingsContext.Provider>
+  );
 }
 
 export function useSettings() {

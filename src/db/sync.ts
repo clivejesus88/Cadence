@@ -107,7 +107,7 @@ async function pushOutbox(): Promise<void> {
 // LWW apply: a local row always wins ties, so we only replace when the remote copy is strictly newer.
 async function applyRemote(remote: Record<string, unknown>): Promise<void> {
   const id = String(remote.id);
-  if (remote.hasOwnProperty('title')) {
+  if ('title' in remote) {
     const existing = await db.tasks.get(id);
     const updatedAt = Number(remote.updated_at);
     if (existing && existing.updatedAt >= updatedAt) return;
@@ -128,7 +128,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
       createdAt: Number(remote.created_at),
       updatedAt
     });
-  } else if (remote.hasOwnProperty('duration_minutes')) {
+  } else if ('duration_minutes' in remote) {
     const existing = await db.focusSessions.get(id);
     const updatedAt = Number(remote.updated_at);
     if (existing && existing.updatedAt >= updatedAt) return;
@@ -148,7 +148,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
       createdAt: Number(remote.created_at),
       updatedAt
     });
-  } else if (remote.hasOwnProperty('default_duration')) {
+  } else if ('default_duration' in remote) {
     const uid = String(remote.user_id);
     const updatedAt = Number(remote.updated_at);
     const existing = await db.preferences.get(uid);
@@ -261,7 +261,9 @@ export function scheduleSync(delayMs = 800): void {
   }, delayMs);
 }
 
-export function initSync(): void {
-  window.addEventListener('online', () => void runSync());
+export function initSync(): () => void {
+  const onOnline = () => void runSync();
+  window.addEventListener('online', onOnline);
   void runSync();
+  return () => window.removeEventListener('online', onOnline);
 }

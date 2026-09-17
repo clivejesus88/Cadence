@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
+import { AuthScreen } from '../components/auth/AuthScreen';
 import { OnboardingDots } from '../components/onboarding/OnboardingDots';
 import { TimerVisual } from '../components/onboarding/TimerVisual';
 import { BlockVisual } from '../components/onboarding/BlockVisual';
@@ -38,11 +40,12 @@ const features = [
 
 
 export function OnboardingFlow() {
-  const [step, setStep] = useState(0); // 0 splash, 1-4 features, 5 paywall
+  const [step, setStep] = useState(0); // 0 splash, 1-4 features, 5 auth, 6 paywall
   const navigate = useNavigate();
+  const { isConfigured } = useAuth();
 
   const goHome = () => navigate('/app/home', { replace: true });
-  const next = () => setStep((s) => Math.min(s + 1, 5));
+  const next = () => setStep((s) => Math.min(s + 1, 6));
 
   if (step === 0) {
     return (
@@ -75,7 +78,7 @@ export function OnboardingFlow() {
           <div className="absolute bottom-0 -left-16 h-72 w-72 rounded-full bg-sky-500/15 blur-[100px]" />
         </div>
         <div className="flex justify-end">
-          <button onClick={() => setStep(5)} className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
+          <button onClick={() => setStep(isConfigured ? 5 : 6)} className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
             Skip
           </button>
         </div>
@@ -104,6 +107,10 @@ export function OnboardingFlow() {
         </button>
       </div>);
 
+  }
+
+  if (step === 5 && isConfigured) {
+    return <AuthScreen onSuccess={() => setStep(6)} onBack={() => setStep(4)} />;
   }
 
   return <Paywall onStart={goHome} onClose={goHome} />;

@@ -1,6 +1,6 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon, LockIcon } from 'lucide-react';
 import { CircularTimer } from '../CircularTimer';
 import { TickRing } from './TickRing';
 import { ambientSounds } from '../../data/ambientSounds';
@@ -14,6 +14,7 @@ interface ActiveSessionProps {
   isPaused: boolean;
   onTogglePause: () => void;
   onEnd: () => void;
+  strictMode: boolean;
   soundId: string;
   blockingEnabled: boolean;
   activeTask?: Task;
@@ -26,11 +27,13 @@ export function ActiveSession({
   isPaused,
   onTogglePause,
   onEnd,
+  strictMode,
   soundId,
   blockingEnabled,
   activeTask
 }: ActiveSessionProps) {
   const isOvertime = sessionType === 'focus' && elapsedSeconds >= targetSeconds;
+  const endLocked = strictMode && sessionType === 'focus' && !isOvertime;
   const displaySeconds = isOvertime ? elapsedSeconds - targetSeconds : Math.max(0, targetSeconds - elapsedSeconds);
   const progress = targetSeconds > 0 ? Math.min(1, elapsedSeconds / targetSeconds) : 0;
   const sound = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
@@ -73,11 +76,13 @@ export function ActiveSession({
 
       <div className="flex items-center gap-4 mt-10">
         <button
-          onClick={onEnd}
-          aria-label="End session"
-          className="glass w-12 h-12 rounded-full flex items-center justify-center text-neutral-300 hover:text-white transition-colors">
-          
-          <SquareIcon className="w-4 h-4" />
+          onClick={endLocked ? undefined : onEnd}
+          aria-label={endLocked ? 'End session locked until the timer finishes' : 'End session'}
+          disabled={endLocked}
+          className={`glass w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+            endLocked ? 'text-neutral-600 cursor-not-allowed' : 'text-neutral-300 hover:text-white'
+          }`}>
+          {endLocked ? <LockIcon className="w-4 h-4" /> : <SquareIcon className="w-4 h-4" />}
         </button>
         <button
           onClick={onTogglePause}
@@ -99,6 +104,10 @@ export function ActiveSession({
         </button>
         <div className="w-12 h-12" />
       </div>
+
+      {endLocked &&
+      <p className="mt-3 text-xs text-neutral-500">Strict mode is on — this session runs until it&apos;s done.</p>
+      }
 
       {sessionType === 'focus' &&
       <div className="mt-10 w-full space-y-2.5">

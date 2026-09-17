@@ -5,11 +5,12 @@ import { formatMinutes } from '../../utils/time';
 
 interface SessionCompleteProps {
   minutes: number;
+  breakMinutes: number;
   onBreak: () => void;
   onDone: () => void;
 }
 
-export function SessionComplete({ minutes, onBreak, onDone }: SessionCompleteProps) {
+export function SessionComplete({ minutes, breakMinutes, onBreak, onDone }: SessionCompleteProps) {
   return (
     <div className="px-5 pt-16 pb-8 flex flex-col items-center text-center min-h-[calc(100vh-6rem)]">
       <motion.div
@@ -29,7 +30,7 @@ export function SessionComplete({ minutes, onBreak, onDone }: SessionCompletePro
           onClick={onBreak}
           className="w-full py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
           
-          Take a 5-min break
+          Take a {breakMinutes}-min break
         </button>
         <button
           onClick={onDone}

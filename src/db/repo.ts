@@ -93,6 +93,22 @@ export function hasSeenWelcome(): boolean {
   return localStorage.getItem('cadence.hasSeenWelcome') === '1';
 }
 
+export function markNudgeSeen(key: string, day: string): void {
+  localStorage.setItem(`cadence.nudge.${key}:${day}`, '1');
+}
+
+export function isNudgeSeen(key: string, day: string): boolean {
+  return localStorage.getItem(`cadence.nudge.${key}:${day}`) === '1';
+}
+
+export function markNudgeSeen(key: string, day: string): void {
+  localStorage.setItem(`cadence.nudge.${key}`, day);
+}
+
+export function isNudgeSeen(key: string, day: string): boolean {
+  return localStorage.getItem(`cadence.nudge.${key}`) === day;
+}
+
 export async function adoptLocalData(uid: string): Promise<void> {
   setSyncUserId(uid);
   const now = Date.now();

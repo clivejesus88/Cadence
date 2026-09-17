@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Internal tooling
+.kilo/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

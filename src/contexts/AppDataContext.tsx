@@ -1,9 +1,11 @@
 import { createContext, useContext, useMemo, useState, ReactNode } from 'react';
-import { format } from 'date-fns';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db/db';
+import { addTask, toggleTask, logSession } from '../db/repo';
+import { scheduleSync } from '../db/sync';
+import { useAuth } from './AuthContext';
 import { Task } from '../types/task';
 import { FocusSession } from '../types/session';
-import { tasks as initialTasks } from '../data/tasks';
-import { sessions as initialSessions } from '../data/sessions';
 import { calculateCurrentStreak, todayFocusMinutes, weeklyFocusMinutes } from '../utils/streak';
 
 interface AppDataContextValue {
@@ -23,33 +25,33 @@ interface AppDataContextValue {
 const AppDataContext = createContext<AppDataContextValue | undefined>(undefined);
 
 export function AppDataProvider({ children }: {children: ReactNode;}) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [sessions, setSessions] = useState<FocusSession[]>(initialSessions);
+  const { user } = useAuth();
+  const uid = user?.id ?? null;
+
+  const tasks = useLiveQuery(
+    () => db.tasks.where('userId').equals(uid).and((r) => !r.deleted).toArray(),
+    [uid],
+    []
+  );
+
+  const sessions = useLiveQuery(
+    () => db.focusSessions.where('userId').equals(uid).and((r) => !r.deleted).toArray(),
+    [uid],
+    []
+  );
+
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 
-  const addTask = (task: Omit<Task, 'id' | 'completedPomodoros' | 'completed'>) => {
-    setTasks((prev) => [...prev, { ...task, id: `t${Date.now()}`, completedPomodoros: 0, completed: false }]);
+  const handleAddTask = (task: Omit<Task, 'id' | 'completedPomodoros' | 'completed'>) => {
+    void addTask(task).then(() => scheduleSync());
   };
 
-  const toggleTask = (id: string) => {
-    setTasks((prev) => prev.map((t) => t.id === id ? { ...t, completed: !t.completed } : t));
+  const handleToggleTask = (id: string) => {
+    void toggleTask(id).then(() => scheduleSync());
   };
 
-  const logSession = (durationMinutes: number, taskId?: string) => {
-    const newSession: FocusSession = {
-      id: `s${Date.now()}`,
-      date: format(new Date(), 'yyyy-MM-dd'),
-      durationMinutes,
-      type: 'focus',
-      completed: true,
-      taskId
-    };
-    setSessions((prev) => [...prev, newSession]);
-    if (taskId) {
-      setTasks((prev) =>
-      prev.map((t) => t.id === taskId ? { ...t, completedPomodoros: t.completedPomodoros + 1 } : t)
-      );
-    }
+  const handleLogSession = (durationMinutes: number, taskId?: string) => {
+    void logSession(durationMinutes, taskId).then(() => scheduleSync());
   };
 
   const currentStreak = useMemo(() => calculateCurrentStreak(sessions), [sessions]);
@@ -62,10 +64,10 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
 
   const value: AppDataContextValue = {
     tasks,
-    addTask,
-    toggleTask,
+    addTask: handleAddTask,
+    toggleTask: handleToggleTask,
     sessions,
-    logSession,
+    logSession: handleLogSession,
     activeTaskId,
     setActiveTaskId,
     currentStreak,
