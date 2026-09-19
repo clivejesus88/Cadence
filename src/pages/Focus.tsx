@@ -36,7 +36,14 @@ export function Focus() {
   const [isPaused, setIsPaused] = useState(false);
   const [completedMinutes, setCompletedMinutes] = useState(0);
   const [shielded, setShielded] = useState(false);
+  const [resumeSeconds, setResumeSeconds] = useState(() => Number(localStorage.getItem('cadence.resumeSeconds') ?? 0));
   const overtimeNotifiedRef = useRef(false);
+
+  const saveResume = useCallback((seconds: number) => {
+    setResumeSeconds(seconds);
+    if (seconds > 0) localStorage.setItem('cadence.resumeSeconds', String(seconds));
+    else localStorage.removeItem('cadence.resumeSeconds');
+  }, []);
 
   // Wall-clock timing instead of tick counting: elapsed is derived from
   // Date.now() minus accumulated pause time, so background tabs and throttled
@@ -128,10 +135,13 @@ export function Focus() {
     overtimeNotifiedRef.current = false;
     setDurationMinutes(minutes);
     setTargetSeconds(Math.min(minutes * 60, MAX_SESSION_SECONDS));
-    setElapsedSeconds(0);
-    startedAtRef.current = Date.now();
+    const resume = resumeSeconds > 0 ? Math.min(Math.floor(resumeSeconds), MAX_SESSION_SECONDS) : 0;
+    if (resume >= minutes * 60) overtimeNotifiedRef.current = true;
+    setElapsedSeconds(resume);
+    startedAtRef.current = Date.now() - resume * 1000;
     pausedTotalRef.current = 0;
     pauseStartedAtRef.current = null;
+    saveResume(0);
     setSessionType('focus');
     setIsPaused(false);
     setPhase('running');
@@ -178,10 +188,21 @@ export function Focus() {
 
     stopSound();
     if (elapsedSeconds >= MIN_LOGGABLE_SECONDS) {
+      if (elapsedSeconds < targetSeconds) {
+        // Stopped partway — keep the progress so the next session can resume here.
+        saveResume(elapsedSeconds);
+        startedAtRef.current = null;
+        pausedTotalRef.current = 0;
+        pauseStartedAtRef.current = null;
+        setElapsedSeconds(elapsedSeconds);
+        setPhase('setup');
+        return;
+      }
       const minutes = Math.max(1, Math.round(elapsedSeconds / 60));
       logSession(minutes, activeTaskId ?? undefined);
       setCompletedMinutes(minutes);
       startedAtRef.current = null;
+      saveResume(0);
       if (preferences.autoStartBreaks) {
         startBreak();
         return;
@@ -189,6 +210,7 @@ export function Focus() {
       setElapsedSeconds(0);
       setPhase('complete');
     } else {
+      saveResume(0);
       setElapsedSeconds(0);
       startedAtRef.current = null;
       setPhase('setup');
@@ -207,6 +229,8 @@ export function Focus() {
         blockingEnabled={blockingEnabled}
         onToggleBlocking={setBlockingEnabled}
         activeTask={activeTask}
+        resumeSeconds={resumeSeconds}
+        onDiscardResume={() => saveResume(0)}
         onStart={() => startSession(durationMinutes)} />);
   }
 

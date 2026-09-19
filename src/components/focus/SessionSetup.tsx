@@ -1,8 +1,9 @@
 
-import { ShieldCheckIcon } from 'lucide-react';
+import { RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { ambientSounds } from '../../data/ambientSounds';
 import { blockedApps } from '../../data/blockedApps';
 import { Task } from '../../types/task';
+import { formatCountdown } from '../../utils/time';
 import { DurationDial } from './DurationDial';
 
 interface SessionSetupProps {
@@ -13,6 +14,8 @@ interface SessionSetupProps {
   blockingEnabled: boolean;
   onToggleBlocking: (v: boolean) => void;
   activeTask?: Task;
+  resumeSeconds: number;
+  onDiscardResume: () => void;
   onStart: () => void;
 }
 
@@ -26,6 +29,8 @@ export function SessionSetup({
   blockingEnabled,
   onToggleBlocking,
   activeTask,
+  resumeSeconds,
+  onDiscardResume,
   onStart
 }: SessionSetupProps) {
   return (
@@ -40,6 +45,25 @@ export function SessionSetup({
             <p className="text-sm text-white truncate">{activeTask.title}</p>
             <p className="text-xs text-neutral-400">{activeTask.subject}</p>
           </div>
+        </div>
+      }
+
+      {resumeSeconds > 0 &&
+      <div className="glass mt-5 flex items-center gap-3 rounded-2xl px-4 py-3">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-ember-500/20">
+            <RotateCcwIcon className="h-4 w-4 text-ember-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-white">Resume where you left off</p>
+            <p className="mt-0.5 text-xs text-neutral-400">{formatCountdown(resumeSeconds)} focused so far</p>
+          </div>
+          <button
+            onClick={onDiscardResume}
+            aria-label="Discard session progress"
+            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/10 hover:text-white">
+            
+            <XIcon className="h-4 w-4" />
+          </button>
         </div>
       }
 
@@ -111,7 +135,7 @@ export function SessionSetup({
         onClick={onStart}
         className="w-full mt-8 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
         
-        Start Focusing
+        {resumeSeconds > 0 ? 'Resume Session' : 'Start Focusing'}
       </button>
     </div>);
 
