@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { updatePreferences, updateProfile as updateProfileRepo, dismissWelcome, hasSeenWelcome } from '../db/repo';
+import { updatePreferences, updateProfile as updateProfileRepo } from '../db/repo';
 import { scheduleSync } from '../db/sync';
 import { useAuth } from './AuthContext';
 import { UserProfile, Preferences, defaultProfile, defaultPreferences } from '../types/user';
@@ -13,8 +13,6 @@ interface SettingsContextValue {
   preferences: Preferences;
   updatePreference: <K extends keyof Preferences>(key: K, value: Preferences[K]) => void;
   updateProfile: (patch: Partial<UserProfile>) => void;
-  hasSeenWelcome: boolean;
-  dismissWelcome: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -42,8 +40,6 @@ export function SettingsProvider({ children }: {children: ReactNode;}) {
     defaultPreferences
   );
 
-  const [seenWelcome, setSeenWelcome] = useState(() => hasSeenWelcome());
-
   const handleUpdatePreference = <K extends keyof Preferences,>(key: K, value: Preferences[K]) => {
     void updatePreferences({ [key]: value }).then(() => scheduleSync());
   };
@@ -52,20 +48,13 @@ export function SettingsProvider({ children }: {children: ReactNode;}) {
     void updateProfileRepo(patch).then(() => scheduleSync());
   };
 
-  const handleDismissWelcome = () => {
-    setSeenWelcome(true);
-    void dismissWelcome();
-  };
-
   return (
     <SettingsContext.Provider
       value={{
         profile,
         preferences,
         updatePreference: handleUpdatePreference,
-        updateProfile: handleUpdateProfile,
-        hasSeenWelcome: seenWelcome,
-        dismissWelcome: handleDismissWelcome
+        updateProfile: handleUpdateProfile
       }}>
       {children}
     </SettingsContext.Provider>

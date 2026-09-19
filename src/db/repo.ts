@@ -89,14 +89,6 @@ export async function updateProfile(patch: Partial<UserProfile>): Promise<void> 
   enqueueOutbox('profile', key, 'upsert', row);
 }
 
-export async function dismissWelcome(): Promise<void> {
-  localStorage.setItem('cadence.hasSeenWelcome', '1');
-}
-
-export function hasSeenWelcome(): boolean {
-  return localStorage.getItem('cadence.hasSeenWelcome') === '1';
-}
-
 export function markNudgeSeen(key: string, day: string): void {
   localStorage.setItem(`cadence.nudge.${key}`, day);
 }

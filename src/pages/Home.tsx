@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import { FlameIcon, ArrowRightIcon, ChevronRightIcon, TimerIcon, LightbulbIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -12,12 +11,11 @@ import { notifySessionReminder, notifyDailySummary } from '../utils/notify';
 import { markNudgeSeen, isNudgeSeen } from '../db/repo';
 import { WeeklyPreview } from '../components/home/WeeklyPreview';
 import { TaskPreviewList } from '../components/home/TaskPreviewList';
-import { WelcomeModal } from '../components/home/WelcomeModal';
 
 export function Home() {
   const navigate = useNavigate();
   const { currentStreak, todayMinutes, totalSessionsCompleted, tasks, weeklyData } = useAppData();
-  const { profile, preferences, hasSeenWelcome, dismissWelcome } = useSettings();
+  const { profile, preferences } = useSettings();
   const todaysTasks = tasks
     .filter((t) => !t.completed)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
@@ -116,12 +114,6 @@ export function Home() {
           <p className="text-sm text-neutral-300">{focusTips[0]}</p>
         </div>
       </section>
-
-      <AnimatePresence>
-        {!hasSeenWelcome &&
-        <WelcomeModal key="welcome" name={profile.name} avatarUrl={profile.avatarUrl} onDismiss={dismissWelcome} />
-        }
-      </AnimatePresence>
     </div>);
 
 }
