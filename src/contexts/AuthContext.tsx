@@ -4,7 +4,6 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { adoptLocalData, setSyncUserId, updateProfile } from '../db/repo';
 import { runSync, initSync } from '../db/sync';
 import { seedIfEmpty } from '../db/seed';
-import { db } from '../db/db';
 
 export interface AppUser {
   id: string;
@@ -24,10 +23,11 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function toAppUser(user: User): AppUser {
+  const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
   return {
     id: user.id,
     email: user.email ?? '',
-    name: (user.user_metadata?.name as string | undefined) ?? user.email ?? ''
+    name: metaName.length > 0 ? metaName : 'Guest'
   };
 }
 
@@ -36,11 +36,8 @@ async function applyUserSession(user: User): Promise<void> {
   setSyncUserId(user.id);
   await adoptLocalData(user.id);
 
-  const existing = await db.profile.get(user.id);
-  const metaName = (user.user_metadata?.name as string | undefined) ?? '';
-  if (!existing || !existing.value.name) {
-    await updateProfile({ name: metaName, email: user.email ?? '' });
-  }
+  const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
+  await updateProfile({ name: metaName.length > 0 ? metaName : 'Guest', email: user.email ?? '' });
 
   await runSync();
 }
