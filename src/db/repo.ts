@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { IndexableType } from 'dexie';
 import { db, SyncTableName, SyncQueueRow } from './db';
 import { Task } from '../types/task';
 import { FocusSession } from '../types/session';
@@ -112,7 +111,7 @@ export async function adoptLocalData(uid: string): Promise<void> {
   await db.transaction('rw', db.tasks, db.focusSessions, db.preferences, db.profile, db.syncQueue, async () => {
     const adopted: string[] = [];
 
-    const localTasks = await db.tasks.where('userId').equals(null as unknown as IndexableType).toArray();
+    const localTasks = await db.tasks.filter((t) => t.userId === null).toArray();
     for (const t of localTasks) {
       if (seedIds.has(t.id)) continue;
       t.userId = uid;
@@ -122,7 +121,7 @@ export async function adoptLocalData(uid: string): Promise<void> {
       adopted.push(t.id);
     }
 
-    const localSessions = await db.focusSessions.where('userId').equals(null as unknown as IndexableType).toArray();
+    const localSessions = await db.focusSessions.filter((s) => s.userId === null).toArray();
     for (const s of localSessions) {
       if (seedIds.has(s.id)) continue;
       s.userId = uid;
@@ -151,7 +150,7 @@ export async function adoptLocalData(uid: string): Promise<void> {
     }
 
     if (adopted.length > 0) {
-      const stale = await db.syncQueue.where('userId').equals(null as unknown as IndexableType).toArray();
+      const stale = await db.syncQueue.filter((e) => e.userId === null).toArray();
       const kill = stale.filter((e) => adopted.includes(e.entityId)).map((e) => e.id!);
       if (kill.length > 0) await db.syncQueue.bulkDelete(kill);
     }

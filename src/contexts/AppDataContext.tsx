@@ -1,6 +1,5 @@
 import { createContext, useContext, useMemo, useState, ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { IndexableType } from 'dexie';
 import { db } from '../db/db';
 import { addTask, toggleTask, logSession } from '../db/repo';
 import { scheduleSync } from '../db/sync';
@@ -30,13 +29,19 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
   const uid = user?.id ?? null;
 
   const tasks = useLiveQuery(
-    () => db.tasks.where('userId').equals(uid as IndexableType).and((r) => !r.deleted).toArray(),
+    () =>
+      uid === null
+        ? db.tasks.filter((r) => r.userId === null && !r.deleted).toArray()
+        : db.tasks.where('userId').equals(uid).and((r) => !r.deleted).toArray(),
     [uid],
     []
   );
 
   const sessions = useLiveQuery(
-    () => db.focusSessions.where('userId').equals(uid as IndexableType).and((r) => !r.deleted).toArray(),
+    () =>
+      uid === null
+        ? db.focusSessions.filter((r) => r.userId === null && !r.deleted).toArray()
+        : db.focusSessions.where('userId').equals(uid).and((r) => !r.deleted).toArray(),
     [uid],
     []
   );
