@@ -1,3 +1,5 @@
+import { BlockingRule } from './blocklist';
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -17,6 +19,7 @@ export interface Preferences {
   dailySummary: boolean;
   blockDuringFocus: boolean;
   strictMode: boolean;
+  blockingRules: BlockingRule[];
 }
 
 export const defaultProfile: UserProfile = {
@@ -37,5 +40,6 @@ export const defaultPreferences: Preferences = {
   taskReminders: true,
   dailySummary: false,
   blockDuringFocus: true,
-  strictMode: false
+  strictMode: false,
+  blockingRules: []
 };

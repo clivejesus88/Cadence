@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, LockIcon, CreditCardIcon, LogOutIcon, BoxIcon } from "lucide-react";
+import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, LogOutIcon, BoxIcon } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -119,6 +119,7 @@ export function Profile() {
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus shield</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={ShieldCheckIcon} title="Block during focus" description="Mute distracting apps while a session runs." control={<ToggleSwitch label="Block during focus" checked={preferences.blockDuringFocus} onChange={(v) => updatePreference('blockDuringFocus', v)} />} />
+          <SettingRow icon={CalendarClockIcon} title="Blocking rules" description={profile.plan === 'pro' ? 'Schedule, per-app, per-website' : 'Manage what stays muted'} onClick={() => navigate('/app/blocking')} />
           <SettingRow icon={LockIcon} title="Strict mode" description="Sessions can't be ended early." control={<ToggleSwitch label="Strict mode" checked={preferences.strictMode} onChange={(v) => updatePreference('strictMode', v)} />} />
         </div>
       </section>

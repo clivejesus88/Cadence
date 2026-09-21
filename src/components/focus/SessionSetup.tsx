@@ -1,9 +1,11 @@
 
-import { RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
+import { LockIcon, RotateCcwIcon, ShieldCheckIcon, ChevronRightIcon, XIcon } from 'lucide-react';
 import { ambientSounds } from '../../data/ambientSounds';
 import { blockedApps } from '../../data/blockedApps';
+import { useSettings } from '../../contexts/SettingsContext';
 import { Task } from '../../types/task';
 import { formatCountdown } from '../../utils/time';
+import { isPro, FeatureKey } from '../../utils/premium';
 import { DurationDial } from './DurationDial';
 
 interface SessionSetupProps {
@@ -17,6 +19,8 @@ interface SessionSetupProps {
   resumeSeconds: number;
   onDiscardResume: () => void;
   onStart: () => void;
+  onUpgrade?: (feature: FeatureKey) => void;
+  onOpenRules?: () => void;
 }
 
 const presets = [15, 25, 50, 90, 180];
@@ -31,8 +35,12 @@ export function SessionSetup({
   activeTask,
   resumeSeconds,
   onDiscardResume,
-  onStart
+  onStart,
+  onUpgrade,
+  onOpenRules
 }: SessionSetupProps) {
+  const { profile } = useSettings();
+  const pro = isPro(profile);
   return (
     <div className="px-5 pt-8 pb-4">
       <h1 className="font-display text-2xl text-white">Focus Session</h1>
@@ -68,8 +76,17 @@ export function SessionSetup({
       }
 
       <div className="mt-7 flex flex-col items-center">
-        <DurationDial value={durationMinutes} onChange={onChangeDuration} />
-        <p className="mt-3 text-xs text-neutral-500">Drag the ring to set your time</p>
+        <DurationDial value={durationMinutes} onChange={onChangeDuration} disabled={!pro} />
+        {pro ?
+        <p className="mt-3 text-xs text-neutral-500">Drag the ring to set your time</p> :
+        <button
+          onClick={() => onUpgrade?.('customDuration')}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ember-500/15 px-3 py-1.5 text-xs font-semibold text-ember-400 transition-colors hover:bg-ember-500/25">
+          
+          <LockIcon className="h-3.5 w-3.5" />
+            Unlock custom durations with Pro
+          </button>
+        }
         <div className="mt-4 flex gap-2">
           {presets.map((p) =>
           <button
@@ -90,17 +107,29 @@ export function SessionSetup({
         <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
           {ambientSounds.map((s) => {
             const Icon = s.icon;
-            const selected = soundId === s.id;
+            const selected = !s.premium && soundId === s.id;
+            const locked = s.premium && !pro;
             return (
               <button
                 key={s.id}
-                onClick={() => onChangeSound(s.id)}
-                className={`flex-shrink-0 w-24 rounded-2xl p-3 text-left transition-colors ${
+                onClick={() => {
+                  if (locked) {
+                    onUpgrade?.('premiumSounds');
+                    return;
+                  }
+                  onChangeSound(s.id);
+                }}
+                className={`relative flex-shrink-0 w-24 rounded-2xl p-3 text-left transition-colors ${
                 selected ? 'bg-ember-500/15 border border-ember-400' : 'glass-inset'}`
                 }>
                 
-                <Icon className={`w-5 h-5 ${selected ? 'text-ember-400' : 'text-neutral-400'}`} />
-                <p className={`text-xs font-medium mt-2 ${selected ? 'text-white' : 'text-neutral-300'}`}>{s.name}</p>
+                <Icon className={`w-5 h-5 ${selected ? 'text-ember-400' : locked ? 'text-neutral-600' : 'text-neutral-400'}`} />
+                <p className={`text-xs font-medium mt-2 ${selected ? 'text-white' : locked ? 'text-neutral-500' : 'text-neutral-300'}`}>{s.name}</p>
+                {locked &&
+                <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
+                    <LockIcon className="h-3 w-3 text-neutral-400" />
+                  </span>
+                }
               </button>);
 
           })}
@@ -128,6 +157,26 @@ export function SessionSetup({
             
             <div className="w-5 h-5 rounded-full bg-white" />
           </div>
+        </button>
+        <button
+          onClick={() => (pro ? onOpenRules?.() : onUpgrade?.('blockingRules'))}
+          className="glass mt-2.5 w-full flex items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors hover:bg-white/[0.03]">
+          
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
+              {pro ?
+              <ShieldCheckIcon className="w-4 h-4 text-ember-400" /> :
+              <LockIcon className="w-4 h-4 text-neutral-500" />
+              }
+            </div>
+            <div>
+              <p className="text-sm text-white font-medium">Advanced blocking rules</p>
+              <p className="text-xs text-neutral-400">
+                {pro ? 'Schedule, per-app, per-website' : 'Locked — upgrade to control what stays blocked'}
+              </p>
+            </div>
+          </div>
+          <ChevronRightIcon className="w-4 h-4 text-neutral-500" />
         </button>
       </div>
 

@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { SessionSetup } from '../components/focus/SessionSetup';
 import { ActiveSession } from '../components/focus/ActiveSession';
 import { SessionComplete } from '../components/focus/SessionComplete';
 import { FocusShield } from '../components/focus/FocusShield';
+import { UpgradeSheet } from '../components/premium/UpgradeSheet';
 import { ambientSounds } from '../data/ambientSounds';
 import { startSound, stopSound } from '../utils/audio';
+import { FeatureKey } from '../utils/premium';
 import {
   notifySessionStarted,
   notifySessionPaused,
@@ -15,7 +18,7 @@ import {
   notifyBreakStarted,
   notifyBreakEnded,
   notifyDailyCapReached } from
-'../utils/notify';
+  '../utils/notify';
 
 type Phase = 'setup' | 'running' | 'complete';
 type SessionKind = 'focus' | 'break';
@@ -24,6 +27,7 @@ const MAX_SESSION_SECONDS = 24 * 60 * 60; // a focus session can run for hours, 
 const MIN_LOGGABLE_SECONDS = 60; // ending almost instantly shouldn't count as a session
 
 export function Focus() {
+  const navigate = useNavigate();
   const { logSession, activeTaskId, tasks } = useAppData();
   const { preferences } = useSettings();
   const [phase, setPhase] = useState<Phase>('setup');
@@ -37,6 +41,7 @@ export function Focus() {
   const [completedMinutes, setCompletedMinutes] = useState(0);
   const [shielded, setShielded] = useState(false);
   const [resumeSeconds, setResumeSeconds] = useState(() => Number(localStorage.getItem('cadence.resumeSeconds') ?? 0));
+  const [upgrade, setUpgrade] = useState<FeatureKey | null>(null);
   const overtimeNotifiedRef = useRef(false);
 
   const saveResume = useCallback((seconds: number) => {
@@ -221,17 +226,23 @@ export function Focus() {
 
   if (phase === 'setup') {
     return (
-      <SessionSetup
-        durationMinutes={durationMinutes}
-        onChangeDuration={setDurationMinutes}
-        soundId={soundId}
-        onChangeSound={setSoundId}
-        blockingEnabled={blockingEnabled}
-        onToggleBlocking={setBlockingEnabled}
-        activeTask={activeTask}
-        resumeSeconds={resumeSeconds}
-        onDiscardResume={() => saveResume(0)}
-        onStart={() => startSession(durationMinutes)} />);
+      <>
+        <SessionSetup
+          durationMinutes={durationMinutes}
+          onChangeDuration={setDurationMinutes}
+          soundId={soundId}
+          onChangeSound={setSoundId}
+          blockingEnabled={blockingEnabled}
+          onToggleBlocking={setBlockingEnabled}
+          activeTask={activeTask}
+          resumeSeconds={resumeSeconds}
+          onDiscardResume={() => saveResume(0)}
+          onStart={() => startSession(durationMinutes)}
+          onUpgrade={setUpgrade}
+          onOpenRules={() => navigate('/app/blocking')} />
+        <UpgradeSheet feature={upgrade} onClose={() => setUpgrade(null)} />
+      </>
+    );
   }
 
   if (phase === 'running') {
@@ -257,5 +268,8 @@ export function Focus() {
     );
   }
 
-  return <SessionComplete minutes={completedMinutes} breakMinutes={preferences.breakLength} onBreak={startBreak} onDone={endSession} />;
+  return <>
+      <SessionComplete minutes={completedMinutes} breakMinutes={preferences.breakLength} onBreak={startBreak} onDone={endSession} />
+      <UpgradeSheet feature={upgrade} onClose={() => setUpgrade(null)} />
+    </>;
 }

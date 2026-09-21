@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { XIcon, SparklesIcon, PaletteIcon, LineChartIcon, ShieldCheckIcon } from 'lucide-react';
+import { format } from 'date-fns';
 import { useSettings } from '../../contexts/SettingsContext';
 
 interface PaywallProps {
@@ -21,7 +22,7 @@ export function Paywall({ onStart, onClose }: PaywallProps) {
   const { updateProfile } = useSettings();
 
   const handleStart = () => {
-    updateProfile({ plan: 'pro' });
+    updateProfile({ plan: 'pro', memberSince: format(new Date(), 'MMMM yyyy') });
     onStart();
   };
 

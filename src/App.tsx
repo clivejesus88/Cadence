@@ -13,6 +13,7 @@ import { Planner } from './pages/Planner';
 import { Profile } from './pages/Profile';
 
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
+const BlockingRules = lazy(() => import('./pages/BlockingRules').then((m) => ({ default: m.BlockingRules })));
 
 function PageLoader() {
   return (
@@ -50,6 +51,14 @@ export function App() {
                     }
                   />
                   <Route path="planner" element={<Planner />} />
+                  <Route
+                    path="blocking"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <BlockingRules />
+                      </Suspense>
+                    }
+                  />
                   <Route path="profile" element={<Profile />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

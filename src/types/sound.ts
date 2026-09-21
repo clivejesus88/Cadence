@@ -5,4 +5,5 @@ export interface AmbientSound {
   name: string;
   description: string;
   icon: LucideIcon;
+  premium: boolean;
 }

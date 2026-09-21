@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { db, SyncTableName, SyncStateRow } from './db';
 import { getSyncUserId } from './repo';
 import { TaskRow, SessionRow, PreferencesRow, ProfileRow } from './db';
+import { BlockingRule } from '../types/blocklist';
 
 type RemoteTable = 'tasks' | 'focus_sessions' | 'preferences' | 'profile';
 
@@ -53,6 +54,7 @@ function preferencesToRemote(row: PreferencesRow, uid: string): Record<string, u
     daily_summary: row.value.dailySummary,
     block_during_focus: row.value.blockDuringFocus,
     strict_mode: row.value.strictMode,
+    blocking_rules: row.value.blockingRules ?? [],
     updated_at: row.updatedAt
   };
 }
@@ -164,7 +166,8 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
         taskReminders: Boolean(remote.task_reminders),
         dailySummary: Boolean(remote.daily_summary),
         blockDuringFocus: Boolean(remote.block_during_focus),
-        strictMode: Boolean(remote.strict_mode)
+        strictMode: Boolean(remote.strict_mode),
+        blockingRules: Array.isArray(remote.blocking_rules) ? (remote.blocking_rules as BlockingRule[]) : []
       },
       updatedAt,
       deleted: false

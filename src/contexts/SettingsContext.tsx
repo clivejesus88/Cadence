@@ -34,7 +34,7 @@ export function SettingsProvider({ children }: {children: ReactNode;}) {
   const preferences = useLiveQuery(
     async () => {
       const row = await db.preferences.get(uid ?? 'local');
-      return row && !row.deleted ? row.value : defaultPreferences;
+      return row && !row.deleted ? { ...defaultPreferences, ...row.value } : defaultPreferences;
     },
     [uid],
     defaultPreferences
