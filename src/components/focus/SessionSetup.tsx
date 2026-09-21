@@ -147,26 +147,6 @@ export function SessionSetup({
             <div className="w-5 h-5 rounded-full bg-white" />
           </div>
         </button>
-        <button
-          onClick={() => (pro ? onOpenRules?.() : onUpgrade?.('blockingRules'))}
-          className="glass mt-2.5 w-full flex items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors hover:bg-white/[0.03]">
-          
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
-              {pro ?
-              <ShieldCheckIcon className="w-4 h-4 text-ember-400" /> :
-              <LockIcon className="w-4 h-4 text-neutral-500" />
-              }
-            </div>
-            <div>
-              <p className="text-sm text-white font-medium">Advanced blocking rules</p>
-              <p className="text-xs text-neutral-400">
-                {pro ? 'Schedule, per-app, per-website' : 'Locked — upgrade to control what stays blocked'}
-              </p>
-            </div>
-          </div>
-          <ChevronRightIcon className="w-4 h-4 text-neutral-500" />
-        </button>
       </div>
 
       <button

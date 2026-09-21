@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { SessionSetup } from '../components/focus/SessionSetup';
@@ -27,7 +26,6 @@ const MAX_SESSION_SECONDS = 24 * 60 * 60; // a focus session can run for hours, 
 const MIN_LOGGABLE_SECONDS = 60; // ending almost instantly shouldn't count as a session
 
 export function Focus() {
-  const navigate = useNavigate();
   const { logSession, activeTaskId, tasks } = useAppData();
   const { preferences } = useSettings();
   const [phase, setPhase] = useState<Phase>('setup');
@@ -238,8 +236,7 @@ export function Focus() {
           resumeSeconds={resumeSeconds}
           onDiscardResume={() => saveResume(0)}
           onStart={() => startSession(durationMinutes)}
-          onUpgrade={setUpgrade}
-          onOpenRules={() => navigate('/app/blocking')} />
+          onUpgrade={setUpgrade} />
         <UpgradeSheet feature={upgrade} onClose={() => setUpgrade(null)} />
       </>
     );
