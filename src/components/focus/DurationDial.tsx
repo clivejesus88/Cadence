@@ -9,7 +9,6 @@ interface DurationDialProps {
   max?: number;
   step?: number;
   size?: number;
-  disabled?: boolean;
 }
 
 interface DragState {
@@ -22,7 +21,7 @@ interface DragState {
 const MINUTES_PER_TURN = 120;
 const DEGREES_PER_MINUTE = 360 / MINUTES_PER_TURN;
 
-export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, size = 260, disabled = false }: DurationDialProps) {
+export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, size = 260 }: DurationDialProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const lastEmittedRef = useRef(value);
@@ -106,7 +105,6 @@ export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, s
   }, [dragging, angleFromPoint, emit, min, max, step]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (disabled) return;
     const angle = angleFromPoint(e.clientX, e.clientY);
     dragStateRef.current = { lastAngle: angle, accumulatedMinutes: value };
     setDragging(true);
@@ -125,8 +123,8 @@ export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, s
     <div
       ref={containerRef}
       onPointerDown={handlePointerDown}
-      className={`glass relative rounded-full ${disabled ? 'opacity-60' : 'touch-none select-none'}`}
-      style={{ width: size, height: size, cursor: disabled ? 'not-allowed' : dragging ? 'grabbing' : 'grab' }}>
+      className="glass relative touch-none select-none rounded-full"
+      style={{ width: size, height: size, cursor: dragging ? 'grabbing' : 'grab' }}>
       
       <svg width={size} height={size} className="absolute inset-0 -rotate-90 pointer-events-none">
         <circle cx={size / 2} cy={size / 2} r={radius} stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth} fill="none" />

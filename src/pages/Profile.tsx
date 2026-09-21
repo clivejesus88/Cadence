@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, LogOutIcon, BoxIcon } from "lucide-react";
+import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,6 +8,8 @@ import { formatMinutes } from "../utils/time";
 import { notifySupport } from "../utils/notify";
 import { SettingRow } from "../components/profile/SettingRow";
 import { ToggleSwitch } from "../components/profile/ToggleSwitch";
+import { EditProfileSheet } from "../components/profile/EditProfileSheet";
+import { useState } from "react";
 const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
 export function Profile() {
@@ -23,6 +25,7 @@ export function Profile() {
     preferences,
     updatePreference
   } = useSettings();
+  const [editing, setEditing] = useState(false);
   const totalMinutes = sessions.filter((s) => s.type === 'focus' && s.completed).reduce((sum, s) => sum + s.durationMinutes, 0);
 
   const handleSignOut = async () => {
@@ -38,7 +41,7 @@ export function Profile() {
       </header>
 
       <section className="glass-strong mt-6 rounded-3xl p-5">
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-4">
           <img src={profile.avatarUrl} alt={profile.name} className="h-16 w-16 flex-shrink-0 rounded-full object-cover ring-2 ring-white/20" />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -50,6 +53,13 @@ export function Profile() {
             <p className="truncate text-xs text-neutral-400">{profile.school}</p>
             <p className="truncate text-xs text-neutral-500">{profile.email}</p>
           </div>
+          <button
+            onClick={() => setEditing(true)}
+            aria-label="Edit profile"
+            className="glass-inset flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+            
+            <UserRoundIcon className="h-4 w-4" />
+          </button>
         </div>
 
         <div className="mt-5 grid grid-cols-3 gap-2">
@@ -127,12 +137,14 @@ export function Profile() {
       <section className="mt-7">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Account</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
-          <SettingRow icon={CreditCardIcon} title="Manage subscription" description={profile.plan === 'pro' ? `Cadence Pro · member since ${profile.memberSince}` : 'Unlock Cadence Pro for custom sessions, blocking rules and deeper insights'} onClick={() => navigate('/?paywall=1')} />
+          <SettingRow icon={UserRoundIcon} title="Edit profile" description="Update your name, school, email and photo." onClick={() => setEditing(true)} />
+          <SettingRow icon={CreditCardIcon} title="Manage subscription" description={profile.plan === 'pro' ? `Cadence Pro · member since ${profile.memberSince}` : 'Unlock Cadence Pro for soundscapes and blocking rules'} onClick={() => navigate('/?paywall=1')} />
           <SettingRow icon={BoxIcon} title="Help & support" onClick={notifySupport} />
           <SettingRow icon={LogOutIcon} title="Sign out" onClick={handleSignOut} danger />
         </div>
       </section>
 
       <p className="mt-6 text-center text-[11px] text-neutral-600">Cadence v1.0 · Made for focused students</p>
+      {editing && <EditProfileSheet profile={profile} onClose={() => setEditing(false)} />}
     </div>;
 }

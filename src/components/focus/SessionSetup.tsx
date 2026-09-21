@@ -1,5 +1,5 @@
 
-import { LockIcon, RotateCcwIcon, ShieldCheckIcon, ChevronRightIcon, XIcon } from 'lucide-react';
+import { LockIcon, RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { ambientSounds } from '../../data/ambientSounds';
 import { blockedApps } from '../../data/blockedApps';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -20,7 +20,6 @@ interface SessionSetupProps {
   onDiscardResume: () => void;
   onStart: () => void;
   onUpgrade?: (feature: FeatureKey) => void;
-  onOpenRules?: () => void;
 }
 
 const presets = [15, 25, 50, 90, 180];
@@ -36,8 +35,7 @@ export function SessionSetup({
   resumeSeconds,
   onDiscardResume,
   onStart,
-  onUpgrade,
-  onOpenRules
+  onUpgrade
 }: SessionSetupProps) {
   const { profile } = useSettings();
   const pro = isPro(profile);
@@ -76,17 +74,8 @@ export function SessionSetup({
       }
 
       <div className="mt-7 flex flex-col items-center">
-        <DurationDial value={durationMinutes} onChange={onChangeDuration} disabled={!pro} />
-        {pro ?
-        <p className="mt-3 text-xs text-neutral-500">Drag the ring to set your time</p> :
-        <button
-          onClick={() => onUpgrade?.('customDuration')}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ember-500/15 px-3 py-1.5 text-xs font-semibold text-ember-400 transition-colors hover:bg-ember-500/25">
-          
-          <LockIcon className="h-3.5 w-3.5" />
-            Unlock custom durations with Pro
-          </button>
-        }
+        <DurationDial value={durationMinutes} onChange={onChangeDuration} />
+        <p className="mt-3 text-xs text-neutral-500">Drag the ring to set your time</p>
         <div className="mt-4 flex gap-2">
           {presets.map((p) =>
           <button
