@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CalendarClockIcon, ChevronLeftIcon, GlobeIcon, LockIcon, PlusIcon, ShieldCheckIcon, SmartphoneIcon, SparklesIcon, XIcon } from 'lucide-react';
+import { CheckIcon, CalendarClockIcon, ChevronLeftIcon, GlobeIcon, LockIcon, PlusIcon, ShieldCheckIcon, SmartphoneIcon, SparklesIcon, XIcon } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { blockedApps } from '../data/blockedApps';
 import { BlockingRule, BlockingRuleKind } from '../types/blocklist';
@@ -159,6 +159,39 @@ interface RuleEditorProps {
   onSave: (rule: BlockingRule) => void;
 }
 
+function StepLabel({ n, title }: { n: string; title: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-ember-500/20 text-[11px] font-bold text-ember-400">
+        {n}
+      </span>
+      <p className="text-sm font-semibold text-white">{title}</p>
+    </div>
+  );
+}
+
+function AppChip({ app, on, onToggle }: { app: { id: string; name: string; color: string }; on: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={on}
+      className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-sm font-medium transition-colors ${
+      on ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
+      }>
+      
+      <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ backgroundColor: app.color }} />
+      <span className="min-w-0 flex-1 truncate text-left">{app.name}</span>
+      <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full transition-colors ${
+      on ? 'bg-ember-500 text-ink-950' : 'bg-white/10 text-transparent'}`
+      }>
+        
+        <CheckIcon className="h-3 w-3" />
+      </span>
+    </button>
+  );
+}
+
 function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
   const [kind, setKind] = useState<BlockingRuleKind>(initial.kind);
   const [appIds, setAppIds] = useState<string[]>(initial.appIds ?? []);
@@ -195,6 +228,8 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
   const parsedWebsites = () =>
     websitesRaw.split(',').map((w) => w.trim().toLowerCase()).filter((w) => w.length > 0);
 
+  const selectedApps = blockedApps.filter((a) => appIds.includes(a.id));
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-5 py-10">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
@@ -203,125 +238,168 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 12, scale: 0.97 }}
         transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-        className="glass-strong relative w-full max-w-md max-h-[85vh] overflow-y-auto no-scrollbar rounded-3xl px-5 pt-5 pb-6">
+        className="glass-strong relative w-full max-w-md max-h-[85vh] overflow-y-auto no-scrollbar rounded-[28px] px-6 pt-6 pb-6">
         
-        <div className="flex items-center justify-between mb-5">
-          <p className="font-display text-lg text-white">{initial.id ? 'Edit rule' : 'New rule'}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-ember-400">Blocking rule</p>
+            <p className="font-display mt-1 text-xl text-white">{initial.id ? 'Edit rule' : 'New rule'}</p>
+            <p className="mt-1 text-xs text-neutral-400">Control what stays muted during your focus sessions.</p>
+          </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="glass-inset w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white transition-colors">
+            className="glass-inset flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:text-white">
             
-            <XIcon className="w-4 h-4" />
+            <XIcon className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="flex gap-2">
-          {kindOptions.map(({ kind: k, label, icon: Icon }) =>
-          <button
-            key={k}
-            onClick={() => setKind(k)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-            kind === k ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
-            }>
-            
-              <Icon className="w-4 h-4" />
-              {label}
-            </button>
-          )}
-        </div>
+        <div className="my-6 h-px bg-white/5" />
 
-        <div className="mt-5 space-y-4">
-          {kind === 'app' &&
-          <>
-            <p className="text-xs text-neutral-500">Select apps to block during focus</p>
-            <div className="grid grid-cols-2 gap-2">
-              {blockedApps.map((app) =>
+        <StepLabel n="1" title="Rule type" />
+        <div className="mt-3 grid grid-cols-3 gap-2.5">
+          {kindOptions.map(({ kind: k, label, icon: Icon }) => {
+            const active = kind === k;
+            return (
               <button
-                key={app.id}
-                onClick={() => toggleApp(app.id)}
-                className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                appIds.includes(app.id) ? 'bg-ember-500/20 border border-ember-400 text-white' : 'glass-inset text-neutral-300'}`
+                type="button"
+                key={k}
+                onClick={() => setKind(k)}
+                aria-pressed={active}
+                className={`flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 transition-colors ${
+                active ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
                 }>
                 
-                  <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: app.color }} />
-                  {app.name}
-                </button>
-              )}
-            </div>
-          </>
-          }
+                <Icon className={`h-5 w-5 ${active ? 'text-ember-400' : 'text-neutral-400'}`} />
+                <span className="text-xs font-semibold">{label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-          {kind === 'schedule' &&
-          <>
+        <div className="my-6 h-px bg-white/5" />
+
+        <StepLabel n="2" title={
+            kind === 'app' ? 'Choose apps' : kind === 'schedule' ? 'Set the schedule' : 'Add websites'
+          }
+        />
+
+        {kind === 'app' &&
+        <>
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
+            {blockedApps.map((app) =>
+            <AppChip key={app.id} app={app} on={appIds.includes(app.id)} onToggle={() => toggleApp(app.id)} />
+            )}
+          </div>
+          <p className="mt-3 text-xs text-neutral-500">
+            {appIds.length === 0 ? 'Pick at least one app to block.' : `${appIds.length} app${appIds.length === 1 ? '' : 's'} selected · blocked during focus`}
+          </p>
+        </>
+        }
+
+        {kind === 'schedule' &&
+        <>
+          <div className="mt-3 space-y-5">
             <div>
-              <p className="text-xs text-neutral-500 mb-2">Days</p>
-              <div className="flex gap-1.5">
-                {dayLabels.map((label, i) =>
-                <button
-                  key={label}
-                  onClick={() => toggleDay(i)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
-                  days.includes(i) ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
-                  }>
-                  
-                    {label}
-                  </button>
+              <p className="mb-2 text-xs font-medium text-neutral-400">Days of the week</p>
+              <div className="flex gap-2">
+                {dayLabels.map((label, i) => {
+                  const active = days.includes(i);
+                  return (
+                    <button
+                      type="button"
+                      key={label}
+                      onClick={() => toggleDay(i)}
+                      aria-pressed={active}
+                      className={`flex-1 rounded-2xl border py-3 text-xs font-bold transition-colors ${
+                      active ? 'border-ember-400 bg-ember-500 text-ink-950' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
+                      }>
+                      
+                        {label}
+                      </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-2 block text-xs font-medium text-neutral-400">Starts at</label>
+                <input
+                  type="time"
+                  value={start}
+                  onChange={(e) => setStart(e.target.value)}
+                  style={{ colorScheme: 'dark' }}
+                  className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-ember-400" />
+                
+              </div>
+              <div>
+                <label className="mb-2 block text-xs font-medium text-neutral-400">Ends at</label>
+                <input
+                  type="time"
+                  value={end}
+                  onChange={(e) => setEnd(e.target.value)}
+                  style={{ colorScheme: 'dark' }}
+                  className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-ember-400" />
+                
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-4 py-3.5">
+              <p className="mb-2 text-xs font-medium text-neutral-400">Apps to mute in this window</p>
+              {appIds.length === 0 ?
+              <p className="text-xs text-neutral-500 py-1">No apps selected — blocks nothing extra right now.</p> :
+              <div className="flex flex-wrap gap-1.5">
+                {selectedApps.map((a) =>
+                <span key={a.id} className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.07] px-2.5 py-1 text-xs font-medium text-neutral-200">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: a.color }} />
+                    {a.name}
+                  </span>
                 )}
               </div>
+              }
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <label className="text-xs text-neutral-500 mb-1.5 block">Start</label>
-                <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="glass-inset w-full rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none" />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs text-neutral-500 mb-1.5 block">End</label>
-                <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="glass-inset w-full rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none" />
-              </div>
-            </div>
-            <div>
-              <p className="text-xs text-neutral-500 mb-2">Apps to mute in this window</p>
-              <div className="grid grid-cols-2 gap-2">
-                {blockedApps.map((app) =>
-                <button
-                  key={app.id}
-                  onClick={() => toggleApp(app.id)}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
-                  appIds.includes(app.id) ? 'bg-ember-500/20 border border-ember-400 text-white' : 'glass-inset text-neutral-300'}`
-                  }>
-                  
-                    <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: app.color }} />
-                    {app.name}
-                  </button>
-                )}
-              </div>
-            </div>
-          </>
-          }
+          </div>
+        </>
+        }
 
-          {kind === 'website' &&
-          <div>
-            <p className="text-xs text-neutral-500 mb-1.5">Websites to block (comma separated)</p>
+        {kind === 'website' &&
+        <>
+          <div className="relative mt-3">
+            <GlobeIcon className="absolute left-3.5 top-3.5 h-4 w-4 text-neutral-500" />
             <input
               value={websitesRaw}
               onChange={(e) => setWebsitesRaw(e.target.value)}
               placeholder="instagram.com, reddit.com"
-              className="glass-inset w-full rounded-xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none" />
+              className="glass-inset w-full rounded-2xl py-3 pl-10 pr-3.5 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
-          }
-        </div>
+          <p className="mt-2.5 text-xs text-neutral-500">
+            {parsedWebsites().length === 0 ?
+            'Separate sites with commas — e.g. instagram.com, reddit.com' :
+            `${parsedWebsites().length} site${parsedWebsites().length === 1 ? '' : 's'} to block during focus`}
+          </p>
+        </>
+        }
 
-        <button
-          onClick={handleSave}
-          disabled={!canSave}
-          className={`w-full mt-6 py-4 rounded-full font-semibold text-[15px] transition-transform active:scale-[0.98] ${
-          canSave ? 'bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 text-white' : 'bg-white/10 text-neutral-500'}`
-          }>
-          
-            Save rule
+        <div className="mt-6 flex items-center gap-3 border-t border-white/5 pt-5">
+          <button
+            onClick={onClose}
+            className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white">
+            
+            Cancel
           </button>
+          <button
+            onClick={handleSave}
+            disabled={!canSave}
+            className={`flex-1 rounded-full py-4 text-[15px] font-bold transition-transform active:scale-[0.98] ${
+            canSave ? 'bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 text-white' : 'bg-white/10 text-neutral-500'}`
+            }>
+            
+              Save rule
+            </button>
+        </div>
       </motion.div>
     </div>);
 }

@@ -11,6 +11,7 @@ interface UpgradeSheetProps {
 export function UpgradeSheet({ feature, onClose }: UpgradeSheetProps) {
   const navigate = useNavigate();
   const copy = feature ? FEATURE_COPY[feature] : null;
+  if (!copy) return null;
 
   return (
     <div className={`fixed inset-0 z-[60] flex items-end justify-center sm:items-center px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]`}>
