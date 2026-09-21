@@ -110,6 +110,7 @@ export function Profile() {
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Notifications</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={BellIcon} title="Session reminders" description="Nudge me when it's time to study." control={<ToggleSwitch label="Session reminders" checked={preferences.sessionReminders} onChange={(v) => updatePreference('sessionReminders', v)} />} />
+          <SettingRow icon={ListChecksIcon} title="Task reminders" description="Remind me about overdue and due-today tasks." control={<ToggleSwitch label="Task reminders" checked={preferences.taskReminders} onChange={(v) => updatePreference('taskReminders', v)} />} />
           <SettingRow icon={MailIcon} title="Daily summary" description="A recap of your focus time each evening." control={<ToggleSwitch label="Daily summary" checked={preferences.dailySummary} onChange={(v) => updatePreference('dailySummary', v)} />} />
         </div>
       </section>

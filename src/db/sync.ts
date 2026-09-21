@@ -49,6 +49,7 @@ function preferencesToRemote(row: PreferencesRow, uid: string): Record<string, u
     break_length: row.value.breakLength,
     auto_start_breaks: row.value.autoStartBreaks,
     session_reminders: row.value.sessionReminders,
+    task_reminders: row.value.taskReminders,
     daily_summary: row.value.dailySummary,
     block_during_focus: row.value.blockDuringFocus,
     strict_mode: row.value.strictMode,
@@ -160,6 +161,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
         breakLength: Number(remote.break_length),
         autoStartBreaks: Boolean(remote.auto_start_breaks),
         sessionReminders: Boolean(remote.session_reminders),
+        taskReminders: Boolean(remote.task_reminders),
         dailySummary: Boolean(remote.daily_summary),
         blockDuringFocus: Boolean(remote.block_during_focus),
         strictMode: Boolean(remote.strict_mode)

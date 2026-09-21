@@ -1,13 +1,13 @@
 
 import { useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { FlameIcon, ArrowRightIcon, ChevronRightIcon, TimerIcon, LightbulbIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes, getGreeting } from '../utils/time';
 import { focusTips } from '../data/insightsTips';
-import { notifySessionReminder, notifyDailySummary } from '../utils/notify';
+import { notifySessionReminder, notifyDailySummary, notifyTaskReminders } from '../utils/notify';
 import { markNudgeSeen, isNudgeSeen } from '../db/repo';
 import { WeeklyPreview } from '../components/home/WeeklyPreview';
 import { TaskPreviewList } from '../components/home/TaskPreviewList';
@@ -22,8 +22,25 @@ export function Home() {
     .slice(0, 3);
   const firstName = profile.name.split(' ')[0];
 
+  const outstandingTasks = tasks
+    .filter((t) => !t.completed && t.dueDate)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const overdueCount = outstandingTasks.filter((t) => {
+    const d = parseISO(t.dueDate);
+    return isPast(d) && !isToday(d);
+  }).length;
+  const todayDueCount = outstandingTasks.filter((t) => isToday(parseISO(t.dueDate))).length;
+  const firstReminderTask = outstandingTasks.find((t) => {
+    const d = parseISO(t.dueDate);
+    return isPast(d) || isToday(d);
+  })?.title ?? '';
+
   useEffect(() => {
     const day = format(new Date(), 'yyyy-MM-dd');
+    if (preferences.taskReminders && (overdueCount > 0 || todayDueCount > 0) && !isNudgeSeen('taskReminder', day)) {
+      markNudgeSeen('taskReminder', day);
+      notifyTaskReminders(overdueCount, todayDueCount, firstReminderTask);
+    }
     if (preferences.sessionReminders && todayMinutes === 0 && !isNudgeSeen('reminder', day)) {
       markNudgeSeen('reminder', day);
       notifySessionReminder();
@@ -34,7 +51,7 @@ export function Home() {
         notifyDailySummary(todayMinutes, totalSessionsCompleted);
       }
     }
-  }, [preferences.sessionReminders, preferences.dailySummary, todayMinutes, totalSessionsCompleted]);
+  }, [preferences.taskReminders, preferences.sessionReminders, preferences.dailySummary, todayMinutes, totalSessionsCompleted, overdueCount, todayDueCount, firstReminderTask]);
 
   return (
     <div className="px-5 pt-8">

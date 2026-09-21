@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, SparklesIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon } from 'lucide-react';
+import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, SparklesIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon } from 'lucide-react';
 import { SessionToast } from '../components/notifications/SessionToast';
 import { formatMinutes } from './time';
 
@@ -97,6 +97,26 @@ export function notifyDailyCapReached() {
 
 
     { duration: 4500 }
+  );
+}
+
+export function notifyTaskReminders(overdueCount: number, todayCount: number, firstTitle: string) {
+  const parts: string[] = [];
+  if (overdueCount > 0) parts.push(`${overdueCount} overdue`);
+  if (todayCount > 0) parts.push(`${todayCount} due today`);
+  if (parts.length === 0) return;
+  const description = firstTitle ? `${parts.join(' · ')} — first up: ${firstTitle}` : parts.join(' · ');
+  toast.custom(
+    (id) =>
+    <SessionToast
+      id={id}
+      icon={ListChecksIcon}
+      title="Tasks to do today"
+      description={description}
+      tone="warning" />,
+
+
+    { duration: 6000 }
   );
 }
 

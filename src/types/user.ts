@@ -13,6 +13,7 @@ export interface Preferences {
   breakLength: number;
   autoStartBreaks: boolean;
   sessionReminders: boolean;
+  taskReminders: boolean;
   dailySummary: boolean;
   blockDuringFocus: boolean;
   strictMode: boolean;
@@ -33,6 +34,7 @@ export const defaultPreferences: Preferences = {
   breakLength: 5,
   autoStartBreaks: true,
   sessionReminders: true,
+  taskReminders: true,
   dailySummary: false,
   blockDuringFocus: true,
   strictMode: false
