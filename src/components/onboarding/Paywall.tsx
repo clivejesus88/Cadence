@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { XIcon, ShieldCheckIcon, PaletteIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { useSettings } from '../../contexts/SettingsContext';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { scheduleSync } from '../../db/sync';
 
 interface PaywallProps {
   onStart: () => void;
@@ -15,13 +17,38 @@ const benefits = [
 { icon: PaletteIcon, title: 'Premium soundscapes', desc: 'Unlock every focus sound in the library.', bg: '#f59e0b' }];
 
 
-export function Paywall({ onStart, onClose }: PaywallProps) {
+export function Paywall({ onClose }: PaywallProps) {
   const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
-  const { updateProfile } = useSettings();
+  const { profile } = useSettings();
+  const isPro = profile.plan === 'pro';
 
-  const handleStart = () => {
-    updateProfile({ plan: 'pro', memberSince: format(new Date(), 'MMMM yyyy') });
-    onStart();
+  useEffect(() => {
+    const refresh = () => scheduleSync(300);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+  }, []);
+
+  const handleStart = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      toast('Checkout is not configured yet.');
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke('flutterwave-checkout', {
+        body: { plan, redirectUrl: `${window.location.origin}/?paywall=1` }
+      });
+      if (error || !data?.url) {
+        toast('Could not start the checkout right now.');
+        return;
+      }
+      window.location.href = data.url as string;
+    } catch {
+      toast('Could not start the checkout right now.');
+    }
   };
 
   return (
@@ -88,6 +115,7 @@ export function Paywall({ onStart, onClose }: PaywallProps) {
           Unlock your best study habits now!
         </p>
 
+        {!isPro &&
         <div className="mt-7 space-y-3">
           <div className="relative">
             <span className="absolute -top-2.5 left-4 z-10 rounded-full bg-gradient-to-r from-ember-500 to-orange-600 px-2.5 py-1 text-[10px] font-bold text-white">
@@ -137,6 +165,17 @@ export function Paywall({ onStart, onClose }: PaywallProps) {
             </div>
           </button>
         </div>
+        }
+
+        {isPro &&
+        <div className="glass-strong mt-7 rounded-2xl px-4 py-5 text-center">
+          <ShieldCheckIcon className="mx-auto h-8 w-8 text-ember-400" />
+          <p className="mt-2 text-base font-bold text-white">You're on Cadence Pro</p>
+          <p className="mx-auto mt-1 max-w-[280px] text-xs leading-5 text-neutral-400">
+            Thanks for being a member — the full sound library and advanced blocking rules are unlocked.
+          </p>
+        </div>
+        }
 
         <section className="mt-8">
           <p className="text-lg font-bold text-white">PRO Benefits</p>
@@ -161,10 +200,10 @@ export function Paywall({ onStart, onClose }: PaywallProps) {
 
       <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-ink-950 via-ink-950/95 to-transparent px-6 pb-8 pt-10">
         <button
-          onClick={handleStart}
+          onClick={isPro ? onClose : handleStart}
           className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98]">
           
-          {plan === 'yearly' ? 'Start Pro · Yearly' : 'Start Pro · Monthly'}
+          {isPro ? 'Back to Cadence' : plan === 'yearly' ? 'Start Pro · Yearly' : 'Start Pro · Monthly'}
         </button>
       </div>
     </div>);
