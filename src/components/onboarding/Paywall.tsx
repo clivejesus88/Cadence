@@ -38,7 +38,7 @@ export function Paywall({ onClose }: PaywallProps) {
       return;
     }
     try {
-      const { data, error } = await supabase.functions.invoke('flutterwave-checkout', {
+      const { data, error } = await supabase.functions.invoke('paypal-create-subscription', {
         body: { plan, redirectUrl: `${window.location.origin}/?paywall=1` }
       });
       if (error || !data?.url) {
