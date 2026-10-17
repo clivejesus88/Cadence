@@ -1,10 +1,49 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+  });
+}
+
+function err(message: string, status: number): Response {
+  return new Response(message, { status, headers: CORS_HEADERS });
+}
+
 const PAYPAL_MODE = Deno.env.get("PAYPAL_MODE") ?? "sandbox";
 const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID") ?? "";
 const PAYPAL_SECRET = Deno.env.get("PAYPAL_SECRET") ?? "";
 const PAYPAL_PLAN_ID_MONTHLY = Deno.env.get("PAYPAL_PLAN_ID_MONTHLY") ?? "";
 const PAYPAL_PLAN_ID_YEARLY = Deno.env.get("PAYPAL_PLAN_ID_YEARLY") ?? "";
+
+// Comma-separated allowlist of origins permitted as PayPal return/cancel URLs.
+// Defaults to localhost for development. Set ALLOWED_REDIRECT_ORIGINS in prod.
+const ALLOWED_REDIRECT_ORIGINS = (Deno.env.get("ALLOWED_REDIRECT_ORIGINS") ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function isAllowedRedirect(raw: string): string | null {
+  try {
+    const u = new URL(raw);
+    const origin = u.origin;
+    if (ALLOWED_REDIRECT_ORIGINS.length === 0) {
+      // Dev fallback: localhost only.
+      if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return raw;
+      return null;
+    }
+    return ALLOWED_REDIRECT_ORIGINS.includes(origin) ? raw : null;
+  } catch {
+    return null;
+  }
+}
 
 const PAYPAL_API_BASE =
   PAYPAL_MODE === "live"
@@ -37,8 +76,11 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return err("Method not allowed", 405);
   }
 
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -48,31 +90,47 @@ Deno.serve(async (req: Request) => {
     error: authError,
   } = await supabase.auth.getUser(jwt);
   if (authError || !user) {
-    return new Response("Unauthorized", { status: 401 });
+    return err("Unauthorized", 401);
   }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return new Response("Invalid JSON", { status: 400 });
+    return err("Invalid JSON", 400);
   }
 
   const plan = body.plan === "yearly" ? "yearly" : "monthly";
   const planId = plan === "yearly" ? PAYPAL_PLAN_ID_YEARLY : PAYPAL_PLAN_ID_MONTHLY;
   if (!planId) {
-    return new Response("Subscription plan not configured", { status: 503 });
+    return err("Subscription plan not configured", 503);
   }
 
-  const origin = new URL(req.url).origin;
-  const redirectUrl =
+  // Prevent duplicate active subscriptions for the same user.
+  const { data: existing } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", user.id)
+    .eq("provider", "paypal")
+    .in("status", ["active", "trialing"])
+    .maybeSingle();
+  if (existing) {
+    return err("Already subscribed", 409);
+  }
+
+  const fallbackOrigin = new URL(req.url).origin;
+  const requestedRedirect =
     typeof body.redirectUrl === "string"
-      ? body.redirectUrl
-      : `${origin}/?paywall=1`;
+      ? isAllowedRedirect(body.redirectUrl)
+      : null;
+  if (typeof body.redirectUrl === "string" && !requestedRedirect) {
+    return err("Redirect URL not allowed", 400);
+  }
+  const redirectUrl = requestedRedirect ?? `${fallbackOrigin}/?paywall=1`;
 
   const accessToken = await getAccessToken();
   if (!accessToken) {
-    return new Response("Failed to authenticate with PayPal", { status: 502 });
+    return err("Failed to authenticate with PayPal", 502);
   }
 
   const payload = {
@@ -96,7 +154,7 @@ Deno.serve(async (req: Request) => {
     body: JSON.stringify(payload),
   });
 
-  const json = (await res.json()) as {
+  const ppJson = (await res.json()) as {
     id?: string;
     status?: string;
     links?: Array<{ rel?: string; href?: string; method?: string }>;
@@ -104,25 +162,25 @@ Deno.serve(async (req: Request) => {
   };
 
   if (!res.ok) {
-    console.error("[paypal] create subscription failed:", json.message ?? json);
-    return new Response("Failed to create subscription", { status: 502 });
+    console.error("[paypal] create subscription failed:", ppJson.message ?? ppJson);
+    return err("Failed to create subscription", 502);
   }
 
-  const approvalUrl = json.links?.find((l) => l.rel === "approve")?.href;
+  const approvalUrl = ppJson.links?.find((l) => l.rel === "approve")?.href;
   if (!approvalUrl) {
-    return new Response("Missing approval URL", { status: 502 });
+    return err("Missing approval URL", 502);
   }
 
   // Create pending subscription record
   try {
     await supabase.from("subscriptions").upsert(
       {
-        id: json.id ?? `paypal-pending-${user.id}-${Date.now()}`,
+        id: ppJson.id ?? `paypal-pending-${user.id}-${Date.now()}`,
         user_id: user.id,
         provider: "paypal",
-        status: json.status?.toLowerCase() ?? "pending",
+        status: ppJson.status?.toLowerCase() ?? "pending",
         plan,
-        paypal_subscription_id: json.id ?? null,
+        paypal_subscription_id: ppJson.id ?? null,
       },
       { onConflict: "id" }
     );
@@ -130,8 +188,5 @@ Deno.serve(async (req: Request) => {
     console.error("[paypal] failed to upsert pending subscription:", e);
   }
 
-  return new Response(
-    JSON.stringify({ url: approvalUrl, subscriptionId: json.id }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  return json({ url: approvalUrl, subscriptionId: ppJson.id });
 });

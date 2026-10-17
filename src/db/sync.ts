@@ -66,8 +66,6 @@ function profileToRemote(row: ProfileRow, uid: string): Record<string, unknown> 
     email: row.value.email,
     school: row.value.school,
     avatar_url: row.value.avatarUrl,
-    plan: row.value.plan,
-    member_since: row.value.memberSince,
     updated_at: row.updatedAt
   };
 }
@@ -176,7 +174,19 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
     const uid = String(remote.user_id);
     const updatedAt = Number(remote.updated_at);
     const existing = await db.profile.get(uid);
-    if (existing && existing.updatedAt >= updatedAt) return;
+    // Billing state is server-authoritative — always take it from the remote,
+    // even when the local copy is otherwise newer.
+    const remotePlan = (remote.plan as 'free' | 'pro') ?? 'free';
+    const remoteMemberSince = String(remote.member_since ?? '');
+    if (existing && existing.updatedAt >= updatedAt) {
+      if (existing.value.plan !== remotePlan || existing.value.memberSince !== remoteMemberSince) {
+        await db.profile.put({
+          ...existing,
+          value: { ...existing.value, plan: remotePlan, memberSince: remoteMemberSince }
+        });
+      }
+      return;
+    }
     await db.profile.put({
       key: uid,
       value: {
@@ -185,8 +195,8 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
         email: String(remote.email ?? ''),
         school: String(remote.school ?? ''),
         avatarUrl: String(remote.avatar_url ?? defaultAvatar()),
-        plan: (remote.plan as 'free' | 'pro') ?? 'free',
-        memberSince: String(remote.member_since ?? '')
+        plan: remotePlan,
+        memberSince: remoteMemberSince
       },
       updatedAt,
       deleted: false

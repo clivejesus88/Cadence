@@ -61,45 +61,49 @@ Deno.serve(async (req: Request) => {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  // Verify webhook signature if configured
-  if (PAYPAL_WEBHOOK_ID && PAYPAL_CLIENT_ID && PAYPAL_SECRET) {
-    const headers = req.headers;
-    const transmissionId = headers.get("paypal-transmission-id") ?? "";
-    const transmissionTime = headers.get("paypal-transmission-time") ?? "";
-    const transmissionSig = headers.get("paypal-transmission-sig") ?? "";
-    const certUrl = headers.get("paypal-cert-url") ?? "";
-    const authAlgo = headers.get("paypal-auth-algo") ?? "";
+  // Always verify webhook signature — fail CLOSED if anything is wrong.
+  if (!PAYPAL_WEBHOOK_ID || !PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
+    console.error("[paypal] webhook verification not configured; rejecting");
+    return new Response("Webhook verification not configured", { status: 503 });
+  }
 
-    const accessToken = await getAccessToken();
-    if (accessToken) {
-      try {
-        const verifyRes = await fetch(`${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            auth_algo: authAlgo,
-            cert_url: certUrl,
-            transmission_id: transmissionId,
-            transmission_sig: transmissionSig,
-            transmission_time: transmissionTime,
-            webhook_id: PAYPAL_WEBHOOK_ID,
-            webhook_event: payload,
-          }),
-        });
-        const verifyJson = (await verifyRes.json()) as { verification_status?: string };
-        if (verifyJson.verification_status !== "SUCCESS") {
-          console.warn("[paypal] webhook signature verification failed");
-          return new Response("Invalid signature", { status: 401 });
-        }
-      } catch (e) {
-        console.error("[paypal] webhook verify error:", e);
-        // Don't block if verification API fails; but better to be strict in prod
-        // For now proceed cautiously
-      }
+  const headers = req.headers;
+  const transmissionId = headers.get("paypal-transmission-id") ?? "";
+  const transmissionTime = headers.get("paypal-transmission-time") ?? "";
+  const transmissionSig = headers.get("paypal-transmission-sig") ?? "";
+  const certUrl = headers.get("paypal-cert-url") ?? "";
+  const authAlgo = headers.get("paypal-auth-algo") ?? "";
+
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    console.error("[paypal] could not get PayPal access token for verification");
+    return new Response("Verification unavailable", { status: 503 });
+  }
+  try {
+    const verifyRes = await fetch(`${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        auth_algo: authAlgo,
+        cert_url: certUrl,
+        transmission_id: transmissionId,
+        transmission_sig: transmissionSig,
+        transmission_time: transmissionTime,
+        webhook_id: PAYPAL_WEBHOOK_ID,
+        webhook_event: payload,
+      }),
+    });
+    const verifyJson = (await verifyRes.json()) as { verification_status?: string };
+    if (verifyJson.verification_status !== "SUCCESS") {
+      console.warn("[paypal] webhook signature verification failed");
+      return new Response("Invalid signature", { status: 401 });
     }
+  } catch (e) {
+    console.error("[paypal] webhook verify error:", e);
+    return new Response("Verification failed", { status: 401 });
   }
 
   const eventType = String(payload.event_type ?? payload.event ?? "");
@@ -110,12 +114,21 @@ Deno.serve(async (req: Request) => {
       ? resource.id
       : typeof (resource as any).subscription_id === "string"
         ? (resource as any).subscription_id
-        : undefined;
+        : typeof (resource as any).billing_agreement_id === "string"
+          ? (resource as any).billing_agreement_id
+          : undefined;
 
-  // Also check links/parent for subscription id
-  const links = (resource.links ?? []) as Array<{ rel?: string; href?: string }>;
-  // Try to extract user from custom_id on subscription resource
-  const userId = customId;
+  // Prefer the signed custom_id; otherwise resolve the owner from our DB using
+  // the PayPal subscription id (e.g. PAYMENT.SALE.COMPLETED has no custom_id).
+  let userId = customId;
+  if (!userId && subscriptionId) {
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("user_id")
+      .eq("paypal_subscription_id", subscriptionId)
+      .maybeSingle();
+    if (sub?.user_id) userId = sub.user_id as string;
+  }
 
   const now = Date.now();
   const applyPro = async () => {
