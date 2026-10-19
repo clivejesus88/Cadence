@@ -24,9 +24,9 @@ export function SessionToast({
   const dismiss = () => {
     if (id !== undefined) toast.dismiss(id);
   };
-  return <div className="glass-strong mx-auto flex w-full max-w-sm items-start gap-3 rounded-2xl px-4 py-3.5">
-      <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${toneStyles[tone]}`}>
-        <Icon className="h-4 w-4" />
+  return <div className="toast-card mx-auto flex w-full max-w-sm items-start gap-3 rounded-[22px] px-4 py-3.5">
+      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${toneStyles[tone]}`}>
+        <Icon className="h-[18px] w-[18px]" />
       </div>
       <div className="min-w-0 flex-1 pt-0.5">
         <p className="text-sm font-semibold text-white">{title}</p>

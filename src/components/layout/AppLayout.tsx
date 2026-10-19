@@ -34,7 +34,7 @@ export function AppLayout() {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="relative z-10 flex-1 overflow-y-auto pb-28 no-scrollbar">
+          className="relative flex-1 overflow-y-auto pb-28 no-scrollbar">
           <Outlet />
         </div>
         <BottomNav visible={navVisible} />

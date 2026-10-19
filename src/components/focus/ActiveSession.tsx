@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon, LockIcon, Volume2Icon, VolumeXIcon, XIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon, LockIcon, Volume2Icon, VolumeXIcon } from 'lucide-react';
 import { CircularTimer } from '../CircularTimer';
 import { TickRing } from './TickRing';
 import { SoundPalette, Equalizer } from './SoundPalette';
+import { Modal, ModalHeader } from '../ui/Modal';
 import { ambientSounds } from '../../data/ambientSounds';
 import { formatCountdown } from '../../utils/time';
 import { FeatureKey } from '../../utils/premium';
@@ -167,58 +168,36 @@ export function ActiveSession({
         </div>
       }
 
-      <AnimatePresence>
-        {showSounds &&
-        <div className="fixed inset-0 z-[70] flex items-end justify-center px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowSounds(false)} />
+      <Modal open={showSounds} onClose={() => setShowSounds(false)} variant="sheet">
+          <ModalHeader
+          eyebrow="Session audio"
+          title="Focus sound"
+          onClose={() => setShowSounds(false)} />
+
+          <div className="modal-divider my-4 h-px" />
+
+          <SoundPalette
+          soundId={soundId}
+          onChangeSound={onChangeSound}
+          onUpgrade={(feature) => {
+            setShowSounds(false);
+            onUpgrade?.(feature);
+          }}
+          pro={pro}
+          hideHeader />
+
+          <button
+          type="button"
+          onClick={() => {
+            onToggleSound();
+            setShowSounds(false);
+          }}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-semibold glass-inset text-neutral-200 transition-colors hover:text-white">
           
-            <motion.div
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 60, opacity: 0 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-            className="glass-strong relative max-h-[72vh] w-full max-w-sm overflow-y-auto no-scrollbar rounded-[28px] px-5 pb-6 pt-4">
-            
-              <div className="flex items-center justify-between">
-                <p className="font-display text-xl text-white">Focus Sound</p>
-                <button
-                onClick={() => setShowSounds(false)}
-                aria-label="Close"
-                className="glass-inset flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:text-white">
-                
-                  <XIcon className="h-4 w-4" />
-                </button>
-              </div>
-              <SoundPalette
-              soundId={soundId}
-              onChangeSound={onChangeSound}
-              onUpgrade={(feature) => {
-                setShowSounds(false);
-                onUpgrade?.(feature);
-              }}
-              pro={pro}
-              hideHeader />
-            
-              <button
-              type="button"
-              onClick={() => {
-                onToggleSound();
-                setShowSounds(false);
-              }}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-semibold glass-inset text-neutral-200 transition-colors hover:text-white">
-              
-                {soundPlaying ? <VolumeXIcon className="h-4 w-4" /> : <Volume2Icon className="h-4 w-4" />}
-                {soundPlaying ? 'Stop sound' : 'Play sound'}
-              </button>
-            </motion.div>
-          </div>
-        }
-      </AnimatePresence>
+            {soundPlaying ? <VolumeXIcon className="h-4 w-4" /> : <Volume2Icon className="h-4 w-4" />}
+            {soundPlaying ? 'Stop sound' : 'Play sound'}
+          </button>
+        </Modal>
     </div>);
 
 }

@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, SparklesIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon } from 'lucide-react';
+import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon } from 'lucide-react';
 import { SessionToast } from '../components/notifications/SessionToast';
 import { formatMinutes } from './time';
 
@@ -34,7 +34,7 @@ export function notifyOvertime() {
     (id) =>
     <SessionToast
       id={id}
-      icon={SparklesIcon}
+      icon={TrophyIcon}
       title="Goal reached!"
       description="You're in bonus time now — keep going or wrap up."
       tone="success" />,

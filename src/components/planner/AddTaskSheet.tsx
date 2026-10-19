@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { XIcon } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { useAppData } from '../../contexts/AppDataContext';
+import { Modal, ModalHeader } from '../ui/Modal';
 
 interface AddTaskSheetProps {
   onClose: () => void;
@@ -36,26 +35,16 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-5 py-10">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, y: 16, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 12, scale: 0.97 }}
-        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-        className="glass-strong relative w-full max-w-md max-h-[85vh] overflow-y-auto no-scrollbar rounded-3xl px-5 pt-5 pb-6">
-        
-        <div className="flex items-center justify-between mb-5">
-          <p className="font-display text-lg text-white">New Task</p>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="glass-inset w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white transition-colors">
-            
-            <XIcon className="w-4 h-4" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <Modal open onClose={onClose} variant="center">
+      <ModalHeader
+      eyebrow="Planner"
+      title="New Task"
+      subtitle="Break your work into focused sessions."
+      onClose={onClose} />
+
+      <div className="modal-divider my-5 h-px" />
+
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs text-neutral-500 mb-1.5 block">Task</label>
             <input
@@ -116,14 +105,20 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
               className="glass-inset mt-2 w-full rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-ember-400" />
             
           </div>
-          <button
-            type="submit"
-            className="w-full py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 active:scale-[0.98] transition-transform">
-            
-            Add Task
-          </button>
-        </form>
-      </motion.div>
-    </div>);
+          <div className="modal-footer">
+            <button
+              type="button"
+              onClick={onClose}
+              className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 active:scale-[0.98] transition-transform">
+              Add Task
+            </button>
+          </div>
+      </form>
+    </Modal>);
 
 }

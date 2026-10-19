@@ -95,3 +95,81 @@ body {
   mask-composite: exclude;
   pointer-events: none;
 }
+/* Premium pop-up card material — layered glass with a specular rim */
+.modal-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.035) 48%,
+    rgba(255, 255, 255, 0.07)
+  );
+  backdrop-filter: blur(30px) saturate(165%);
+  -webkit-backdrop-filter: blur(30px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 28px 70px -26px rgba(0, 0, 0, 0.85);
+}
+.toast-card {
+  position: relative;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.13),
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.09)
+  );
+  backdrop-filter: blur(28px) saturate(165%);
+  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 18px 42px -18px rgba(0, 0, 0, 0.8);
+}
+.modal-card::before,
+.toast-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.05) 35%,
+    rgba(255, 255, 255, 0.22) 72%,
+    rgba(255, 255, 255, 0.04)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+/* Sheet grabber */
+.modal-grabber {
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  margin: 11px auto 3px;
+}
+/* Hairline that fades out at both ends */
+.modal-divider {
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.16), transparent);
+}
+/* Sticky action bar pinned to the bottom of a scrolling card */
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem -1.5rem -1.5rem;
+  padding: 1rem 1.5rem 1.5rem;
+  background: linear-gradient(to top, rgba(13, 16, 20, 0.98) 55%, rgba(13, 16, 20, 0));
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
