@@ -1,12 +1,12 @@
 
-import { LockIcon, RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
-import { ambientSounds } from '../../data/ambientSounds';
+import { RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { blockedApps } from '../../data/blockedApps';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Task } from '../../types/task';
 import { formatCountdown } from '../../utils/time';
 import { isPro, FeatureKey } from '../../utils/premium';
 import { DurationDial } from './DurationDial';
+import { SoundPalette } from './SoundPalette';
 
 interface SessionSetupProps {
   durationMinutes: number;
@@ -91,39 +91,7 @@ export function SessionSetup({
         </div>
       </div>
 
-      <div className="mt-8">
-        <p className="text-white font-semibold text-sm mb-3">Focus Sound</p>
-        <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
-          {ambientSounds.map((s) => {
-            const Icon = s.icon;
-            const selected = !s.premium && soundId === s.id;
-            const locked = s.premium && !pro;
-            return (
-              <button
-                key={s.id}
-                onClick={() => {
-                  if (locked) {
-                    onUpgrade?.('premiumSounds');
-                    return;
-                  }
-                  onChangeSound(s.id);
-                }}
-                className={`relative flex-shrink-0 w-24 rounded-2xl p-3 text-left transition-colors ${
-                selected ? 'bg-ember-500/15 border border-ember-400' : 'glass-inset'}`
-                }>
-                
-                <Icon className={`w-5 h-5 ${selected ? 'text-ember-400' : locked ? 'text-neutral-600' : 'text-neutral-400'}`} />
-                <p className={`text-xs font-medium mt-2 ${selected ? 'text-white' : locked ? 'text-neutral-500' : 'text-neutral-300'}`}>{s.name}</p>
-                {locked &&
-                <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
-                    <LockIcon className="h-3 w-3 text-neutral-400" />
-                  </span>
-                }
-              </button>);
-
-          })}
-        </div>
-      </div>
+      <SoundPalette soundId={soundId} onChangeSound={onChangeSound} onUpgrade={onUpgrade} pro={pro} />
 
       <div className="mt-6">
         <button
@@ -151,7 +119,7 @@ export function SessionSetup({
 
       <button
         onClick={onStart}
-        className="w-full mt-8 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
+        className="w-full mt-8 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 active:scale-[0.98] transition-transform">
         
         {resumeSeconds > 0 ? 'Resume Session' : 'Start Focusing'}
       </button>

@@ -1,10 +1,13 @@
 
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon, LockIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, SquareIcon, ShieldCheckIcon, LockIcon, Volume2Icon, VolumeXIcon, XIcon } from 'lucide-react';
 import { CircularTimer } from '../CircularTimer';
 import { TickRing } from './TickRing';
+import { SoundPalette, Equalizer } from './SoundPalette';
 import { ambientSounds } from '../../data/ambientSounds';
 import { formatCountdown } from '../../utils/time';
+import { FeatureKey } from '../../utils/premium';
 import { Task } from '../../types/task';
 
 interface ActiveSessionProps {
@@ -16,6 +19,11 @@ interface ActiveSessionProps {
   onEnd: () => void;
   strictMode: boolean;
   soundId: string;
+  soundPlaying: boolean;
+  onChangeSound: (id: string) => void;
+  onToggleSound: () => void;
+  onUpgrade?: (feature: FeatureKey) => void;
+  pro: boolean;
   blockingEnabled: boolean;
   activeTask?: Task;
 }
@@ -29,9 +37,15 @@ export function ActiveSession({
   onEnd,
   strictMode,
   soundId,
+  soundPlaying,
+  onChangeSound,
+  onToggleSound,
+  onUpgrade,
+  pro,
   blockingEnabled,
   activeTask
 }: ActiveSessionProps) {
+  const [showSounds, setShowSounds] = useState(false);
   const isOvertime = sessionType === 'focus' && elapsedSeconds >= targetSeconds;
   const endLocked = strictMode && sessionType === 'focus' && !isOvertime;
   const displaySeconds = isOvertime ? elapsedSeconds - targetSeconds : Math.max(0, targetSeconds - elapsedSeconds);
@@ -87,7 +101,7 @@ export function ActiveSession({
         <button
           onClick={onTogglePause}
           aria-label={isPaused ? 'Resume' : 'Pause'}
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 shadow-glow overflow-hidden">
+          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 overflow-hidden">
           
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
@@ -111,10 +125,37 @@ export function ActiveSession({
 
       {sessionType === 'focus' &&
       <div className="mt-10 w-full space-y-2.5">
-          <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
-            <SoundIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
-            <p className="text-sm text-white flex-1">{sound.name}</p>
-            <span className="text-xs text-neutral-400">Playing</span>
+          <div className="glass flex items-center gap-2 rounded-2xl p-2 pl-3">
+            <button
+              type="button"
+              onClick={() => setShowSounds(true)}
+              className="flex min-w-0 flex-1 items-center gap-3 text-left">
+              
+              <span
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
+                style={{ background: `${sound.accent}22` }}>
+                <SoundIcon className="w-4 h-4" style={{ color: sound.accent }} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm text-white">{sound.name}</span>
+                <span className="block text-[11px] text-neutral-500">
+                  {soundPlaying ? 'Playing · tap to change' : 'Muted · tap to play'}
+                </span>
+              </span>
+              {soundPlaying &&
+              <span style={{ color: sound.accent }}>
+                  <Equalizer active />
+                </span>
+              }
+            </button>
+            <button
+              type="button"
+              onClick={onToggleSound}
+              aria-label={soundPlaying ? 'Stop sound' : 'Play sound'}
+              className="glass-inset flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+              
+              {soundPlaying ? <Volume2Icon className="h-4 w-4" /> : <VolumeXIcon className="h-4 w-4" />}
+            </button>
           </div>
           {blockingEnabled &&
         <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
@@ -125,6 +166,59 @@ export function ActiveSession({
         }
         </div>
       }
+
+      <AnimatePresence>
+        {showSounds &&
+        <div className="fixed inset-0 z-[70] flex items-end justify-center px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowSounds(false)} />
+          
+            <motion.div
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 60, opacity: 0 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+            className="glass-strong relative max-h-[72vh] w-full max-w-sm overflow-y-auto no-scrollbar rounded-[28px] px-5 pb-6 pt-4">
+            
+              <div className="flex items-center justify-between">
+                <p className="font-display text-xl text-white">Focus Sound</p>
+                <button
+                onClick={() => setShowSounds(false)}
+                aria-label="Close"
+                className="glass-inset flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:text-white">
+                
+                  <XIcon className="h-4 w-4" />
+                </button>
+              </div>
+              <SoundPalette
+              soundId={soundId}
+              onChangeSound={onChangeSound}
+              onUpgrade={(feature) => {
+                setShowSounds(false);
+                onUpgrade?.(feature);
+              }}
+              pro={pro}
+              hideHeader />
+            
+              <button
+              type="button"
+              onClick={() => {
+                onToggleSound();
+                setShowSounds(false);
+              }}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-semibold glass-inset text-neutral-200 transition-colors hover:text-white">
+              
+                {soundPlaying ? <VolumeXIcon className="h-4 w-4" /> : <Volume2Icon className="h-4 w-4" />}
+                {soundPlaying ? 'Stop sound' : 'Play sound'}
+              </button>
+            </motion.div>
+          </div>
+        }
+      </AnimatePresence>
     </div>);
 
 }

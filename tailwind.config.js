@@ -26,9 +26,6 @@ export default {content: [
           600: '#ea580c'
         }
       },
-      boxShadow: {
-        glow: '0 0 90px 20px rgba(251,146,60,0.22)'
-      },
       keyframes: {
         'fade-in': {
           '0%': {

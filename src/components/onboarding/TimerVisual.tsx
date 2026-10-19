@@ -30,7 +30,7 @@ export function TimerVisual() {
             left: knobX,
             top: knobY,
             transform: 'translate(-50%, -50%)',
-            boxShadow: '0 0 0 4px rgba(10,13,16,0.85), 0 0 20px 4px rgba(251,146,60,0.55)'
+            boxShadow: '0 0 0 4px rgba(10,13,16,0.85)'
           }} />
         
       </div>

@@ -10,9 +10,14 @@ const navItems = [
 { to: '/app/profile', label: 'Settings', icon: SettingsIcon }];
 
 
-export function BottomNav() {
+export function BottomNav({ visible = true }: {visible?: boolean;}) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+    <motion.div
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+      initial={false}
+      animate={{ y: visible ? 0 : 140, opacity: visible ? 1 : 0 }}
+      transition={{ type: 'spring', stiffness: 480, damping: 40, mass: 0.9 }}>
+      
       <nav
         aria-label="Primary"
         className="glass-nav pointer-events-auto mx-auto flex items-center justify-between gap-1 rounded-[28px] p-1.5">
@@ -48,6 +53,6 @@ export function BottomNav() {
           </NavLink>
         )}
       </nav>
-    </div>);
+    </motion.div>);
 
 }

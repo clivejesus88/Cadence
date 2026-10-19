@@ -8,7 +8,7 @@ import { FocusShield } from '../components/focus/FocusShield';
 import { UpgradeSheet } from '../components/premium/UpgradeSheet';
 import { ambientSounds } from '../data/ambientSounds';
 import { startSound, stopSound } from '../utils/audio';
-import { FeatureKey } from '../utils/premium';
+import { isPro, FeatureKey } from '../utils/premium';
 import {
   notifySessionStarted,
   notifySessionPaused,
@@ -27,13 +27,15 @@ const MIN_LOGGABLE_SECONDS = 60; // ending almost instantly shouldn't count as a
 
 export function Focus() {
   const { logSession, activeTaskId, tasks } = useAppData();
-  const { preferences } = useSettings();
+  const { preferences, profile } = useSettings();
+  const pro = isPro(profile);
   const [phase, setPhase] = useState<Phase>('setup');
   const [sessionType, setSessionType] = useState<SessionKind>('focus');
   const [durationMinutes, setDurationMinutes] = useState(preferences.defaultDuration);
   const [targetSeconds, setTargetSeconds] = useState(preferences.defaultDuration * 60);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [soundId, setSoundId] = useState(ambientSounds[0].id);
+  const [soundPlaying, setSoundPlaying] = useState(false);
   const [blockingEnabled, setBlockingEnabled] = useState(preferences.blockDuringFocus);
   const [isPaused, setIsPaused] = useState(false);
   const [completedMinutes, setCompletedMinutes] = useState(0);
@@ -126,6 +128,7 @@ export function Focus() {
       const minutes = Math.round(MAX_SESSION_SECONDS / 60);
       notifyDailyCapReached();
       stopSound();
+      setSoundPlaying(false);
       logSessionRef.current(minutes, activeTaskIdRef.current ?? undefined);
       setCompletedMinutes(minutes);
       setElapsedSeconds(0);
@@ -149,11 +152,13 @@ export function Focus() {
     setIsPaused(false);
     setPhase('running');
     startSound(soundId);
+    setSoundPlaying(true);
     notifySessionStarted(minutes, blockingEnabled);
   };
 
   const startBreak = () => {
     stopSound();
+    setSoundPlaying(false);
     setTargetSeconds(Math.max(60, preferences.breakLength * 60));
     setElapsedSeconds(0);
     startedAtRef.current = Date.now();
@@ -179,9 +184,29 @@ export function Focus() {
     setIsPaused(!isPaused);
   };
 
+  const changeSound = (id: string) => {
+    setSoundId(id);
+    if (phase === 'running' && sessionType === 'focus') {
+      stopSound();
+      startSound(id);
+      setSoundPlaying(true);
+    }
+  };
+
+  const toggleSound = () => {
+    if (soundPlaying) {
+      stopSound();
+      setSoundPlaying(false);
+    } else {
+      startSound(soundId);
+      setSoundPlaying(true);
+    }
+  };
+
   const endSession = () => {
     if (sessionType === 'break') {
       stopSound();
+      setSoundPlaying(false);
       setElapsedSeconds(0);
       startedAtRef.current = null;
       setPhase('setup');
@@ -190,6 +215,7 @@ export function Focus() {
     }
 
     stopSound();
+    setSoundPlaying(false);
     if (elapsedSeconds >= MIN_LOGGABLE_SECONDS) {
       if (elapsedSeconds < targetSeconds) {
         // Stopped partway — keep the progress so the next session can resume here.
@@ -254,6 +280,11 @@ export function Focus() {
           onEnd={endSession}
           strictMode={preferences.strictMode}
           soundId={soundId}
+          soundPlaying={soundPlaying}
+          onChangeSound={changeSound}
+          onToggleSound={toggleSound}
+          onUpgrade={setUpgrade}
+          pro={pro}
           blockingEnabled={blockingEnabled && sessionType === 'focus'}
           activeTask={activeTask} />
         <FocusShield
@@ -261,6 +292,7 @@ export function Focus() {
           taskTitle={activeTask?.title}
           onContinue={() => setShielded(false)}
           onEndSession={endSession} />
+        <UpgradeSheet feature={upgrade} onClose={() => setUpgrade(null)} />
       </>
     );
   }

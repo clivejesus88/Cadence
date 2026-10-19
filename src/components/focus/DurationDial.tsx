@@ -152,7 +152,7 @@ export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, s
           left: knobX,
           top: knobY,
           transform: 'translate(-50%, -50%)',
-          boxShadow: '0 0 0 4px rgba(10,13,16,0.85), 0 0 20px 4px rgba(251,146,60,0.55)',
+          boxShadow: '0 0 0 4px rgba(10,13,16,0.85)',
           transition: dragging ?
           'width 0.15s ease, height 0.15s ease' :
           'left 0.25s ease, top 0.25s ease, width 0.15s ease, height 0.15s ease'

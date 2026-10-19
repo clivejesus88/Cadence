@@ -30,7 +30,7 @@ export function UpgradeSheet({ feature, onClose }: UpgradeSheetProps) {
             <XIcon className="h-4 w-4" />
           </button>
 
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-ember-500 to-orange-600 shadow-glow">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-ember-500 to-orange-600">
             <SparklesIcon className="h-7 w-7 text-white" />
           </div>
           <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-ember-400">Cadence Pro</p>

@@ -28,7 +28,7 @@ export function SessionComplete({ minutes, breakMinutes, onBreak, onDone }: Sess
       <div className="w-full mt-10 space-y-3">
         <button
           onClick={onBreak}
-          className="w-full py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 shadow-glow active:scale-[0.98] transition-transform">
+          className="w-full py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 active:scale-[0.98] transition-transform">
           
           Take a {breakMinutes}-min break
         </button>
