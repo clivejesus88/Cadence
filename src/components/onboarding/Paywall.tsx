@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { XIcon, ShieldCheckIcon, PaletteIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettings } from '../../contexts/SettingsContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
-import { scheduleSync } from '../../db/sync';
+import { runSync, scheduleSync } from '../../db/sync';
 
 interface PaywallProps {
   onStart: () => void;
@@ -21,6 +21,32 @@ export function Paywall({ onClose }: PaywallProps) {
   const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
   const { profile } = useSettings();
   const isPro = profile.plan === 'pro';
+
+  const isProRef = useRef(isPro);
+  useEffect(() => {
+    isProRef.current = isPro;
+  }, [isPro]);
+
+  // After returning from PayPal checkout, keep pulling until the webhook flips
+  // us to Pro — the activation event can land a moment after the redirect.
+  useEffect(() => {
+    if (!isSupabaseConfigured || isProRef.current) return;
+    if (new URLSearchParams(window.location.search).get('paywall') !== '1') return;
+    let attempts = 0;
+    const maxAttempts = 12;
+    let timer = 0;
+    const tick = () => {
+      if (isProRef.current || attempts >= maxAttempts) {
+        window.clearInterval(timer);
+        return;
+      }
+      attempts += 1;
+      void runSync();
+    };
+    timer = window.setInterval(tick, 2500);
+    tick();
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const refresh = () => scheduleSync(300);
