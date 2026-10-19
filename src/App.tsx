@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import * as Sentry from '@sentry/react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
@@ -12,6 +13,7 @@ import { Focus } from './pages/Focus';
 import { Planner } from './pages/Planner';
 import { Profile } from './pages/Profile';
 
+const SentryRoutes = Sentry.wrapReactRouterRouting(Routes);
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
 const BlockingRules = lazy(() => import('./pages/BlockingRules').then((m) => ({ default: m.BlockingRules })));
 
@@ -30,7 +32,7 @@ export function App() {
         <SettingsProvider>
           <div className="w-full min-h-screen bg-ink-950">
             <BrowserRouter>
-              <Routes>
+              <SentryRoutes>
                 <Route path="/" element={<OnboardingFlow />} />
                 <Route
                   path="/app"
@@ -62,7 +64,7 @@ export function App() {
                   <Route path="profile" element={<Profile />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              </SentryRoutes>
             </BrowserRouter>
             <Toaster
               position="top-center"

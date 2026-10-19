@@ -1,4 +1,10 @@
+import "@sentry/deno/import";
+import * as Sentry from "@sentry/deno";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+
+Sentry.init({
+  dsn: "https://7ea99e2c5dda2c502de6d9817be5c06c@o4512283907981312.ingest.de.sentry.io/4512284060287056",
+});
 
 const PAYPAL_MODE = Deno.env.get("PAYPAL_MODE") ?? "sandbox";
 const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID") ?? "";
