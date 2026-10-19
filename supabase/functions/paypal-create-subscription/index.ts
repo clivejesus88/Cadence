@@ -1,5 +1,5 @@
-import "@sentry/deno/import";
-import * as Sentry from "@sentry/deno";
+import "npm:@sentry/deno/import";
+import * as Sentry from "npm:@sentry/deno";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 Sentry.init({
