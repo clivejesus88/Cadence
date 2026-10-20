@@ -24,12 +24,12 @@ export interface Preferences {
 
 export const defaultProfile: UserProfile = {
   id: 'local',
-  name: 'Alex Rivera',
-  email: 'alex.rivera@university.edu',
-  school: 'Second year · Biology',
+  name: '',
+  email: '',
+  school: '',
   avatarUrl: "/41934678-ca28-4660-a31a-3e5350bae9d7.jpg",
   plan: 'free',
-  memberSince: 'March 2026'
+  memberSince: ''
 };
 
 export const defaultPreferences: Preferences = {

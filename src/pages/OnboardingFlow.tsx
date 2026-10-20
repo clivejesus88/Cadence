@@ -41,30 +41,33 @@ const features = [
 
 export function OnboardingFlow() {
   const [searchParams] = useSearchParams();
-  const [step, setStep] = useState(() => (searchParams.get('paywall') ? 6 : 0)); // 0 splash, 1-4 features, 5 auth, 6 paywall
+  const [step, setStep] = useState(() => {
+    if (searchParams.get('paywall')) return 6;
+    return 0;
+  }); // 0 splash, 1-4 features, 5 auth, 6 paywall
   const navigate = useNavigate();
-  const { isConfigured, user } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (isConfigured && user && !searchParams.get('paywall')) {
+    if (user && !searchParams.get('paywall')) {
       navigate('/app/home', { replace: true });
     }
-  }, [isConfigured, user, navigate, searchParams]);
+  }, [user, navigate, searchParams]);
 
   const goHome = () => navigate('/app/home', { replace: true });
   const next = () => setStep((s) => Math.min(s + 1, 6));
 
   if (step === 0) {
     return (
-      <div className="relative w-full min-h-screen flex flex-col justify-end bg-ink-950">
+      <div className="relative w-full min-h-[100dvh] flex flex-col justify-end bg-ink-950">
         <img src={HERO_IMAGE_URL} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/50 to-ink-950/10" />
-        <div className="relative z-10 px-6 pb-10 flex flex-col items-center text-center">
-          <p className="font-display italic text-4xl text-white">Cadence</p>
-          <p className="text-neutral-300 text-sm mt-2">Focus that fits your rhythm.</p>
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/55 to-ink-950/15" />
+        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col items-center px-5 pb-[max(2rem,env(safe-area-inset-bottom))] text-center sm:px-6">
+          <p className="font-display italic text-4xl text-white sm:text-5xl">Cadence</p>
+          <p className="mt-2 text-sm text-neutral-300">Focus that fits your rhythm.</p>
           <button
             onClick={next}
-            className="mt-8 w-full py-4 rounded-full font-semibold text-[15px] bg-white text-ink-950 active:scale-[0.98] transition-transform">
+            className="mt-8 w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.98]">
             
             Get Started
           </button>
@@ -77,15 +80,15 @@ export function OnboardingFlow() {
     const idx = step - 1;
     const { Visual, title, subtitle } = features[idx];
     return (
-      <div className="relative w-full min-h-screen flex flex-col px-6 pt-6 pb-8 bg-ink-950 overflow-hidden">
+      <div className="relative w-full min-h-[100dvh] flex flex-col overflow-hidden bg-ink-950 px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-5 sm:px-6">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <img src={HERO_IMAGE_URL} alt="" className="h-full w-full scale-110 object-cover blur-2xl" />
           <div className="absolute inset-0 bg-ink-950/45" />
           <div className="absolute -top-10 -right-16 h-72 w-72 rounded-full bg-ember-500/25 blur-[100px]" />
           <div className="absolute bottom-0 -left-16 h-72 w-72 rounded-full bg-sky-500/15 blur-[100px]" />
         </div>
-        <div className="flex justify-end">
-          <button onClick={() => setStep(isConfigured ? 5 : 6)} className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
+        <div className="mx-auto flex w-full max-w-md items-center justify-end">
+          <button onClick={() => setStep(5)} className="text-sm text-neutral-500 transition-colors hover:text-neutral-300">
             Skip
           </button>
         </div>
@@ -96,27 +99,29 @@ export function OnboardingFlow() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="flex-1 flex flex-col items-center justify-center text-center">
+            className="mx-auto flex flex-1 w-full max-w-md flex-col items-center justify-center text-center">
             
             <Visual />
-            <p className="font-display text-2xl text-white mt-8">{title}</p>
-            <p className="text-neutral-400 text-sm mt-2 max-w-[280px]">{subtitle}</p>
+            <p className="mt-8 font-display text-2xl text-white">{title}</p>
+            <p className="mt-2 max-w-[280px] text-sm text-neutral-400">{subtitle}</p>
           </motion.div>
         </AnimatePresence>
-        <div className="mb-6">
+        <div className="mx-auto mb-6 w-full max-w-md">
           <OnboardingDots total={4} current={idx} />
         </div>
-        <button
-          onClick={next}
-          className="w-full py-4 rounded-full font-semibold text-[15px] bg-white text-ink-950 active:scale-[0.98] transition-transform">
-          
-          Continue
-        </button>
+        <div className="mx-auto w-full max-w-md">
+          <button
+            onClick={next}
+            className="w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.98]">
+            
+            Continue
+          </button>
+        </div>
       </div>);
 
   }
 
-  if (step === 5 && isConfigured) {
+  if (step === 5) {
     return <AuthScreen onSuccess={() => setStep(6)} onBack={() => setStep(4)} />;
   }
 

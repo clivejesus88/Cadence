@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { XIcon, ShieldCheckIcon, PaletteIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSettings } from '../../contexts/SettingsContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { runSync, scheduleSync } from '../../db/sync';
 
@@ -20,6 +21,7 @@ const benefits = [
 export function Paywall({ onClose }: PaywallProps) {
   const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
   const { profile } = useSettings();
+  const { user } = useAuth();
   const isPro = profile.plan === 'pro';
 
   const isProRef = useRef(isPro);
@@ -97,8 +99,8 @@ export function Paywall({ onClose }: PaywallProps) {
         <XIcon className="h-5 w-5" />
       </button>
 
-      <div className="relative z-10 px-6 pb-36 pt-16">
-        <div className="mx-auto w-60 -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-40 pt-14 sm:px-6">
+        <div className="mx-auto w-full max-w-xs rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
           <div className="flex justify-between">
             {Array.from({ length: 9 }).map((_, i) =>
             <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
@@ -107,22 +109,24 @@ export function Paywall({ onClose }: PaywallProps) {
           <div className="mt-2.5 flex items-center justify-between">
             <p className="text-[13px] font-bold text-ink-950">
               Focus Pass{' '}
-              <span className="ml-1 rounded bg-ember-500/15 px-1 py-0.5 text-[9px] font-bold text-ember-600">NEW</span>
+              <span className="ml-1 rounded bg-ember-500/15 px-1 py-0.5 text-[9px] font-bold text-ember-600">PRO</span>
             </p>
             <p className="font-display text-sm italic text-ink-950/50">Cadence</p>
           </div>
           <div className="mt-3 space-y-2 text-left">
             <div>
-              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Student</p>
-              <p className="text-xs font-medium text-ink-950/80">Alex</p>
+              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Member</p>
+              <p className="truncate text-xs font-medium text-ink-950/80">
+                {user ? profile.name || user.email?.split('@')[0] || 'Account' : 'Signed in'}
+              </p>
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Focus goal</p>
-              <p className="text-xs font-medium text-ink-950/80">Deep Work</p>
+              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Status</p>
+              <p className="text-xs font-medium text-ink-950/80">{isPro ? 'Cadence Pro' : 'Free'}</p>
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Signed</p>
-              <p className="font-display text-sm italic text-ink-950/70">Alex R.</p>
+              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Unlocks</p>
+              <p className="text-xs font-medium text-ink-950/80">Soundscapes &amp; Blocking rules</p>
             </div>
           </div>
           <div className="mt-3 flex justify-between">
@@ -132,13 +136,11 @@ export function Paywall({ onClose }: PaywallProps) {
           </div>
         </div>
 
-        <p className="mt-6 text-center font-display text-3xl tracking-tight text-white">
+        <p className="mt-6 text-center font-display text-3xl tracking-tight text-white sm:text-4xl">
           Cadence <span className="italic text-ember-400">pro</span>
         </p>
-        <p className="mx-auto mt-2 max-w-[240px] text-center text-sm leading-6 text-neutral-400">
-          Launch special is on!
-          <br />
-          Unlock your best study habits now!
+        <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-neutral-400">
+          Unlock advanced blocking rules and the full premium sound library.
         </p>
 
         {!isPro &&
@@ -224,13 +226,15 @@ export function Paywall({ onClose }: PaywallProps) {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-ink-950 via-ink-950/95 to-transparent px-6 pb-8 pt-10">
-        <button
-          onClick={isPro ? onClose : handleStart}
-          className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98]">
-          
-          {isPro ? 'Back to Cadence' : plan === 'yearly' ? 'Start Pro · Yearly' : 'Start Pro · Monthly'}
-        </button>
+      <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-ink-950 via-ink-950/95 to-transparent px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-10 sm:px-6">
+        <div className="mx-auto w-full max-w-md">
+          <button
+            onClick={isPro ? onClose : handleStart}
+            className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98]">
+            
+            {isPro ? 'Back to Cadence' : plan === 'yearly' ? 'Start Pro · Yearly' : 'Start Pro · Monthly'}
+          </button>
+        </div>
       </div>
     </div>);
 

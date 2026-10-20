@@ -3,10 +3,8 @@ import { db, SyncTableName, SyncQueueRow } from './db';
 import { Task } from '../types/task';
 import { FocusSession } from '../types/session';
 import { UserProfile, Preferences, defaultPreferences, defaultProfile } from '../types/user';
-import { tasks as seedTasks } from '../data/tasks';
-import { sessions as seedSessions } from '../data/sessions';
 
-const seedIds = new Set<string>([...seedTasks.map((t) => t.id), ...seedSessions.map((s) => s.id)]);
+const seedIds = new Set<string>();
 
 let userId: string | null = null;
 

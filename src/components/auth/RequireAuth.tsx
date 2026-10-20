@@ -3,9 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading, isConfigured } = useAuth();
-
-  if (!isConfigured) return <>{children}</>;
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (

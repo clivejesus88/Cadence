@@ -52,10 +52,10 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
   };
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden bg-ink-950">
+    <div className="relative w-full min-h-[100dvh] overflow-hidden bg-ink-950">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={HERO_IMAGE_URL} alt="" className="h-full w-full scale-110 object-cover blur-2xl" />
-        <div className="absolute inset-0 bg-ink-950/45" />
+        <div className="absolute inset-0 bg-ink-950/50" />
         <div className="absolute -top-10 -right-16 h-72 w-72 rounded-full bg-ember-500/25 blur-[100px]" />
         <div className="absolute bottom-0 -left-16 h-72 w-72 rounded-full bg-sky-500/15 blur-[100px]" />
       </div>
@@ -63,18 +63,18 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
       <button
         onClick={onBack}
         aria-label="Back"
-        className="glass-inset absolute left-5 top-6 z-20 flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-70">
+        className="glass-inset absolute left-5 top-[max(1.5rem,env(safe-area-inset-top))] z-20 flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-70">
         <ChevronLeftIcon className="h-5 w-5" />
       </button>
 
-      <div className="relative z-10 flex min-h-screen flex-col justify-center px-6 py-10">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 py-10 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
           <p className="font-display text-2xl text-white">Cadence</p>
-          <h1 className="mt-1 font-display text-3xl text-white">
+          <h1 className="mt-1 font-display text-3xl text-white sm:text-4xl">
             {mode === 'signin' ? 'Welcome back' : 'Create your account'}
           </h1>
           <p className="mt-1.5 text-sm text-neutral-400">
-            {mode === 'signin' ? 'Sign in to keep your focus streak alive.' : 'Takes under a minute — your data stays in sync.'}
+            {mode === 'signin' ? 'Sign in to access your focus space.' : 'Sign up to sync your focus data across devices.'}
           </p>
 
           <div className="glass-strong mt-6 rounded-3xl p-5">
