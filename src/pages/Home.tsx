@@ -142,8 +142,7 @@ export function Home() {
         </div>
         <div>
           <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1">Insight Tip</p>
-          <p className="text-sm text-neutral-300">{focusTips[0]}</p>
-        </div>
+          <p className="text-sm text-neutral-300">{focusTips[0]}</p>        </div>
       </section>
     </div>);
 

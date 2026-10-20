@@ -3,8 +3,7 @@ import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
 import { ClockIcon, FlameIcon, ListChecksIcon, TrendingUpIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { formatMinutes } from '../utils/time';
-import { rangeFocusMinutes, monthlyFocusMinutes } from '../utils/streak';
-import { distractionStats } from '../data/insightsTips';
+import { rangeFocusMinutes, monthlyFocusMinutes, longestFocusStreak } from '../utils/streak';
 import { StatCard } from '../components/insights/StatCard';
 import { StreakHeatmap } from '../components/insights/StreakHeatmap';
 
@@ -21,6 +20,8 @@ export function Insights() {
   const focusSessions = sessions.filter((s) => s.type === 'focus' && s.completed);
   const chartData = useMemo(() => rangeFocusMinutes(sessions, rangeDays), [sessions, rangeDays]);
   const monthlyData = useMemo(() => monthlyFocusMinutes(sessions), [sessions]);
+  const totalFocusMinutes = focusSessions.reduce((s, se) => s + se.durationMinutes, 0);
+  const longestStreak = useMemo(() => longestFocusStreak(sessions), [sessions]);
   const avgSession =
   totalSessionsCompleted > 0 ?
   Math.round(focusSessions.reduce((s, se) => s + se.durationMinutes, 0) / totalSessionsCompleted) :
@@ -132,14 +133,26 @@ export function Insights() {
       </section>
 
       <section className="mt-6">
-        <p className="text-white font-semibold text-sm mb-3">Distractions blocked</p>
+        <p className="text-white font-semibold text-sm mb-3">Focus summary</p>
         <div className="glass rounded-2xl divide-y divide-white/5">
-          {distractionStats.map((d) =>
-          <div key={d.name} className="flex items-center justify-between px-4 py-3">
-              <p className="min-w-0 truncate text-sm text-white">{d.name}</p>
-              <p className="ml-2 flex-shrink-0 whitespace-nowrap text-xs text-neutral-500">{d.minutesSaved} min saved</p>
-            </div>
-          )}
+          {totalSessionsCompleted === 0 ?
+          <p className="px-4 py-3 text-sm text-neutral-500">Complete a focus session and your summary will build up here.</p> :
+
+          <>
+              <div className="flex items-center justify-between px-4 py-3">
+                <p className="min-w-0 truncate text-sm text-white">Total focus time</p>
+                <p className="ml-2 flex-shrink-0 whitespace-nowrap text-xs text-neutral-400">{formatMinutes(totalFocusMinutes)}</p>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3">
+                <p className="min-w-0 truncate text-sm text-white">Total sessions</p>
+                <p className="ml-2 flex-shrink-0 whitespace-nowrap text-xs text-neutral-400">{totalSessionsCompleted}</p>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3">
+                <p className="min-w-0 truncate text-sm text-white">Longest streak</p>
+                <p className="ml-2 flex-shrink-0 whitespace-nowrap text-xs text-neutral-400">{longestStreak} days</p>
+              </div>
+            </>
+          }
         </div>
       </section>
     </div>);

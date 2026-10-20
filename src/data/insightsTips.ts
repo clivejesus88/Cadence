@@ -1,12 +1,6 @@
 export const focusTips: string[] = [
-'You focus best between 9–11am. Try scheduling tough subjects then.',
-'Sessions with Lo-fi Beats run 18% longer on average.',
-'Your longest streak started right after you began blocking Instagram.',
-'Short 5-minute breaks help you finish 30% more sessions.'];
-
-
-export const distractionStats: {name: string;minutesSaved: number;}[] = [
-{ name: 'Instagram', minutesSaved: 186 },
-{ name: 'TikTok', minutesSaved: 154 },
-{ name: 'YouTube', minutesSaved: 98 },
-{ name: 'Reddit', minutesSaved: 42 }];
+  'Try working in focused blocks with short breaks between them.',
+  'Put your phone in another room during a session — distance beats willpower.',
+  'Write down the one thing you want to finish before you start the timer.',
+  'A short 5-minute break between sessions helps you stay sharp longer.'
+];

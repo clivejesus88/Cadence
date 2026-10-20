@@ -14,6 +14,23 @@ export function calculateCurrentStreak(sessions: FocusSession[]): number {
   return streak;
 }
 
+export function longestFocusStreak(sessions: FocusSession[]): number {
+  const days = Array.from(
+    new Set(sessions.filter((s) => s.type === 'focus' && s.completed).map((s) => s.date))
+  ).sort();
+  let best = 0;
+  let run = 0;
+  let prev: Date | null = null;
+  for (const day of days) {
+    const d = new Date(`${day}T00:00:00`);
+    if (prev && (d.getTime() - prev.getTime()) / 86400000 === 1) run += 1;
+    else run = 1;
+    best = Math.max(best, run);
+    prev = d;
+  }
+  return best;
+}
+
 export function todayFocusMinutes(sessions: FocusSession[]): number {
   const today = format(new Date(), 'yyyy-MM-dd');
   return sessions.
