@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import type { LucideIcon } from 'lucide-react';
 import {
-  SparklesIcon,
+  RocketIcon,
   FlameIcon,
   ClockIcon,
   TargetIcon,
@@ -139,7 +139,7 @@ export function evaluateBadges(
     target: number;
     label: (v: number) => string;
   }[] = [
-    { id: 'first-session', name: 'First Step', description: 'Complete your first focus session', icon: SparklesIcon, value: totalSessions, target: 1, label: (v) => `${Math.min(v, 1)}/1` },
+    { id: 'first-session', name: 'First Step', description: 'Complete your first focus session', icon: RocketIcon, value: totalSessions, target: 1, label: (v) => `${Math.min(v, 1)}/1` },
     { id: 'streak-3', name: 'Warming Up', description: 'Focus 3 days in a row', icon: FlameIcon, value: best, target: 3, label: (v) => `${Math.min(v, 3)}/3` },
     { id: 'streak-7', name: 'Week Warrior', description: 'Focus 7 days in a row', icon: FlameIcon, value: best, target: 7, label: (v) => `${Math.min(v, 7)}/7` },
     { id: 'streak-30', name: 'Unbreakable', description: 'Focus 30 days in a row', icon: CrownIcon, value: best, target: 30, label: (v) => `${Math.min(v, 30)}/30` },

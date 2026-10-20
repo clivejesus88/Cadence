@@ -32,7 +32,7 @@ export function Home() {
     .filter((t) => !t.completed)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 3);
-  const firstName = profile.name.split(' ')[0];
+  const firstName = profile.name.trim().split(' ')[0] || 'there';
 
   const outstandingTasks = tasks
     .filter((t) => !t.completed && t.dueDate)

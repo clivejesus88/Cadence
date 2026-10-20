@@ -27,7 +27,7 @@ const GUEST_FLAG_KEY = 'cadence:guest';
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function guestUser(): AppUser {
-  return { id: 'guest', email: '', name: 'Guest' };
+  return { id: 'guest', email: '', name: '' };
 }
 
 function hasGuestFlag(): boolean {

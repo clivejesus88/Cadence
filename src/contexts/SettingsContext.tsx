@@ -28,7 +28,6 @@ export function SettingsProvider({ children }: {children: ReactNode;}) {
       if (uid === null) return defaultProfile;
       const row = await db.profile.get(uid);
       const base = row && !row.deleted ? row.value : defaultProfile;
-      if (isGuest && !base.name) return { ...base, name: 'Guest' };
       return base;
     },
     [uid, isGuest],

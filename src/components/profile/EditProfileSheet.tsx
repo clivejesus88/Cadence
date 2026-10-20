@@ -101,7 +101,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
         </div>
 
         <div className="mt-5">
-          <div className="grid grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-4 gap-3">
             {avatarPresets.map((a) => {
               const selected = !isCustomAvatar && activePreset?.id === a.id;
               return (
@@ -111,10 +111,10 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
                   aria-label={a.name}
                   aria-pressed={selected}
                   onClick={() => setAvatarUrl(presetAvatarValue(a.id))}
-                  className={`relative rounded-full transition-transform active:scale-90 ${
+                  className={`relative aspect-square rounded-full transition-transform active:scale-90 ${
                     selected ? 'ring-2 ring-ember-400 ring-offset-2 ring-offset-[#20252c]' : 'ring-1 ring-white/10'
                   }`}>
-                  <Avatar value={presetAvatarValue(a.id)} className="aspect-square w-full" alt={a.name} />
+                  <Avatar value={presetAvatarValue(a.id)} className="h-full w-full" alt={a.name} />
                   {selected && (
                     <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-ember-500 text-ink-950 ring-2 ring-[#20252c]">
                       <CheckIcon className="h-2.5 w-2.5" strokeWidth={3} />

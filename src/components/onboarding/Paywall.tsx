@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { XIcon, SparklesIcon, ShieldCheckIcon, LineChartIcon, PaletteIcon } from 'lucide-react';
+import { XIcon, TimerIcon, ShieldCheckIcon, LineChartIcon, PaletteIcon } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
@@ -14,7 +14,7 @@ interface PaywallProps {
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 
 const benefits = [
-{ icon: SparklesIcon, title: 'Unlimited custom sessions', desc: 'Create any timer length for any subject.', bg: '#0ea5e9' },
+{ icon: TimerIcon, title: 'Unlimited custom sessions', desc: 'Create any timer length for any subject.', bg: '#0ea5e9' },
 { icon: ShieldCheckIcon, title: 'Advanced distraction blocking', desc: 'Block by schedule, app, or website—automatically.', bg: '#059669' },
 { icon: LineChartIcon, title: 'Deeper insights', desc: 'See patterns across months, not just weeks.', bg: '#8b5cf6' },
 { icon: PaletteIcon, title: 'Premium focus sounds', desc: 'Unlock the full library of ambient sounds for deep focus.', bg: '#f59e0b' }];

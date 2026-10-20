@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon, SparklesIcon, ShieldCheckIcon, CrownIcon, AwardIcon, TargetIcon } from 'lucide-react';
+import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon, ShieldCheckIcon, CrownIcon, AwardIcon, TargetIcon } from 'lucide-react';
 import { SessionToast } from '../components/notifications/SessionToast';
 import { formatMinutes } from './time';
 
@@ -9,7 +9,6 @@ export function notifySessionStarted(minutes: number, blockingEnabled: boolean) 
     (id) =>
     <SessionToast
       id={id}
-      duration={3000}
       icon={blockingEnabled ? ShieldCheckIcon : TimerIcon}
       title="Focus session started"
       description={`${formatMinutes(minutes)} · ${blockingEnabled ? 'Distractions blocked' : 'Distractions allowed'}`} />,
@@ -21,14 +20,14 @@ export function notifySessionStarted(minutes: number, blockingEnabled: boolean) 
 
 export function notifySessionPaused() {
   toast.custom(
-    (id) => <SessionToast id={id} duration={2500} icon={PauseIcon} title="Session paused" description="Resume whenever you're ready." tone="warning" />,
+    (id) => <SessionToast id={id} icon={PauseIcon} title="Session paused" description="Resume whenever you're ready." tone="warning" />,
     { duration: 2500 }
   );
 }
 
 export function notifySessionResumed() {
   toast.custom(
-    (id) => <SessionToast id={id} duration={2000} icon={PlayIcon} title="Back to focus" description="Your timer is running again." />,
+    (id) => <SessionToast id={id} icon={PlayIcon} title="Back to focus" description="Your timer is running again." />,
     { duration: 2000 }
   );
 }
@@ -38,7 +37,6 @@ export function notifyOvertime() {
     (id) =>
     <SessionToast
       id={id}
-      duration={3500}
       icon={TrophyIcon}
       title="Goal reached!"
       description="You're in bonus time now — keep going or wrap up."
@@ -51,7 +49,7 @@ export function notifyOvertime() {
 
 export function notifyBreakStarted(minutes: number) {
   toast.custom(
-    (id) => <SessionToast id={id} duration={2500} icon={CoffeeIcon} title="Break started" description={`${minutes} minutes to recharge.`} tone="info" />,
+    (id) => <SessionToast id={id} icon={CoffeeIcon} title="Break started" description={`${minutes} minutes to recharge.`} tone="info" />,
     { duration: 2500 }
   );
 }
@@ -61,7 +59,6 @@ export function notifySessionReminder() {
     (id) =>
     <SessionToast
       id={id}
-      duration={5000}
       icon={BellIcon}
       title="Ready to focus?"
       description="You haven't logged a session today. A few minutes still count."
@@ -77,7 +74,6 @@ export function notifyDailySummary(totalMinutes: number, sessionCount: number) {
     (id) =>
     <SessionToast
       id={id}
-      duration={6000}
       icon={SunIcon}
       title="Today at a glance"
       description={`You focused ${formatMinutes(totalMinutes)} across ${sessionCount} session${sessionCount === 1 ? '' : 's'}.`} />,
@@ -89,7 +85,7 @@ export function notifyDailySummary(totalMinutes: number, sessionCount: number) {
 
 export function notifyBreakEnded() {
   toast.custom(
-    (id) => <SessionToast id={id} duration={2500} icon={TimerIcon} title="Break's over" description="Ready to refocus?" />,
+    (id) => <SessionToast id={id} icon={TimerIcon} title="Break's over" description="Ready to refocus?" />,
     { duration: 2500 }
   );
 }
@@ -99,7 +95,6 @@ export function notifyDailyCapReached() {
     (id) =>
     <SessionToast
       id={id}
-      duration={4500}
       icon={AlertTriangleIcon}
       title="24-hour limit reached"
       description="We ended your session automatically. Time for real rest."
@@ -120,7 +115,6 @@ export function notifyTaskReminders(overdueCount: number, todayCount: number, fi
     (id) =>
     <SessionToast
       id={id}
-      duration={6000}
       icon={ListChecksIcon}
       title="Tasks to do today"
       description={description}
@@ -136,7 +130,6 @@ export function notifySupport() {
     (id) =>
     <SessionToast
       id={id}
-      duration={4500}
       icon={LifeBuoyIcon}
       title="Cadence support"
       description="Reach us any time at support@cadence.app — we usually reply within a day."
@@ -152,8 +145,7 @@ export function notifyUpgrade(feature: string) {
     (id) =>
     <SessionToast
       id={id}
-      duration={4000}
-      icon={SparklesIcon}
+      icon={ShieldCheckIcon}
       title="Unlock this with Pro"
       description={feature}
       tone="ember" />,
@@ -168,7 +160,6 @@ export function notifyError(title: string, description?: string) {
     (id) =>
     <SessionToast
       id={id}
-      duration={4500}
       icon={AlertTriangleIcon}
       title={title}
       description={description}
@@ -184,7 +175,6 @@ export function notifyLevelUp(level: number, title: string) {
     (id) =>
     <SessionToast
       id={id}
-      duration={5000}
       icon={CrownIcon}
       title={`Level ${level} — ${title}`}
       description="New level reached. Keep the momentum going."
@@ -200,7 +190,6 @@ export function notifyBadgeEarned(name: string, description: string) {
     (id) =>
     <SessionToast
       id={id}
-      duration={5000}
       icon={AwardIcon}
       title={`Badge unlocked: ${name}`}
       description={description}
@@ -216,7 +205,6 @@ export function notifyGoalMet(goalMinutes: number) {
     (id) =>
     <SessionToast
       id={id}
-      duration={5000}
       icon={TargetIcon}
       title="Daily goal complete"
       description={`You hit ${formatMinutes(goalMinutes)} of focus today. Nicely done.`}

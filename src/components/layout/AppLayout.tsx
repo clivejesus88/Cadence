@@ -47,7 +47,6 @@ export function AppLayout() {
         (id) => (
           <SessionToast
             id={id}
-            duration={9000}
             icon={LogInIcon}
             title="You're browsing as a guest"
             description="Sign in to sync your focus data across devices."
