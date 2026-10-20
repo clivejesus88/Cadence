@@ -14,7 +14,7 @@ const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
 export function Profile() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, isGuest } = useAuth();
   const {
     currentStreak,
     totalSessionsCompleted,
@@ -34,7 +34,7 @@ export function Profile() {
   };
   return <div className="px-5 pt-8 pb-8">
       <header className="flex items-center gap-3">
-        <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+        <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         <h1 className="font-display text-2xl text-white">Profile</h1>
@@ -51,12 +51,12 @@ export function Profile() {
                 </span>}
             </div>
             <p className="truncate text-xs text-neutral-400">{profile.school}</p>
-            <p className="truncate text-xs text-neutral-500">{profile.email}</p>
+            <p className="truncate text-xs text-neutral-500">{profile.email || (isGuest ? 'Browsing as guest' : '')}</p>
           </div>
           <button
             onClick={() => setEditing(true)}
             aria-label="Edit profile"
-            className="glass-inset flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+            className="hit-slop glass-inset flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
             
             <UserRoundIcon className="h-4 w-4" />
           </button>
@@ -66,17 +66,17 @@ export function Profile() {
           <div className="glass-inset rounded-2xl px-3 py-3 text-center">
             <FlameIcon className="mx-auto h-4 w-4 text-ember-400" />
             <p className="mt-1.5 text-sm font-semibold text-white">{currentStreak}</p>
-            <p className="text-[10px] text-neutral-500">Day streak</p>
+            <p className="text-[11px] text-neutral-500">Day streak</p>
           </div>
           <div className="glass-inset rounded-2xl px-3 py-3 text-center">
             <ClockIcon className="mx-auto h-4 w-4 text-neutral-300" />
             <p className="mt-1.5 text-sm font-semibold text-white">{formatMinutes(totalMinutes)}</p>
-            <p className="text-[10px] text-neutral-500">Focused</p>
+            <p className="text-[11px] text-neutral-500">Focused</p>
           </div>
           <div className="glass-inset rounded-2xl px-3 py-3 text-center">
             <ListChecksIcon className="mx-auto h-4 w-4 text-neutral-300" />
             <p className="mt-1.5 text-sm font-semibold text-white">{totalSessionsCompleted}</p>
-            <p className="text-[10px] text-neutral-500">Sessions</p>
+            <p className="text-[11px] text-neutral-500">Sessions</p>
           </div>
         </div>
       </section>
@@ -92,7 +92,7 @@ export function Profile() {
               <p className="flex-1 text-sm font-medium text-white">Default session</p>
             </div>
             <div className="mt-3 flex gap-2">
-              {durationOptions.map((d) => <button key={d} onClick={() => updatePreference('defaultDuration', d)} className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-colors ${preferences.defaultDuration === d ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
+              {durationOptions.map((d) => <button key={d} onClick={() => updatePreference('defaultDuration', d)} aria-pressed={preferences.defaultDuration === d} className={`flex-1 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${preferences.defaultDuration === d ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
                   {d}m
                 </button>)}
             </div>
@@ -106,7 +106,7 @@ export function Profile() {
               <p className="flex-1 text-sm font-medium text-white">Break length</p>
             </div>
             <div className="mt-3 flex gap-2">
-              {breakOptions.map((b) => <button key={b} onClick={() => updatePreference('breakLength', b)} className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-colors ${preferences.breakLength === b ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
+              {breakOptions.map((b) => <button key={b} onClick={() => updatePreference('breakLength', b)} aria-pressed={preferences.breakLength === b} className={`flex-1 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${preferences.breakLength === b ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
                   {b}m
                 </button>)}
             </div>
@@ -140,7 +140,7 @@ export function Profile() {
           <SettingRow icon={UserRoundIcon} title="Edit profile" description="Update your name, school, email and photo." onClick={() => setEditing(true)} />
           <SettingRow icon={CreditCardIcon} title="Manage subscription" description={profile.plan === 'pro' ? `Cadence Pro · member since ${profile.memberSince}` : 'Unlock Cadence Pro for soundscapes and blocking rules'} onClick={() => navigate('/?paywall=1')} />
           <SettingRow icon={BoxIcon} title="Help & support" onClick={notifySupport} />
-          <SettingRow icon={LogOutIcon} title="Sign out" onClick={handleSignOut} danger />
+          <SettingRow icon={LogOutIcon} title={isGuest ? 'Leave guest mode' : 'Sign out'} onClick={handleSignOut} danger />
         </div>
       </section>
 

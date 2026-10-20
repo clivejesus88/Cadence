@@ -35,7 +35,7 @@ export function SessionToast({
       <button
         onClick={dismiss}
         aria-label="Dismiss notification"
-        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/10 hover:text-white">
+        className="hit-slop flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/10 hover:text-white active:scale-90">
         <XIcon className="h-4 w-4" />
       </button>
     </div>;

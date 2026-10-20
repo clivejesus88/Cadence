@@ -6,8 +6,6 @@ import {
   LockIcon,
   UserIcon,
   Loader2Icon,
-  EyeIcon,
-  EyeOffIcon,
   ShieldCheckIcon
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,17 +13,18 @@ import { useAuth } from '../../contexts/AuthContext';
 interface AuthScreenProps {
   onSuccess: () => void;
   onBack: () => void;
+  onGuest?: () => void;
 }
 
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 
-export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
+export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -102,22 +101,26 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
               ))}
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-5 pt-5">
               {mode === 'signup' && (
-                <label className="block">
+                <motion.label
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="block">
                   <span className="mb-1.5 block text-xs font-medium text-neutral-400">Name</span>
-                  <div className="glass-inset flex items-center gap-2.5 rounded-2xl px-3.5 py-3">
-                    <UserIcon className="h-4 w-4 text-neutral-500" />
+                  <div className="group glass-inset flex items-center gap-2.5 rounded-2xl px-3.5 py-3 transition-colors focus-within:bg-white/5">
+                    <UserIcon className="h-4 w-4 text-neutral-500 transition-colors group-focus-within:text-ember-400" />
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                       autoComplete="name"
                       placeholder="e.g. Alex Rivera"
-                      className="w-full bg-transparent text-base text-white placeholder:text-neutral-600 focus:outline-none"
+                      className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
                     />
                   </div>
-                </label>
+                </motion.label>
               )}
 
               <label className="block">
@@ -148,22 +151,32 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                     minLength={6}
                     autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                     placeholder="At least 6 characters"
-                    className="w-full bg-transparent text-base text-white placeholder:text-neutral-600 focus:outline-none"
+                    className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
                   />
                 </div>
               </label>
 
               {error && (
-                <p className="rounded-xl bg-red-500/10 px-3.5 py-2.5 text-xs leading-5 text-red-400">{error}</p>
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl bg-red-500/10 px-3.5 py-2.5 text-xs leading-5 text-red-400">
+                  {error}
+                </motion.p>
               )}
               {notice && (
-                <p className="rounded-xl bg-emerald-500/10 px-3.5 py-2.5 text-xs leading-5 text-emerald-400">{notice}</p>
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl bg-emerald-500/10 px-3.5 py-2.5 text-xs leading-5 text-emerald-400">
+                  {notice}
+                </motion.p>
               )}
 
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60">
+                className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.995] disabled:opacity-60">
                 {busy ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2Icon className="h-4 w-4 animate-spin" />
@@ -175,15 +188,28 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                   'Create account'
                 )}
               </button>
+              <div className="flex items-center justify-center gap-2 text-xs text-neutral-500">
+                <ShieldCheckIcon className="h-3.5 w-3.5" />
+                <span>Your data stays private & encrypted</span>
+              </div>
             </form>
           </div>
 
-          <p className="mt-4 text-center text-xs text-neutral-500">
+          <p className="mt-5 text-center text-sm text-neutral-500">
             {mode === 'signin' ? 'New to Cadence?' : 'Already have an account?'}{' '}
-            <button onClick={toggleMode} className="hit-slop -my-2 px-2 py-2 font-semibold text-ember-400 active:text-white">
+            <button onClick={toggleMode} className="hit-slop px-2 py-2 font-semibold text-ember-400 transition-colors hover:text-ember-300 active:text-white">
               {mode === 'signin' ? 'Create one' : 'Sign in'}
             </button>
           </p>
+
+          {onGuest && (
+            <button
+              type="button"
+              onClick={onGuest}
+              className="hit-slop mx-auto mt-2 block px-3 py-2 text-sm text-neutral-500 transition-colors hover:text-neutral-300 active:text-white">
+              Continue as guest
+            </button>
+          )}
         </motion.div>
       </div>
     </div>

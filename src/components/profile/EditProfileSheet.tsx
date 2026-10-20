@@ -85,13 +85,13 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
               <img
                 src={avatarUrl || DEFAULT_AVATAR}
                 alt="Avatar preview"
-                className="h-24 w-24 rounded-full object-cover ring-2 ring-white/20 transition-all group-hover:ring-ember-400/70" />
+                className="h-24 w-24 rounded-full object-cover ring-2 ring-white/20 transition-all group-hover:ring-ember-400/70 group-active:ring-ember-400/70" />
               
-              <span className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-ember-500 text-ink-950 ring-4 ring-[#181c22] transition-transform group-hover:scale-105">
+              <span className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-ember-500 text-ink-950 ring-4 ring-[#181c22] transition-transform group-hover:scale-105 group-active:scale-105">
                 <CameraIcon className="h-4 w-4" />
               </span>
             </div>
-            <span className="text-xs font-medium text-neutral-400 transition-colors group-hover:text-white">
+            <span className="text-xs font-medium text-neutral-400 transition-colors group-hover:text-white group-active:text-white">
               Tap to choose a photo
             </span>
           </button>

@@ -59,7 +59,7 @@ export function Insights() {
             <button
               key={o.days}
               onClick={() => setRangeDays(o.days)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              className={`rounded-full px-3.5 py-2.5 text-xs font-semibold transition-all active:scale-95 ${
               rangeDays === o.days ? 'bg-ember-500 text-ink-950' : 'text-neutral-400'}`
               }>
               
@@ -119,7 +119,7 @@ export function Insights() {
             {subjectBreakdown.map((s) =>
             <div key={s.subject}>
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm text-white">{s.subject}</p>
+                  <p className="min-w-0 truncate text-sm text-white">{s.subject}</p>
                   <p className="text-xs text-neutral-500">{formatMinutes(s.minutes)} · {s.pct}%</p>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
@@ -136,8 +136,8 @@ export function Insights() {
         <div className="glass rounded-2xl divide-y divide-white/5">
           {distractionStats.map((d) =>
           <div key={d.name} className="flex items-center justify-between px-4 py-3">
-              <p className="text-sm text-white">{d.name}</p>
-              <p className="text-xs text-neutral-500">{d.minutesSaved} min saved</p>
+              <p className="min-w-0 truncate text-sm text-white">{d.name}</p>
+              <p className="ml-2 flex-shrink-0 whitespace-nowrap text-xs text-neutral-500">{d.minutesSaved} min saved</p>
             </div>
           )}
         </div>

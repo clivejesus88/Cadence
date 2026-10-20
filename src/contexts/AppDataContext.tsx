@@ -25,8 +25,9 @@ interface AppDataContextValue {
 const AppDataContext = createContext<AppDataContextValue | undefined>(undefined);
 
 export function AppDataProvider({ children }: {children: ReactNode;}) {
-  const { user } = useAuth();
-  const uid = user?.id ?? null;
+  const { user, isGuest } = useAuth();
+  // Guests write rows with userId null — treat them like the local user.
+  const uid = isGuest ? null : user?.id ?? null;
 
   const tasks = useLiveQuery(
     () =>

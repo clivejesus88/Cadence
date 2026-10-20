@@ -47,7 +47,7 @@ export function OnboardingFlow() {
     return 0;
   }); // 0 splash, 1-4 features, 5 auth, 6 paywall
   const navigate = useNavigate();
-  const { user, isConfigured } = useAuth();
+  const { user, isConfigured, continueAsGuest } = useAuth();
 
   useEffect(() => {
     if (user && !searchParams.get('paywall')) {
@@ -55,7 +55,12 @@ export function OnboardingFlow() {
     }
   }, [user, navigate, searchParams]);
 
-  const goHome = () => navigate('/app/home', { replace: true });
+  // Leaving the paywall (or skipping auth) drops you into the app as a guest
+  // when there's no real session — never back to the onboarding start.
+  const enterApp = () => {
+    if (!user) continueAsGuest();
+    navigate('/app/home', { replace: true });
+  };
   const next = () => setStep((s) => Math.min(s + 1, 6));
 
   if (step === 0) {
@@ -120,7 +125,7 @@ export function OnboardingFlow() {
         <div className="mx-auto flex w-full max-w-md items-center justify-end">
           <button
             onClick={() => setStep(isConfigured ? 5 : 6)}
-            className="rounded-full px-2 py-1 text-sm text-neutral-500 transition-colors hover:text-neutral-300">
+            className="hit-slop px-3 py-1 text-sm text-neutral-500 transition-colors hover:text-neutral-300 active:text-white">
             Skip
           </button>
         </div>
@@ -158,10 +163,16 @@ export function OnboardingFlow() {
 
   if (step === 5) {
     if (!isConfigured) {
-      return <Paywall onStart={goHome} onClose={goHome} />;
+      return <Paywall onStart={enterApp} onClose={enterApp} />;
     }
-    return <AuthScreen onSuccess={() => setStep(6)} onBack={() => setStep(4)} />;
+    return (
+      <AuthScreen
+        onSuccess={() => setStep(6)}
+        onBack={() => setStep(4)}
+        onGuest={enterApp}
+      />
+    );
   }
 
-  return <Paywall onStart={goHome} onClose={goHome} />;
+  return <Paywall onStart={enterApp} onClose={enterApp} />;
 }

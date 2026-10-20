@@ -119,10 +119,50 @@ export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, s
   const knobX = size / 2 + radius * Math.cos(knobRad);
   const knobY = size / 2 + radius * Math.sin(knobRad);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const adjust = (delta: number) => {
+      e.preventDefault();
+      const next = Math.min(max, Math.max(min, value + delta));
+      emit(Math.round(next / step) * step);
+    };
+    switch (e.key) {
+      case 'ArrowUp':
+      case 'ArrowRight':
+        adjust(step);
+        break;
+      case 'ArrowDown':
+      case 'ArrowLeft':
+        adjust(-step);
+        break;
+      case 'PageUp':
+        adjust(step * 6);
+        break;
+      case 'PageDown':
+        adjust(-step * 6);
+        break;
+      case 'Home':
+        e.preventDefault();
+        emit(min);
+        break;
+      case 'End':
+        e.preventDefault();
+        emit(max);
+        break;
+    }
+  };
+
   return (
     <div
       ref={containerRef}
       onPointerDown={handlePointerDown}
+      onKeyDown={handleKeyDown}
+      role="slider"
+      tabIndex={0}
+      aria-label="Session duration"
+      aria-valuemin={min}
+      aria-valuemax={max}
+      aria-valuenow={value}
+      aria-valuetext={`${value} minutes`}
       className="glass relative touch-none select-none rounded-full"
       style={{ width: size, height: size, cursor: dragging ? 'grabbing' : 'grab' }}>
       

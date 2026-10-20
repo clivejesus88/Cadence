@@ -12,7 +12,7 @@ interface SessionCompleteProps {
 
 export function SessionComplete({ minutes, breakMinutes, onBreak, onDone }: SessionCompleteProps) {
   return (
-    <div className="px-5 pt-16 pb-8 flex flex-col items-center text-center min-h-[calc(100vh-6rem)]">
+    <div className="px-5 pt-16 pb-8 flex flex-col items-center text-center min-h-[calc(100dvh-8rem)]">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

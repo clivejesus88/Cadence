@@ -47,7 +47,7 @@ export function Planner() {
         <button
           onClick={() => setShowAdd(true)}
           aria-label="Add task"
-          className="w-10 h-10 rounded-full bg-ember-500 flex items-center justify-center text-ink-950">
+          className="h-11 w-11 rounded-full bg-ember-500 flex items-center justify-center text-ink-950 transition-transform active:scale-95">
           
           <PlusIcon className="w-5 h-5" />
         </button>

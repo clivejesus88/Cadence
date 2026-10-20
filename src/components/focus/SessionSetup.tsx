@@ -66,7 +66,7 @@ export function SessionSetup({
           <button
             onClick={onDiscardResume}
             aria-label="Discard session progress"
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/10 hover:text-white">
+            className="hit-slop flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/10 hover:text-white active:scale-90">
             
             <XIcon className="h-4 w-4" />
           </button>
@@ -76,12 +76,12 @@ export function SessionSetup({
       <div className="mt-7 flex flex-col items-center">
         <DurationDial value={durationMinutes} onChange={onChangeDuration} />
         <p className="mt-3 text-xs text-neutral-500">Drag the ring to set your time</p>
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           {presets.map((p) =>
           <button
             key={p}
             onClick={() => onChangeDuration(p)}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+            className={`rounded-full px-4 py-2.5 text-xs font-semibold transition-all active:scale-95 ${
             durationMinutes === p ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
             }>
             
@@ -96,7 +96,9 @@ export function SessionSetup({
       <div className="mt-6">
         <button
           onClick={() => onToggleBlocking(!blockingEnabled)}
-          className="glass w-full flex items-center justify-between rounded-2xl px-4 py-3.5">
+          role="switch"
+          aria-checked={blockingEnabled}
+          className="glass w-full flex items-center justify-between rounded-2xl px-4 py-3.5 transition-transform active:scale-[0.99]">
           
           <div className="flex items-center gap-3">
             <ShieldCheckIcon className={`w-5 h-5 ${blockingEnabled ? 'text-ember-400' : 'text-neutral-500'}`} />

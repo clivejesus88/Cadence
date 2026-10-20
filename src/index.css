@@ -44,7 +44,6 @@ button,
 a,
 [role='button'],
 [role='switch'],
-[role='slider'],
 [role='tab'] {
   -webkit-user-select: none;
   user-select: none;

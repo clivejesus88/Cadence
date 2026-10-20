@@ -107,7 +107,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
                     }}
                     aria-pressed={isSelected}
                     className={`group relative overflow-hidden rounded-2xl p-3 text-left transition-colors ${
-                    isSelected ? 'glass-strong' : 'glass-inset hover:bg-white/[0.07]'}`
+                    isSelected ? 'glass-strong' : 'glass-inset hover:bg-white/[0.07] active:bg-white/[0.07]'}`
                     }
                     style={
                     isSelected ?
@@ -137,7 +137,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
                           <Equalizer active />
                         </span> :
 
-                      <span className="h-5 w-5 rounded-full border border-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                      <span className="h-5 w-5 rounded-full border border-white/10 opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100" />
                       }
                     </div>
                     <p className={`relative mt-3 truncate text-sm font-medium ${locked ? 'text-neutral-500' : 'text-white'}`}>

@@ -15,12 +15,37 @@ interface AuthContextValue {
   user: AppUser | null;
   loading: boolean;
   isConfigured: boolean;
+  isGuest: boolean;
+  continueAsGuest: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<{ needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
 }
 
+const GUEST_FLAG_KEY = 'cadence:guest';
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function guestUser(): AppUser {
+  return { id: 'guest', email: '', name: 'Guest' };
+}
+
+function hasGuestFlag(): boolean {
+  try {
+    return localStorage.getItem(GUEST_FLAG_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function setGuestFlag(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(GUEST_FLAG_KEY, '1');
+    else localStorage.removeItem(GUEST_FLAG_KEY);
+  } catch {
+    // storage unavailable — guest simply won't persist across reloads
+  }
+}
 
 function toAppUser(user: User): AppUser {
   const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
@@ -43,7 +68,7 @@ async function applyUserSession(user: User): Promise<void> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUser | null>(() => (hasGuestFlag() ? guestUser() : null));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,11 +86,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const subscribe = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;
-      setUser(u ? toAppUser(u) : null);
       if (u) {
+        setGuestFlag(false);
+        setUser(toAppUser(u));
         void applyUserSession(u);
       } else {
         setSyncUserId(null);
+        setUser(hasGuestFlag() ? guestUser() : null);
       }
     });
 
@@ -74,8 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data } = await supabase.auth.getSession();
       if (!mounted) return;
       const u = data.session?.user ?? null;
-      setUser(u ? toAppUser(u) : null);
-      if (u) await applyUserSession(u);
+      if (u) {
+        setUser(toAppUser(u));
+        await applyUserSession(u);
+      } else {
+        setUser(hasGuestFlag() ? guestUser() : null);
+      }
       setLoading(false);
     })();
 
@@ -88,6 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     return initSync();
   }, []);
+
+  const continueAsGuest = () => {
+    setGuestFlag(true);
+    setSyncUserId(null);
+    setUser(guestUser());
+  };
 
   const signIn = async (email: string, password: string): Promise<void> => {
     if (!supabase) throw new Error('Supabase isn’t configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to enable accounts.');
@@ -110,14 +147,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async (): Promise<void> => {
+    setGuestFlag(false);
     if (supabase) await supabase.auth.signOut();
     setSyncUserId(null);
+    setUser(null);
   };
 
   const value: AuthContextValue = {
     user,
     loading,
     isConfigured: isSupabaseConfigured,
+    isGuest: user?.id === 'guest',
+    continueAsGuest,
     signIn,
     signUp,
     signOut

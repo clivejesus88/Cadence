@@ -177,7 +177,7 @@ function AppChip({ app, on, onToggle }: { app: { id: string; name: string; color
       onClick={onToggle}
       aria-pressed={on}
       className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-sm font-medium transition-all active:scale-[0.97] ${
-      on ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
+      on ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] active:bg-white/[0.12]'}`
       }>
       
       <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ backgroundColor: app.color }} />
@@ -251,7 +251,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
                 onClick={() => setKind(k)}
                 aria-pressed={active}
                 className={`flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 transition-all active:scale-95 ${
-                active ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
+                active ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] active:bg-white/[0.12]'}`
                 }>
                 
                 <Icon className={`h-5 w-5 ${active ? 'text-ember-400' : 'text-neutral-400'}`} />
@@ -296,7 +296,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
                       onClick={() => toggleDay(i)}
                       aria-pressed={active}
                       className={`flex-1 rounded-2xl border py-3.5 text-xs font-bold transition-all active:scale-95 ${
-                      active ? 'border-ember-400 bg-ember-500 text-ink-950' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
+                      active ? 'border-ember-400 bg-ember-500 text-ink-950' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] active:bg-white/[0.12]'}`
                       }>
                       
                         {label}

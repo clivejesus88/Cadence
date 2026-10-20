@@ -56,7 +56,7 @@ export function ActiveSession({
   const isBreathing = sessionType === 'focus' && !isPaused;
 
   return (
-    <div className="px-5 pt-10 pb-6 flex flex-col items-center min-h-[calc(100vh-6rem)]">
+    <div className="px-5 pt-10 pb-6 flex flex-col items-center min-h-[calc(100dvh-8rem)]">
       <p className="text-neutral-400 text-sm uppercase tracking-wide font-medium">
         {sessionType === 'focus' ? 'Focusing' : 'Break'}
       </p>
@@ -94,7 +94,7 @@ export function ActiveSession({
           onClick={endLocked ? undefined : onEnd}
           aria-label={endLocked ? 'End session locked until the timer finishes' : 'End session'}
           disabled={endLocked}
-          className={`glass w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+          className={`glass w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 ${
             endLocked ? 'text-neutral-600 cursor-not-allowed' : 'text-neutral-300 hover:text-white'
           }`}>
           {endLocked ? <LockIcon className="w-4 h-4" /> : <SquareIcon className="w-4 h-4" />}
@@ -102,7 +102,7 @@ export function ActiveSession({
         <button
           onClick={onTogglePause}
           aria-label={isPaused ? 'Resume' : 'Pause'}
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 overflow-hidden">
+          className="w-16 h-16 rounded-full bg-gradient-to-br from-ember-400 to-ember-600 flex items-center justify-center text-ink-950 overflow-hidden transition-transform active:scale-95">
           
           <AnimatePresence mode="wait" initial={false}>
             <motion.span
@@ -130,7 +130,7 @@ export function ActiveSession({
             <button
               type="button"
               onClick={() => setShowSounds(true)}
-              className="flex min-w-0 flex-1 items-center gap-3 text-left">
+              className="flex min-w-0 flex-1 items-center gap-3 text-left transition-opacity active:opacity-70">
               
               <span
                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
@@ -153,7 +153,7 @@ export function ActiveSession({
               type="button"
               onClick={onToggleSound}
               aria-label={soundPlaying ? 'Stop sound' : 'Play sound'}
-              className="glass-inset flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+              className="glass-inset hit-slop flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-90">
               
               {soundPlaying ? <Volume2Icon className="h-4 w-4" /> : <VolumeXIcon className="h-4 w-4" />}
             </button>
@@ -192,7 +192,7 @@ export function ActiveSession({
             onToggleSound();
             setShowSounds(false);
           }}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-semibold glass-inset text-neutral-200 transition-colors hover:text-white">
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-semibold glass-inset text-neutral-200 transition-all hover:text-white active:scale-[0.98]">
           
             {soundPlaying ? <VolumeXIcon className="h-4 w-4" /> : <Volume2Icon className="h-4 w-4" />}
             {soundPlaying ? 'Stop sound' : 'Play sound'}

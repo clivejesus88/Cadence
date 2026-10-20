@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { BottomNav } from './BottomNav';
+import { useAuth } from '../../contexts/AuthContext';
+
+const LOGIN_PROMPT_KEY = 'cadence:last-login-prompt';
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function AppLayout() {
   const [navVisible, setNavVisible] = useState(true);
   const settleTimer = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isGuest } = useAuth();
 
   useEffect(() => () => {
     if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
@@ -16,6 +23,31 @@ export function AppLayout() {
     scrollRef.current?.scrollTo({ top: 0 });
     setNavVisible(true);
   }, [location.pathname]);
+
+  // Guests get a gentle sign-in nudge at most once every 24 hours.
+  useEffect(() => {
+    if (!isGuest) return;
+    let last = 0;
+    try {
+      last = Number(localStorage.getItem(LOGIN_PROMPT_KEY) ?? '0');
+    } catch {
+      // storage unavailable — prompt each visit is too aggressive, skip
+      return;
+    }
+    if (Date.now() - last < DAY_MS) return;
+    try {
+      localStorage.setItem(LOGIN_PROMPT_KEY, String(Date.now()));
+    } catch {
+      // ignore
+    }
+    const timer = window.setTimeout(() => {
+      toast('Sign in to sync your focus data across devices', {
+        duration: 10000,
+        action: { label: 'Sign in', onClick: () => navigate('/sign-in') }
+      });
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [isGuest, navigate]);
 
   const handleScroll = () => {
     const el = scrollRef.current;

@@ -18,16 +18,20 @@ interface SettingsContextValue {
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
 
 export function SettingsProvider({ children }: {children: ReactNode;}) {
-  const { user } = useAuth();
-  const uid = user?.id ?? null;
+  const { user, isGuest } = useAuth();
+  // Guest data lives under the local 'local' key so it syncs nowhere and is
+  // migrated by adoptLocalData when the guest signs in for real.
+  const uid = isGuest ? 'local' : user?.id ?? null;
 
   const profile = useLiveQuery(
     async () => {
       if (uid === null) return defaultProfile;
       const row = await db.profile.get(uid);
-      return row && !row.deleted ? row.value : defaultProfile;
+      const base = row && !row.deleted ? row.value : defaultProfile;
+      if (isGuest && !base.name) return { ...base, name: 'Guest' };
+      return base;
     },
-    [uid],
+    [uid, isGuest],
     defaultProfile
   );
 

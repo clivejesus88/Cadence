@@ -1,12 +1,13 @@
 import { lazy, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { MotionConfig } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { RequireAuth } from './components/auth/RequireAuth';
+import { AuthScreen } from './components/auth/AuthScreen';
 import { OnboardingFlow } from './pages/OnboardingFlow';
 import { AppLayout } from './components/layout/AppLayout';
 import { Home } from './pages/Home';
@@ -29,6 +30,16 @@ function PageLoader() {
 function NotFoundRedirect() {
   const location = useLocation();
   return <Navigate to={location.pathname.startsWith('/app') ? '/app/home' : '/'} replace />;
+}
+
+function SignInRoute() {
+  const navigate = useNavigate();
+  return (
+    <AuthScreen
+      onSuccess={() => navigate('/app/home', { replace: true })}
+      onBack={() => navigate('/app/home', { replace: true })}
+    />
+  );
 }
 
 export function App() {
@@ -55,6 +66,7 @@ export function App() {
                 <BrowserRouter>
               <SentryRoutes>
                 <Route path="/" element={<OnboardingFlow />} />
+                <Route path="/sign-in" element={<SignInRoute />} />
                 <Route
                   path="/app"
                   element={

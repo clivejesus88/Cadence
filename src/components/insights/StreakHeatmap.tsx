@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { format, subDays } from 'date-fns';
 import { FocusSession } from '../../types/session';
 
@@ -15,6 +16,9 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
     minutesByDate.set(s.date, (minutesByDate.get(s.date) ?? 0) + s.durationMinutes);
   });
   const max = Math.max(...Array.from(minutesByDate.values()), 1);
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const selectedMinutes = selected ? minutesByDate.get(selected) ?? 0 : null;
 
   return (
     <div className="glass rounded-2xl p-4">
@@ -23,19 +27,32 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
           const iso = format(d, 'yyyy-MM-dd');
           const minutes = minutesByDate.get(iso) ?? 0;
           const intensity = minutes === 0 ? 0 : Math.min(1, minutes / max);
+          const label = `${format(d, 'MMM d')}: ${minutes} min`;
           return (
-            <div
+            <button
               key={i}
-              title={`${format(d, 'MMM d')}: ${minutes} min`}
-              className="aspect-square rounded-md"
+              type="button"
+              title={label}
+              aria-label={label}
+              aria-pressed={selected === iso}
+              onClick={() => setSelected(selected === iso ? null : iso)}
+              className="aspect-square rounded-md transition-transform active:scale-90"
               style={{
-                backgroundColor: intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.25 + intensity * 0.75})`
+                backgroundColor: intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.25 + intensity * 0.75})`,
+                boxShadow: selected === iso ? '0 0 0 2px rgba(255,255,255,0.85)' : undefined
               }} />);
 
 
         })}
       </div>
-      <div className="flex items-center justify-end gap-1.5 mt-3">
+      <p className="mt-2 min-h-[16px] text-[11px] text-neutral-400" aria-live="polite">
+        {selected ?
+        <span className="font-medium text-neutral-200">
+            {format(new Date(selected), 'EEE, MMM d')} · {selectedMinutes} min
+          </span> :
+        'Tap a day for focus minutes'}
+      </p>
+      <div className="flex items-center justify-end gap-1.5 mt-1">
         <span className="text-[10px] text-neutral-500">Less</span>
         <div className="w-2.5 h-2.5 rounded-sm bg-ink-700" />
         <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'rgba(251,146,60,0.4)' }} />
