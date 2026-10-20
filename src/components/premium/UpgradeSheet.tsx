@@ -17,7 +17,7 @@ export function UpgradeSheet({ feature, onClose }: UpgradeSheetProps) {
       <button
         onClick={onClose}
         aria-label="Close"
-        className="absolute right-4 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-neutral-300 transition-colors hover:text-white">
+        className="hit-slop absolute right-4 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-neutral-300 transition-colors hover:text-white active:scale-95">
         <XIcon className="h-4 w-4" />
       </button>
 
@@ -39,7 +39,9 @@ export function UpgradeSheet({ feature, onClose }: UpgradeSheetProps) {
         className="mt-6 w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98]">
         Upgrade to Unlock
       </button>
-      <button onClick={onClose} className="mt-3 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-300">
+      <button
+        onClick={onClose}
+        className="hit-slop mt-3 inline-flex items-center justify-center px-4 py-2 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-300 active:text-white">
         Maybe later
       </button>
     </Modal>

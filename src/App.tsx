@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react';
 import * as Sentry from '@sentry/react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { MotionConfig } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { SettingsProvider } from './contexts/SettingsContext';
@@ -25,13 +26,33 @@ function PageLoader() {
   );
 }
 
+function NotFoundRedirect() {
+  const location = useLocation();
+  return <Navigate to={location.pathname.startsWith('/app') ? '/app/home' : '/'} replace />;
+}
+
 export function App() {
   return (
-    <AuthProvider>
-      <AppDataProvider>
-        <SettingsProvider>
-          <div className="w-full min-h-screen bg-ink-950">
-            <BrowserRouter>
+    <Sentry.ErrorBoundary
+      fallback={
+        <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center gap-4 bg-ink-950 px-6 text-center">
+          <p className="font-display text-xl text-white">Something went wrong</p>
+          <p className="max-w-xs text-sm text-neutral-400">
+            An unexpected error occurred. Your data is safe — reload to continue.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-950 active:scale-[0.98]">
+            Reload app
+          </button>
+        </div>
+      }>
+      <MotionConfig reducedMotion="user">
+        <AuthProvider>
+          <AppDataProvider>
+            <SettingsProvider>
+              <div className="w-full min-h-[100dvh] bg-ink-950">
+                <BrowserRouter>
               <SentryRoutes>
                 <Route path="/" element={<OnboardingFlow />} />
                 <Route
@@ -63,7 +84,7 @@ export function App() {
                   />
                   <Route path="profile" element={<Profile />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFoundRedirect />} />
               </SentryRoutes>
             </BrowserRouter>
             <Toaster
@@ -72,9 +93,11 @@ export function App() {
               toastOptions={{ unstyled: true, className: 'w-full flex justify-center px-4' }}
               style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
             />
-          </div>
-        </SettingsProvider>
-      </AppDataProvider>
-    </AuthProvider>
+              </div>
+            </SettingsProvider>
+          </AppDataProvider>
+        </AuthProvider>
+      </MotionConfig>
+    </Sentry.ErrorBoundary>
   );
 }

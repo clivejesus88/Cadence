@@ -35,7 +35,7 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
   ];
 
   return (
-    <Modal open onClose={onClose} variant="center">
+    <Modal open onClose={onClose} variant="sheet">
       <ModalHeader
       eyebrow="Planner"
       title="New Task"
@@ -46,32 +46,37 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs text-neutral-500 mb-1.5 block">Task</label>
+            <label htmlFor="new-task-title" className="text-xs text-neutral-500 mb-1.5 block">Task</label>
             <input
+              id="new-task-title"
+              autoFocus
+              enterKeyHint="next"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Read Chapter 5"
-              className="glass-inset w-full rounded-xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
           <div>
-            <label className="text-xs text-neutral-500 mb-1.5 block">Subject</label>
+            <label htmlFor="new-task-subject" className="text-xs text-neutral-500 mb-1.5 block">Subject</label>
             <input
+              id="new-task-subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="e.g. Biology"
-              className="glass-inset w-full rounded-xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
           <div>
-            <label className="text-xs text-neutral-500 mb-1.5 block">Estimated sessions</label>
+            <span className="text-xs text-neutral-500 mb-1.5 block">Estimated sessions</span>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((n) =>
               <button
                 type="button"
                 key={n}
                 onClick={() => setPomodoros(n)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                aria-pressed={pomodoros === n}
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
                 pomodoros === n ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
                 }>
                 
@@ -81,14 +86,15 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
             </div>
           </div>
           <div>
-            <label className="text-xs text-neutral-500 mb-1.5 block">Due date</label>
+            <span className="text-xs text-neutral-500 mb-1.5 block">Due date</span>
             <div className="flex gap-2">
               {dateOptions.map((o) =>
               <button
                 type="button"
                 key={o.label}
                 onClick={() => setDueDate(o.value)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                aria-pressed={dueDate === o.value}
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
                 dueDate === o.value ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`
                 }>
                 
@@ -102,14 +108,14 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
               min={today()}
               onChange={(e) => e.target.value && setDueDate(e.target.value)}
               aria-label="Custom due date"
-              className="glass-inset mt-2 w-full rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-ember-400" />
+              className="glass-inset mt-2 w-full rounded-xl px-3.5 py-3 text-base text-white focus:outline-none focus:border-ember-400" />
             
           </div>
           <div className="modal-footer">
             <button
               type="button"
               onClick={onClose}
-              className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white">
+              className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white active:scale-[0.98]">
               Cancel
             </button>
             <button

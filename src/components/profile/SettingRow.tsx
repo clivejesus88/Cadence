@@ -27,7 +27,7 @@ export function SettingRow({
       {control ?? (onClick && <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-neutral-500" />)}
     </>;
   if (onClick) {
-    return <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03]">
+    return <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03] active:bg-white/[0.07]">
         {content}
       </button>;
   }

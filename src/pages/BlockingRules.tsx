@@ -62,7 +62,7 @@ export function BlockingRules() {
   return (
     <div className="px-5 pt-8 pb-8">
       <header className="flex items-center gap-3">
-        <button onClick={() => navigate('/app/profile')} aria-label="Back to profile" className="glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white">
+        <button onClick={() => navigate('/app/profile')} aria-label="Back to profile" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         <h1 className="font-display text-2xl text-white">Blocking rules</h1>
@@ -77,7 +77,7 @@ export function BlockingRules() {
             <p className="text-white font-semibold text-sm">Rules</p>
             <button
               onClick={() => setEditing({ id: '', kind: 'app', title: '', enabled: true, appIds: [], createdAt: Date.now() })}
-              className="inline-flex items-center gap-1.5 rounded-full bg-ember-500 text-ink-950 px-3.5 py-2 text-xs font-bold transition-colors hover:bg-ember-400">
+              className="inline-flex items-center gap-1.5 rounded-full bg-ember-500 text-ink-950 hit-slop px-3.5 py-2 text-xs font-bold transition-colors hover:bg-ember-400">
               <PlusIcon className="h-4 w-4" />
               Add rule
             </button>
@@ -108,7 +108,7 @@ export function BlockingRules() {
                   <button
                     onClick={() => removeRule(rule.id)}
                     aria-label="Delete rule"
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/10 hover:text-white">
+                    className="hit-slop flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/10 hover:text-white active:scale-90">
                     <XIcon className="h-4 w-4" />
                   </button>
                 </div>
@@ -131,7 +131,7 @@ export function BlockingRules() {
               <p className="mt-0.5 text-xs text-neutral-400">Block by schedule, per app, or per website with Pro.</p>
               <button
                 onClick={() => setUpgrade('blockingRules')}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ember-500/15 px-3.5 py-2 text-xs font-semibold text-ember-400 transition-colors hover:bg-ember-500/25">
+                className="hit-slop mt-3 inline-flex items-center gap-1.5 rounded-full bg-ember-500/15 px-3.5 py-2 text-xs font-semibold text-ember-400 transition-colors hover:bg-ember-500/25 active:bg-ember-500/30">
                 <CrownIcon className="h-3.5 w-3.5" />
                 Unlock blocking rules
               </button>
@@ -250,7 +250,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
                 key={k}
                 onClick={() => setKind(k)}
                 aria-pressed={active}
-                className={`flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 transition-colors ${
+                className={`flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 transition-all active:scale-95 ${
                 active ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
                 }>
                 
@@ -295,7 +295,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
                       key={label}
                       onClick={() => toggleDay(i)}
                       aria-pressed={active}
-                      className={`flex-1 rounded-2xl border py-3 text-xs font-bold transition-colors ${
+                      className={`flex-1 rounded-2xl border py-3.5 text-xs font-bold transition-all active:scale-95 ${
                       active ? 'border-ember-400 bg-ember-500 text-ink-950' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
                       }>
                       
@@ -308,23 +308,23 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-2 block text-xs font-medium text-neutral-400">Starts at</label>
+                <label htmlFor="rule-start" className="mb-2 block text-xs font-medium text-neutral-400">Starts at</label>
                 <input
+                  id="rule-start"
                   type="time"
-                  value={start}
                   onChange={(e) => setStart(e.target.value)}
                   style={{ colorScheme: 'dark' }}
-                  className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-ember-400" />
+                  className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white focus:outline-none focus:border-ember-400" />
                 
               </div>
               <div>
-                <label className="mb-2 block text-xs font-medium text-neutral-400">Ends at</label>
+                <label htmlFor="rule-end" className="mb-2 block text-xs font-medium text-neutral-400">Ends at</label>
                 <input
                   type="time"
                   value={end}
                   onChange={(e) => setEnd(e.target.value)}
                   style={{ colorScheme: 'dark' }}
-                  className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-ember-400" />
+                  className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white focus:outline-none focus:border-ember-400" />
                 
               </div>
             </div>
@@ -355,7 +355,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
               value={websitesRaw}
               onChange={(e) => setWebsitesRaw(e.target.value)}
               placeholder="instagram.com, reddit.com"
-              className="glass-inset w-full rounded-2xl py-3 pl-10 pr-3.5 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-2xl py-3 pl-10 pr-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
           <p className="mt-2.5 text-xs text-neutral-500">
@@ -370,7 +370,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
           <button
             type="button"
             onClick={onClose}
-            className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white">
+            className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white active:scale-[0.98]">
             
             Cancel
           </button>

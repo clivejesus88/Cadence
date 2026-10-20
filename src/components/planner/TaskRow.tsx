@@ -14,7 +14,7 @@ export function TaskRow({ task, onToggle, onStartFocus }: TaskRowProps) {
       <button
         onClick={onToggle}
         aria-label={task.completed ? 'Mark incomplete' : 'Mark complete'}
-        className={`w-5 h-5 rounded-full flex items-center justify-center border flex-shrink-0 ${
+        className={`hit-slop w-5 h-5 rounded-full flex items-center justify-center border flex-shrink-0 transition-transform active:scale-90 ${
         task.completed ? 'bg-ember-500 border-ember-500' : 'border-neutral-500'}`
         }>
         
@@ -30,7 +30,7 @@ export function TaskRow({ task, onToggle, onStartFocus }: TaskRowProps) {
       <button
         onClick={onStartFocus}
         aria-label="Start focus session"
-        className="glass-inset w-8 h-8 rounded-full flex items-center justify-center text-ember-400 flex-shrink-0">
+        className="glass-inset hit-slop w-8 h-8 rounded-full flex items-center justify-center text-ember-400 flex-shrink-0 transition-transform active:scale-90">
         
           <PlayIcon className="w-3.5 h-3.5" />
         </button>

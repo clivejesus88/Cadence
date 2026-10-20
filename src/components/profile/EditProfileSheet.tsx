@@ -79,7 +79,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="group flex flex-col items-center gap-3">
+            className="group flex flex-col items-center gap-3 transition-transform active:scale-[0.97]">
             
             <div className="relative">
               <img
@@ -108,7 +108,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
           <button
             type="button"
             onClick={() => setAvatarUrl(DEFAULT_AVATAR)}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-neutral-400 transition-colors hover:text-white">
+            className="hit-slop mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-neutral-400 transition-colors hover:text-white active:bg-white/10">
             
             <RotateCcwIcon className="h-3.5 w-3.5" />
               Reset to default
@@ -118,41 +118,45 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
 
         <div className="mt-6 space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-neutral-400">Name</label>
+            <label htmlFor="edit-name" className="mb-1.5 block text-xs font-medium text-neutral-400">Name</label>
             <input
+              id="edit-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-neutral-400">School</label>
+            <label htmlFor="edit-school" className="mb-1.5 block text-xs font-medium text-neutral-400">School</label>
             <input
+              id="edit-school"
               value={school}
               onChange={(e) => setSchool(e.target.value)}
               placeholder="e.g. Second year · Biology"
-              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-neutral-400">Email</label>
+            <label htmlFor="edit-email" className="mb-1.5 block text-xs font-medium text-neutral-400">Email</label>
             <input
+              id="edit-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               placeholder="you@university.edu"
-              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-neutral-400">…or paste an image URL</label>
+            <label htmlFor="edit-avatar" className="mb-1.5 block text-xs font-medium text-neutral-400">…or paste an image URL</label>
             <input
+              id="edit-avatar"
               value={avatarUrl}
               onChange={(e) => setAvatarUrl(e.target.value)}
               placeholder="Paste a link to an image (JPG/PNG)"
-              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
+              className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
         </div>
@@ -161,7 +165,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
           <button
             type="button"
             onClick={onClose}
-            className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white">
+            className="glass rounded-full px-6 py-4 text-[15px] font-semibold text-neutral-300 transition-colors hover:text-white active:scale-[0.98]">
             
             Cancel
           </button>

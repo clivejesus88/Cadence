@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HomeIcon, TimerIcon, BarChart3Icon, ListChecksIcon, SettingsIcon } from 'lucide-react';
@@ -11,6 +12,15 @@ const navItems = [
 
 
 export function BottomNav({ visible = true }: {visible?: boolean;}) {
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    if (visible) el.removeAttribute('inert');
+    else el.setAttribute('inert', '');
+  }, [visible]);
+
   return (
     <motion.div
       className="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
@@ -19,11 +29,12 @@ export function BottomNav({ visible = true }: {visible?: boolean;}) {
       transition={{ type: 'spring', stiffness: 480, damping: 40, mass: 0.9 }}>
       
       <nav
+        ref={navRef}
         aria-label="Primary"
         className="glass-nav pointer-events-auto mx-auto flex items-center justify-between gap-1 rounded-[28px] p-1.5">
         
         {navItems.map(({ to, label, icon: Icon }) =>
-        <NavLink key={to} to={to} className="relative flex-1 rounded-[22px] px-1 py-2.5">
+          <NavLink key={to} to={to} className="relative flex-1 rounded-[22px] px-1 py-2.5 transition-transform active:scale-95">
             {({ isActive }) =>
           <>
                 {isActive &&

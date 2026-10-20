@@ -1,6 +1,15 @@
 import { useState, FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeftIcon, MailIcon, LockIcon, UserIcon, Loader2Icon } from 'lucide-react';
+import {
+  ChevronLeftIcon,
+  MailIcon,
+  LockIcon,
+  UserIcon,
+  Loader2Icon,
+  EyeIcon,
+  EyeOffIcon,
+  ShieldCheckIcon
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface AuthScreenProps {
@@ -16,6 +25,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -63,7 +73,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
       <button
         onClick={onBack}
         aria-label="Back"
-        className="glass-inset absolute left-5 top-[max(1.5rem,env(safe-area-inset-top))] z-20 flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-70">
+        className="hit-slop glass-inset absolute left-5 top-[max(1.5rem,env(safe-area-inset-top))] z-20 flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity hover:opacity-70 active:scale-95">
         <ChevronLeftIcon className="h-5 w-5" />
       </button>
 
@@ -83,7 +93,8 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                 <button
                   key={m}
                   onClick={toggleMode}
-                  className={`flex-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+                  aria-pressed={mode === m}
+                  className={`flex-1 rounded-full py-3 text-sm font-semibold transition-all active:scale-95 ${
                     mode === m ? 'bg-white text-ink-950' : 'text-neutral-300'
                   }`}>
                   {m === 'signin' ? 'Sign in' : 'Sign up'}
@@ -103,7 +114,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                       required
                       autoComplete="name"
                       placeholder="e.g. Alex Rivera"
-                      className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
+                      className="w-full bg-transparent text-base text-white placeholder:text-neutral-600 focus:outline-none"
                     />
                   </div>
                 </label>
@@ -120,7 +131,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                     required
                     autoComplete="email"
                     placeholder="you@school.edu"
-                    className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
+                    className="w-full bg-transparent text-base text-white placeholder:text-neutral-600 focus:outline-none"
                   />
                 </div>
               </label>
@@ -137,7 +148,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                     minLength={6}
                     autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                     placeholder="At least 6 characters"
-                    className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
+                    className="w-full bg-transparent text-base text-white placeholder:text-neutral-600 focus:outline-none"
                   />
                 </div>
               </label>
@@ -169,7 +180,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
 
           <p className="mt-4 text-center text-xs text-neutral-500">
             {mode === 'signin' ? 'New to Cadence?' : 'Already have an account?'}{' '}
-            <button onClick={toggleMode} className="font-semibold text-ember-400">
+            <button onClick={toggleMode} className="hit-slop -my-2 px-2 py-2 font-semibold text-ember-400 active:text-white">
               {mode === 'signin' ? 'Create one' : 'Sign in'}
             </button>
           </p>
