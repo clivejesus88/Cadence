@@ -60,8 +60,8 @@ export function App() {
       }>
       <MotionConfig reducedMotion="user">
         <AuthProvider>
-          <AppDataProvider>
-            <SettingsProvider>
+          <SettingsProvider>
+            <AppDataProvider>
               <div className="w-full min-h-[100dvh] bg-ink-950">
                 <BrowserRouter>
               <SentryRoutes>
@@ -101,13 +101,15 @@ export function App() {
             </BrowserRouter>
             <Toaster
               position="top-center"
-              gap={10}
+              gap={12}
+              offset={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+              mobileOffset={{ top: 'max(0.75rem, env(safe-area-inset-top))' }}
               toastOptions={{ unstyled: true, className: 'w-full flex justify-center px-4' }}
-              style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+              icons={{ close: null }}
             />
               </div>
-            </SettingsProvider>
-          </AppDataProvider>
+            </AppDataProvider>
+          </SettingsProvider>
         </AuthProvider>
       </MotionConfig>
     </Sentry.ErrorBoundary>

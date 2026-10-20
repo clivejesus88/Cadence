@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { FlameIcon, ArrowRightIcon, ChevronRightIcon, TimerIcon, LightbulbIcon } from 'lucide-react';
+import { FlameIcon, ArrowRightIcon, ChevronRightIcon, LightbulbIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes, getGreeting } from '../utils/time';
@@ -11,10 +11,22 @@ import { notifySessionReminder, notifyDailySummary, notifyTaskReminders } from '
 import { markNudgeSeen, isNudgeSeen } from '../db/repo';
 import { WeeklyPreview } from '../components/home/WeeklyPreview';
 import { TaskPreviewList } from '../components/home/TaskPreviewList';
+import { Avatar } from '../components/profile/Avatar';
+import { LevelBadge } from '../components/gamified/LevelBadge';
+import { DailyGoalRing } from '../components/gamified/DailyGoalRing';
+import { XpBar } from '../components/gamified/XpBar';
 
 export function Home() {
   const navigate = useNavigate();
-  const { currentStreak, todayMinutes, totalSessionsCompleted, tasks, weeklyData } = useAppData();
+  const {
+    currentStreak,
+    todayMinutes,
+    totalSessionsCompleted,
+    tasks,
+    weeklyData,
+    level,
+    dailyGoalMinutes
+  } = useAppData();
   const { profile, preferences } = useSettings();
   const todaysTasks = tasks
     .filter((t) => !t.completed)
@@ -62,16 +74,19 @@ export function Home() {
             aria-label="Open profile and settings"
             className="rounded-full ring-2 ring-white/15 transition-transform active:scale-95">
             
-            <img src={profile.avatarUrl} alt={profile.name} className="h-11 w-11 rounded-full object-cover" />
+            <Avatar value={profile.avatarUrl} className="h-11 w-11" alt={profile.name} />
           </button>
           <div className="min-w-0">
             <p className="text-neutral-400 text-sm">{getGreeting()}</p>
             <p className="font-display truncate text-2xl text-white">{firstName}</p>
           </div>
         </div>
-        <div className="glass-pill flex items-center gap-1.5 rounded-full px-3 py-1.5">
-          <FlameIcon className="w-4 h-4 text-ember-400" />
-          <span className="text-sm font-semibold text-white">{currentStreak}</span>
+        <div className="flex items-center gap-2">
+          <div className="glass-pill flex items-center gap-1.5 rounded-full px-3 py-1.5">
+            <FlameIcon className="w-4 h-4 text-ember-400" />
+            <span className="text-sm font-semibold text-white">{currentStreak}</span>
+          </div>
+          <LevelBadge level={level} />
         </div>
       </header>
 
@@ -79,18 +94,17 @@ export function Home() {
         onClick={() => navigate('/app/focus')}
         className="glass-strong mt-6 w-full text-left rounded-3xl p-5 relative overflow-hidden active:scale-[0.99] transition-transform">
         
-        <div className="flex items-start justify-between gap-3">
-          <div>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wide">Quick Start</p>
             <p className="font-display text-xl text-white mt-1">Start a focus session</p>
+            <p className="text-neutral-400 text-sm mt-2">
+              {formatMinutes(todayMinutes)} focused · {level.xpIntoLevel}/{level.xpForLevel} XP to Lv {level.level + 1}
+            </p>
+            <XpBar progress={level.progress} className="mt-3 max-w-[9rem]" />
           </div>
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ember-500/20">
-            <TimerIcon className="w-5 h-5 text-ember-400" />
-          </div>
+          <DailyGoalRing minutes={todayMinutes} goal={dailyGoalMinutes} size={96} stroke={8} />
         </div>
-        <p className="text-neutral-400 text-sm mt-3">
-          {formatMinutes(todayMinutes)} focused today · {totalSessionsCompleted} sessions total
-        </p>
         <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white text-ink-950 font-semibold text-sm px-4 py-2">
           Begin now <ArrowRightIcon className="w-4 h-4" />
         </div>

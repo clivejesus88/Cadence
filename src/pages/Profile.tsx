@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon } from "lucide-react";
+import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon, TargetIcon } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,16 +9,25 @@ import { notifySupport } from "../utils/notify";
 import { SettingRow } from "../components/profile/SettingRow";
 import { ToggleSwitch } from "../components/profile/ToggleSwitch";
 import { EditProfileSheet } from "../components/profile/EditProfileSheet";
+import { Avatar } from "../components/profile/Avatar";
+import { DailyGoalRing } from "../components/gamified/DailyGoalRing";
+import { XpBar } from "../components/gamified/XpBar";
+import { BadgeGrid } from "../components/gamified/BadgeGrid";
 import { useState } from "react";
 const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
+const goalOptions = [30, 60, 90, 120];
 export function Profile() {
   const navigate = useNavigate();
   const { signOut, isGuest } = useAuth();
   const {
     currentStreak,
     totalSessionsCompleted,
-    sessions
+    sessions,
+    level,
+    badges,
+    dailyGoalMinutes,
+    todayMinutes
   } = useAppData();
   const {
     profile,
@@ -42,7 +51,7 @@ export function Profile() {
 
       <section className="glass-strong mt-6 rounded-3xl p-5">
         <div className="flex items-start gap-4">
-          <img src={profile.avatarUrl} alt={profile.name} className="h-16 w-16 flex-shrink-0 rounded-full object-cover ring-2 ring-white/20" />
+          <Avatar value={profile.avatarUrl} className="h-16 w-16 flex-shrink-0 ring-2 ring-white/20" alt={profile.name} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <p className="truncate text-lg font-semibold text-white">{profile.name}</p>
@@ -82,6 +91,25 @@ export function Profile() {
       </section>
 
       <section className="mt-7">
+        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Progress</h2>
+        <div className="glass-strong rounded-3xl p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ember-400">Level {level.level}</p>
+              <p className="font-display text-2xl text-white">{level.title}</p>
+              <p className="mt-1 text-xs text-neutral-400 tabular-nums">
+                {level.xpIntoLevel} / {level.xpForLevel} XP · {badges.filter((b) => b.earned).length} badges earned
+              </p>
+              <XpBar progress={level.progress} className="mt-3" />
+            </div>
+            <DailyGoalRing minutes={todayMinutes} goal={dailyGoalMinutes} size={92} stroke={8} />
+          </div>
+
+          <BadgeGrid badges={badges} className="mt-5" />
+        </div>
+      </section>
+
+      <section className="mt-7">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus preferences</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <div className="px-4 py-3.5">
@@ -113,6 +141,20 @@ export function Profile() {
           </div>
 
           <SettingRow icon={PlayIcon} title="Auto-start breaks" description="Roll straight into a break when a session ends." control={<ToggleSwitch label="Auto-start breaks" checked={preferences.autoStartBreaks} onChange={(v) => updatePreference('autoStartBreaks', v)} />} />
+
+          <div className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
+                <TargetIcon className="h-4 w-4 text-neutral-300" />
+              </div>
+              <p className="flex-1 text-sm font-medium text-white">Daily focus goal</p>
+            </div>
+            <div className="mt-3 flex gap-2">
+              {goalOptions.map((g) => <button key={g} onClick={() => updatePreference('dailyGoalMinutes', g)} aria-pressed={dailyGoalMinutes === g} className={`flex-1 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${dailyGoalMinutes === g ? 'bg-ember-500 text-ink-950' : 'glass-inset text-neutral-300'}`}>
+                  {g}m
+                </button>)}
+            </div>
+          </div>
         </div>
       </section>
 

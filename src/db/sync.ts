@@ -54,6 +54,7 @@ function preferencesToRemote(row: PreferencesRow, uid: string): Record<string, u
     daily_summary: row.value.dailySummary,
     block_during_focus: row.value.blockDuringFocus,
     strict_mode: row.value.strictMode,
+    daily_goal_minutes: row.value.dailyGoalMinutes ?? 60,
     blocking_rules: row.value.blockingRules ?? [],
     updated_at: row.updatedAt
   };
@@ -165,6 +166,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
         dailySummary: Boolean(remote.daily_summary),
         blockDuringFocus: Boolean(remote.block_during_focus),
         strictMode: Boolean(remote.strict_mode),
+        dailyGoalMinutes: Number(remote.daily_goal_minutes ?? 60),
         blockingRules: Array.isArray(remote.blocking_rules) ? (remote.blocking_rules as BlockingRule[]) : []
       },
       updatedAt,
@@ -205,7 +207,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
 }
 
 function defaultAvatar(): string {
-  return '/41934678-ca28-4660-a31a-3e5350bae9d7.jpg';
+  return 'preset:ember-orb';
 }
 
 async function pullTable(table: SyncTableName): Promise<void> {

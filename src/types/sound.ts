@@ -15,6 +15,9 @@ export interface AmbientSound {
   premium: boolean;
   category: SoundCategoryId;
   accent: string;
+  // Short, factual trait line — tempo, lyrics, or psychoacoustic cue. Never an
+  // endorsement: these describe the sound, they don't claim clinical approval.
+  tag?: string;
 }
 
 export const soundCategories: SoundCategory[] = [

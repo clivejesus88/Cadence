@@ -11,28 +11,35 @@ import {
   AudioLinesIcon,
   MoonIcon,
   PianoIcon,
-  RadioIcon
+  RadioIcon,
+  GuitarIcon,
+  ActivityIcon,
+  DrumIcon
 } from 'lucide-react';
 import { AmbientSound } from '../types/sound';
 
 export const ambientSounds: AmbientSound[] = [
 // Focus — utility soundscapes
 { id: 'silence', name: 'Deep Silence', description: 'No sound, pure focus', icon: MoonStarIcon, premium: false, category: 'focus', accent: '#94a3b8' },
-{ id: 'white', name: 'White Noise', description: 'Even coverage to mask distraction', icon: AudioLinesIcon, premium: false, category: 'focus', accent: '#e2e8f0' },
-{ id: 'brown', name: 'Brown Noise', description: 'Warm low-end hum', icon: RadioIcon, premium: true, category: 'focus', accent: '#b45309' },
+{ id: 'white', name: 'White Noise', description: 'Even coverage to mask distraction', icon: AudioLinesIcon, premium: false, category: 'focus', accent: '#e2e8f0', tag: 'Broadband · masks speech' },
+{ id: 'brown', name: 'Brown Noise', description: 'Warm low-end hum', icon: RadioIcon, premium: true, category: 'focus', accent: '#b45309', tag: 'Low frequency · deep focus' },
 
 // Nature
-{ id: 'rain', name: 'Rainfall', description: 'Steady rain on a window', icon: CloudRainIcon, premium: false, category: 'nature', accent: '#38bdf8' },
-{ id: 'ocean', name: 'Ocean Waves', description: 'Slow rolling tide', icon: WavesIcon, premium: true, category: 'nature', accent: '#06b6d4' },
+{ id: 'rain', name: 'Rainfall', description: 'Steady rain on a window', icon: CloudRainIcon, premium: false, category: 'nature', accent: '#38bdf8', tag: 'Steady · no lyrics' },
+{ id: 'ocean', name: 'Ocean Waves', description: 'Slow rolling tide', icon: WavesIcon, premium: true, category: 'nature', accent: '#06b6d4', tag: 'Slow swell · ~0.1 Hz' },
 { id: 'forest', name: 'Forest Morning', description: 'Birdsong & light wind', icon: TreePineIcon, premium: true, category: 'nature', accent: '#22c55e' },
 { id: 'wind', name: 'Highland Wind', description: 'Gusts across open fields', icon: WindIcon, premium: true, category: 'nature', accent: '#64748b' },
 { id: 'thunder', name: 'Thunderstorm', description: 'Distant thunder & heavy rain', icon: CloudLightningIcon, premium: true, category: 'nature', accent: '#6366f1' },
 
 // Ambience
-{ id: 'cafe', name: 'Cafe Ambience', description: 'Soft chatter & espresso', icon: CoffeeIcon, premium: true, category: 'ambience', accent: '#f59e0b' },
+{ id: 'cafe', name: 'Cafe Ambience', description: 'Soft chatter & espresso', icon: CoffeeIcon, premium: true, category: 'ambience', accent: '#f59e0b', tag: '74 dB murmur · steady' },
 { id: 'fireplace', name: 'Fireplace', description: 'Crackling logs & warmth', icon: FlameIcon, premium: true, category: 'ambience', accent: '#ef4444' },
 { id: 'night', name: 'Night Fall', description: 'Crickets & calm darkness', icon: MoonIcon, premium: true, category: 'ambience', accent: '#8b5cf6' },
 
-// Music
-{ id: 'lofi', name: 'Lo-fi Beats', description: 'Chill instrumental loops', icon: Music2Icon, premium: true, category: 'music', accent: '#f472b6' },
-{ id: 'piano', name: 'Soft Piano', description: 'Gentle keys, slow tempo', icon: PianoIcon, premium: true, category: 'music', accent: '#fbbf24' }];
+// Music — instrumental, study-tuned (no lyrics, steady tempo)
+{ id: 'lofi', name: 'Lo-fi Beats', description: 'Chill instrumental loops', icon: Music2Icon, premium: false, category: 'music', accent: '#f472b6', tag: 'No lyrics · ~70 BPM' },
+{ id: 'classical', name: 'Classical Piano', description: 'Instrumental, unhurried harmony', icon: PianoIcon, premium: false, category: 'music', accent: '#fbbf24', tag: 'Instrumental · Bach & Satie' },
+{ id: 'beats', name: 'Study Beats', description: 'Steady pulse for deep work', icon: DrumIcon, premium: true, category: 'music', accent: '#fb7185', tag: 'No lyrics · ~75 BPM' },
+{ id: 'guitar', name: 'Ambient Guitar', description: 'Slow arpeggios, soft ambience', icon: GuitarIcon, premium: true, category: 'music', accent: '#34d399', tag: 'No lyrics · slow arpeggios' },
+{ id: 'focuswave', name: 'Focus Waves', description: 'Warm alpha pulse for calm focus', icon: ActivityIcon, premium: true, category: 'music', accent: '#818cf8', tag: '8 Hz alpha pulsing' },
+{ id: 'piano', name: 'Soft Piano', description: 'Gentle keys, slow tempo', icon: PianoIcon, premium: true, category: 'music', accent: '#f59e0b', tag: 'No lyrics · slow tempo' }];

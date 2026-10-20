@@ -4,9 +4,11 @@ import { db } from '../db/db';
 import { addTask, toggleTask, logSession } from '../db/repo';
 import { scheduleSync } from '../db/sync';
 import { useAuth } from './AuthContext';
+import { useSettings } from './SettingsContext';
 import { Task } from '../types/task';
 import { FocusSession } from '../types/session';
 import { calculateCurrentStreak, todayFocusMinutes, weeklyFocusMinutes } from '../utils/streak';
+import { buildStats, GamificationStats, LevelInfo, BadgeStatus, todayGoalMinutes, goalMet } from '../utils/gamification';
 
 interface AppDataContextValue {
   tasks: Task[];
@@ -20,12 +22,19 @@ interface AppDataContextValue {
   todayMinutes: number;
   weeklyData: {day: string;minutes: number;}[];
   totalSessionsCompleted: number;
+  gamification: GamificationStats;
+  level: LevelInfo;
+  badges: BadgeStatus[];
+  dailyGoalMinutes: number;
+  todayGoalMinutes: number;
+  goalMetToday: boolean;
 }
 
 const AppDataContext = createContext<AppDataContextValue | undefined>(undefined);
 
 export function AppDataProvider({ children }: {children: ReactNode;}) {
   const { user, isGuest } = useAuth();
+  const { preferences } = useSettings();
   // Guests write rows with userId null — treat them like the local user.
   const uid = isGuest ? null : user?.id ?? null;
 
@@ -69,6 +78,17 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
     [sessions]
   );
 
+  const dailyGoalMinutes = preferences.dailyGoalMinutes ?? 60;
+  const gamification = useMemo(
+    () => buildStats(sessions, currentStreak, dailyGoalMinutes),
+    [sessions, currentStreak, dailyGoalMinutes]
+  );
+  const todayGoalMin = useMemo(() => todayGoalMinutes(sessions), [sessions]);
+  const goalMetToday = useMemo(
+    () => goalMet(sessions, dailyGoalMinutes),
+    [sessions, dailyGoalMinutes]
+  );
+
   const value: AppDataContextValue = {
     tasks,
     addTask: handleAddTask,
@@ -80,7 +100,13 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
     currentStreak,
     todayMinutes,
     weeklyData,
-    totalSessionsCompleted
+    totalSessionsCompleted,
+    gamification,
+    level: gamification.level,
+    badges: gamification.badges,
+    dailyGoalMinutes,
+    todayGoalMinutes: todayGoalMin,
+    goalMetToday
   };
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

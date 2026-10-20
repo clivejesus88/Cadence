@@ -19,6 +19,7 @@ export interface Preferences {
   dailySummary: boolean;
   blockDuringFocus: boolean;
   strictMode: boolean;
+  dailyGoalMinutes: number;
   blockingRules: BlockingRule[];
 }
 
@@ -27,7 +28,7 @@ export const defaultProfile: UserProfile = {
   name: '',
   email: '',
   school: '',
-  avatarUrl: "/41934678-ca28-4660-a31a-3e5350bae9d7.jpg",
+  avatarUrl: 'preset:ember-orb',
   plan: 'free',
   memberSince: ''
 };
@@ -41,5 +42,6 @@ export const defaultPreferences: Preferences = {
   dailySummary: false,
   blockDuringFocus: true,
   strictMode: false,
+  dailyGoalMinutes: 60,
   blockingRules: []
 };

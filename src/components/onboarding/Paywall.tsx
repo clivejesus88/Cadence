@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { XIcon, SparklesIcon, ShieldCheckIcon, LineChartIcon, PaletteIcon } from 'lucide-react';
-import { toast } from 'sonner';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { runSync, scheduleSync } from '../../db/sync';
+import { notifyError } from '../../utils/notify';
 
 interface PaywallProps {
   onStart: () => void;
@@ -70,7 +70,7 @@ export function Paywall({ onClose }: PaywallProps) {
   const handleStart = async () => {
     if (loading) return;
     if (!isSupabaseConfigured || !supabase) {
-      toast('Checkout is not configured yet.');
+      notifyError('Checkout isn’t available yet', 'Payments need a final configuration step. Everything else is ready to use.');
       return;
     }
     setLoading(true);
@@ -79,13 +79,13 @@ export function Paywall({ onClose }: PaywallProps) {
         body: { plan, redirectUrl: `${window.location.origin}/?paywall=1` }
       });
       if (error || !data?.url) {
-        toast('Could not start the checkout right now.');
+        notifyError('Could not start checkout', 'Please try again in a moment.');
         setLoading(false);
         return;
       }
       window.location.href = data.url as string;
     } catch {
-      toast('Could not start the checkout right now.');
+      notifyError('Could not start checkout', 'Please try again in a moment.');
       setLoading(false);
     }
   };

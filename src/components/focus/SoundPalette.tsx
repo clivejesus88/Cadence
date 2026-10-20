@@ -34,6 +34,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
   const selected = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
   const SelectedIcon = selected.icon;
   const selectedLocked = selected.premium && !pro;
+  const freeCount = ambientSounds.filter((s) => !s.premium).length;
 
   return (
     <div className={hideHeader ? '' : 'mt-8'}>
@@ -41,7 +42,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
       <div className="mb-3 flex items-end justify-between">
         <p className="text-sm font-semibold text-white">Focus Sound</p>
         <span className="text-[11px] font-medium text-neutral-500">
-          {pro ? 'Pro library unlocked' : '3 free sounds'}
+          {pro ? 'Pro library unlocked' : `${freeCount} free sounds`}
         </span>
       </div>
       }
@@ -70,6 +71,11 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
               }
             </div>
             <p className="mt-0.5 truncate text-xs text-neutral-400">{selected.description}</p>
+            {selected.tag &&
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-neutral-400">
+                {selected.tag}
+              </span>
+            }
           </div>
           <span style={{ color: selected.accent }}>
             <Equalizer active={!selectedLocked} />
@@ -146,6 +152,11 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
                     <p className={`relative mt-0.5 truncate text-[11px] ${locked ? 'text-neutral-600' : 'text-neutral-400'}`}>
                       {locked ? 'Pro sound' : s.description}
                     </p>
+                    {!locked && s.tag &&
+                    <p className="relative mt-1 truncate text-[10px] font-medium text-neutral-500">
+                        {s.tag}
+                      </p>
+                    }
                   </motion.button>);
 
               })}

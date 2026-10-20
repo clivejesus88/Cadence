@@ -3,24 +3,26 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { BottomNav } from './BottomNav';
 import { useAuth } from '../../contexts/AuthContext';
+import { SessionToast } from '../notifications/SessionToast';
+import { LogInIcon } from 'lucide-react';
+import { useGamificationCelebration } from '../../utils/useGamificationCelebration';
+import { LevelUpCelebration } from '../gamified/LevelUpCelebration';
 
 const LOGIN_PROMPT_KEY = 'cadence:last-login-prompt';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function AppLayout() {
   const [navVisible, setNavVisible] = useState(true);
-  const settleTimer = useRef<number | null>(null);
+  const lastScrollRef = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { isGuest } = useAuth();
-
-  useEffect(() => () => {
-    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-  }, []);
+  const { celebration, clearCelebration } = useGamificationCelebration();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
+    lastScrollRef.current = 0;
     setNavVisible(true);
   }, [location.pathname]);
 
@@ -31,7 +33,7 @@ export function AppLayout() {
     try {
       last = Number(localStorage.getItem(LOGIN_PROMPT_KEY) ?? '0');
     } catch {
-      // storage unavailable — prompt each visit is too aggressive, skip
+      // storage unavailable — prompting each visit is too aggressive, skip
       return;
     }
     if (Date.now() - last < DAY_MS) return;
@@ -41,24 +43,41 @@ export function AppLayout() {
       // ignore
     }
     const timer = window.setTimeout(() => {
-      toast('Sign in to sync your focus data across devices', {
-        duration: 10000,
-        action: { label: 'Sign in', onClick: () => navigate('/sign-in') }
-      });
+      toast.custom(
+        (id) => (
+          <SessionToast
+            id={id}
+            duration={9000}
+            icon={LogInIcon}
+            title="You're browsing as a guest"
+            description="Sign in to sync your focus data across devices."
+            tone="info"
+            action={{ label: 'Sign in', onClick: () => navigate('/sign-in') }}
+          />
+        ),
+        { duration: 9000 }
+      );
     }, 1200);
     return () => window.clearTimeout(timer);
   }, [isGuest, navigate]);
 
+  // Hide the bar when scrolling down, bring it back the moment you scroll up
+  // (or reach the top). Never force it visible mid-scroll, or the bar fights
+  // the finger.
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
-    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-    if (el.scrollTop <= 24) {
+    const y = el.scrollTop;
+    const prev = lastScrollRef.current;
+    lastScrollRef.current = y;
+
+    if (y <= 24) {
       setNavVisible(true);
       return;
     }
-    setNavVisible(false);
-    settleTimer.current = window.setTimeout(() => setNavVisible(true), 420);
+    const delta = y - prev;
+    if (delta > 6) setNavVisible(false);
+    else if (delta < -6) setNavVisible(true);
   };
 
   return (
@@ -77,5 +96,6 @@ export function AppLayout() {
         </div>
         <BottomNav visible={navVisible} />
       </div>
+      <LevelUpCelebration level={celebration} onDismiss={clearCelebration} />
     </div>);
 }
