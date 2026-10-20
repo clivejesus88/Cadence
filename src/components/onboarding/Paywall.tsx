@@ -14,12 +14,13 @@ interface PaywallProps {
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 
 const benefits = [
-{ icon: ShieldCheckIcon, title: 'Advanced blocking rules', desc: 'Block by schedule, app, or website.', bg: '#059669' },
-{ icon: PaletteIcon, title: 'Premium soundscapes', desc: 'Unlock every focus sound in the library.', bg: '#f59e0b' }];
+{ icon: ShieldCheckIcon, title: 'Advanced distraction blocking', desc: 'Block by schedule, app, or website—automatically.', bg: '#059669' },
+{ icon: PaletteIcon, title: 'Premium focus sounds', desc: 'Unlock the full library of ambient sounds for deep focus.', bg: '#f59e0b' }];
 
 
 export function Paywall({ onClose }: PaywallProps) {
   const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
+  const [loading, setLoading] = useState(false);
   const { profile } = useSettings();
   const { user } = useAuth();
   const isPro = profile.plan === 'pro';
@@ -61,21 +62,25 @@ export function Paywall({ onClose }: PaywallProps) {
   }, []);
 
   const handleStart = async () => {
+    if (loading) return;
     if (!isSupabaseConfigured || !supabase) {
       toast('Checkout is not configured yet.');
       return;
     }
+    setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('paypal-create-subscription', {
         body: { plan, redirectUrl: `${window.location.origin}/?paywall=1` }
       });
       if (error || !data?.url) {
         toast('Could not start the checkout right now.');
+        setLoading(false);
         return;
       }
       window.location.href = data.url as string;
     } catch {
       toast('Could not start the checkout right now.');
+      setLoading(false);
     }
   };
 
@@ -137,10 +142,10 @@ export function Paywall({ onClose }: PaywallProps) {
         </div>
 
         <p className="mt-6 text-center font-display text-3xl tracking-tight text-white sm:text-4xl">
-          Cadence <span className="italic text-ember-400">pro</span>
+          Cadence <span className="italic text-ember-400">Pro</span>
         </p>
         <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-neutral-400">
-          Unlock advanced blocking rules and the full premium sound library.
+          Unlock advanced distraction blocking and the full premium sound library—built for deep work.
         </p>
 
         {!isPro &&
@@ -230,10 +235,15 @@ export function Paywall({ onClose }: PaywallProps) {
         <div className="mx-auto w-full max-w-md">
           <button
             onClick={isPro ? onClose : handleStart}
-            className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.98]">
-            
-            {isPro ? 'Back to Cadence' : plan === 'yearly' ? 'Start Pro · Yearly' : 'Start Pro · Monthly'}
+            disabled={loading}
+            className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.995] disabled:opacity-60">
+            {isPro ? 'Back to Cadence' : plan === 'yearly' ? 'Start Pro • Yearly' : 'Start Pro • Monthly'}
           </button>
+          {!isPro && (
+            <button onClick={onClose} className="mt-3 w-full text-center text-sm text-neutral-400 hover:text-neutral-300">
+              Not now
+            </button>
+          )}
         </div>
       </div>
     </div>);

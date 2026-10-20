@@ -156,7 +156,7 @@ export function AuthScreen({ onSuccess, onBack }: AuthScreenProps) {
                 {busy ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2Icon className="h-4 w-4 animate-spin" />
-                    Please wait…
+                    Please wait
                   </span>
                 ) : mode === 'signin' ? (
                   'Sign in'
