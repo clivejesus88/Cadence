@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { format, subDays } from 'date-fns';
 import { FocusSession } from '../../types/session';
@@ -6,6 +5,9 @@ import { FocusSession } from '../../types/session';
 interface StreakHeatmapProps {
   sessions: FocusSession[];
 }
+
+const CELL = 11;
+const GAP = 3;
 
 export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
   const days = Array.from({ length: 28 }, (_, i) => subDays(new Date(), 27 - i));
@@ -22,7 +24,7 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
 
   return (
     <div className="glass rounded-2xl p-4">
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 justify-start" style={{ gap: GAP, width: 'fit-content' }}>
         {days.map((d, i) => {
           const iso = format(d, 'yyyy-MM-dd');
           const minutes = minutesByDate.get(iso) ?? 0;
@@ -36,29 +38,28 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
               aria-label={label}
               aria-pressed={selected === iso}
               onClick={() => setSelected(selected === iso ? null : iso)}
-              className="aspect-square rounded-md transition-transform active:scale-90"
+              className="rounded-[3px] transition-transform active:scale-90"
               style={{
-                backgroundColor: intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.25 + intensity * 0.75})`,
-                boxShadow: selected === iso ? '0 0 0 2px rgba(255,255,255,0.85)' : undefined
+                width: CELL,
+                height: CELL,
+                backgroundColor: intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.22 + intensity * 0.78})`,
+                boxShadow: selected === iso ? '0 0 0 1.5px rgba(255,255,255,0.85)' : undefined
               }} />);
-
-
         })}
       </div>
-      <p className="mt-2 min-h-[16px] text-[11px] text-neutral-400" aria-live="polite">
+      <p className="mt-2 min-h-[15px] text-[11px] text-neutral-400" aria-live="polite">
         {selected ?
         <span className="font-medium text-neutral-200">
             {format(new Date(selected), 'EEE, MMM d')} · {selectedMinutes} min
           </span> :
         'Tap a day for focus minutes'}
       </p>
-      <div className="flex items-center justify-end gap-1.5 mt-1">
+      <div className="flex items-center justify-end gap-1 mt-1">
         <span className="text-[10px] text-neutral-500">Less</span>
-        <div className="w-2.5 h-2.5 rounded-sm bg-ink-700" />
-        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'rgba(251,146,60,0.4)' }} />
-        <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: 'rgba(251,146,60,1)' }} />
+        <div className="h-2.5 w-2.5 rounded-[3px] bg-ink-700" />
+        <div className="h-2.5 w-2.5 rounded-[3px]" style={{ backgroundColor: 'rgba(251,146,60,0.4)' }} />
+        <div className="h-2.5 w-2.5 rounded-[3px]" style={{ backgroundColor: 'rgba(251,146,60,1)' }} />
         <span className="text-[10px] text-neutral-500">More</span>
       </div>
     </div>);
-
 }
