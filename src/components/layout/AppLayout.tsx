@@ -6,7 +6,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { SessionToast } from '../notifications/SessionToast';
 import { LogInIcon } from 'lucide-react';
 import { useGamificationCelebration } from '../../utils/useGamificationCelebration';
-import { LevelUpCelebration } from '../gamified/LevelUpCelebration';
 
 const LOGIN_PROMPT_KEY = 'cadence:last-login-prompt';
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -15,16 +14,23 @@ export function AppLayout() {
   const [navVisible, setNavVisible] = useState(true);
   const lastScrollRef = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const settleTimer = useRef<number | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { isGuest } = useAuth();
-  const { celebration, clearCelebration } = useGamificationCelebration();
+  useGamificationCelebration();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
     lastScrollRef.current = 0;
     setNavVisible(true);
   }, [location.pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    };
+  }, []);
 
   // Guests get a gentle sign-in nudge at most once every 24 hours.
   useEffect(() => {
@@ -60,9 +66,8 @@ export function AppLayout() {
     return () => window.clearTimeout(timer);
   }, [isGuest, navigate]);
 
-  // Hide the bar when scrolling down, bring it back the moment you scroll up
-  // (or reach the top). Never force it visible mid-scroll, or the bar fights
-  // the finger.
+  // Hide the bar while scrolling down; the instant scrolling stops, bring it
+  // back at the bottom of the viewport. Never leave the user without the bar.
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
@@ -74,9 +79,12 @@ export function AppLayout() {
       setNavVisible(true);
       return;
     }
+
     const delta = y - prev;
-    if (delta > 6) setNavVisible(false);
-    else if (delta < -6) setNavVisible(true);
+    if (delta > 4) setNavVisible(false);
+
+    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => setNavVisible(true), 160);
   };
 
   return (
@@ -95,6 +103,5 @@ export function AppLayout() {
         </div>
         <BottomNav visible={navVisible} />
       </div>
-      <LevelUpCelebration level={celebration} onDismiss={clearCelebration} />
     </div>);
 }

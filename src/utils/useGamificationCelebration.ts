@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppData } from '../contexts/AppDataContext';
 import { notifyLevelUp, notifyBadgeEarned, notifyGoalMet } from './notify';
-import { LevelInfo } from './gamification';
 
 const SEEN_LEVEL_KEY = 'cadence.seenLevel';
 const SEEN_BADGES_KEY = 'cadence.seenBadges';
@@ -20,11 +19,9 @@ function readSeenBadges(): Set<string> {
   }
 }
 
-// Watches derived gamification state and fires one-time celebration toasts +
-// returns the level to celebrate with a full-screen overlay.
+// Watches derived gamification state and fires one-time celebration toasts.
 export function useGamificationCelebration() {
   const { level, badges, goalMetToday, dailyGoalMinutes } = useAppData();
-  const [celebration, setCelebration] = useState<LevelInfo | null>(null);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -39,7 +36,6 @@ export function useGamificationCelebration() {
     const seenLevel = readSeenLevel();
     if (level.level > seenLevel) {
       localStorage.setItem(SEEN_LEVEL_KEY, String(level.level));
-      setCelebration(level);
       notifyLevelUp(level.level, level.title);
     }
 
@@ -62,6 +58,4 @@ export function useGamificationCelebration() {
     localStorage.setItem(key, '1');
     notifyGoalMet(dailyGoalMinutes);
   }, [goalMetToday, dailyGoalMinutes]);
-
-  return { celebration, clearCelebration: () => setCelebration(null) };
 }
