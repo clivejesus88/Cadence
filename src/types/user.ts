@@ -28,7 +28,7 @@ export const defaultProfile: UserProfile = {
   name: '',
   email: '',
   school: '',
-  avatarUrl: 'preset:ember-orb',
+  avatarUrl: 'preset:beam-ember',
   plan: 'free',
   memberSince: ''
 };

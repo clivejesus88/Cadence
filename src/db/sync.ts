@@ -207,7 +207,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
 }
 
 function defaultAvatar(): string {
-  return 'preset:ember-orb';
+  return 'preset:beam-ember';
 }
 
 async function pullTable(table: SyncTableName): Promise<void> {

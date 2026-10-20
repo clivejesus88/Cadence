@@ -62,7 +62,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
       name: name.trim(),
       school: school.trim(),
       email: email.trim(),
-      avatarUrl: avatarUrl.trim() || presetAvatarValue('ember-orb')
+      avatarUrl: avatarUrl.trim() || presetAvatarValue('beam-ember')
     });
     onClose();
   };
