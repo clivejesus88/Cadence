@@ -64,9 +64,9 @@ export function Home() {
             
             <img src={profile.avatarUrl} alt={profile.name} className="h-11 w-11 rounded-full object-cover" />
           </button>
-          <div>
+          <div className="min-w-0">
             <p className="text-neutral-400 text-sm">{getGreeting()}</p>
-            <p className="font-display text-2xl text-white">{firstName}</p>
+            <p className="font-display truncate text-2xl text-white">{firstName}</p>
           </div>
         </div>
         <div className="glass-pill flex items-center gap-1.5 rounded-full px-3 py-1.5">
@@ -101,7 +101,7 @@ export function Home() {
           <p className="text-white font-semibold">This week</p>
           <button
             onClick={() => navigate('/app/insights')}
-            className="text-xs text-neutral-500 flex items-center gap-0.5 hover:text-neutral-300 transition-colors">
+            className="hit-slop text-xs text-neutral-500 flex items-center gap-0.5 hover:text-neutral-300 transition-colors active:text-white">
             
             Details <ChevronRightIcon className="w-3.5 h-3.5" />
           </button>
@@ -114,7 +114,7 @@ export function Home() {
           <p className="text-white font-semibold">Up next</p>
           <button
             onClick={() => navigate('/app/planner')}
-            className="text-xs text-neutral-500 flex items-center gap-0.5 hover:text-neutral-300 transition-colors">
+            className="hit-slop text-xs text-neutral-500 flex items-center gap-0.5 hover:text-neutral-300 transition-colors active:text-white">
             
             All tasks <ChevronRightIcon className="w-3.5 h-3.5" />
           </button>

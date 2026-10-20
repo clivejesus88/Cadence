@@ -176,7 +176,7 @@ function AppChip({ app, on, onToggle }: { app: { id: string; name: string; color
       type="button"
       onClick={onToggle}
       aria-pressed={on}
-      className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-sm font-medium transition-colors ${
+      className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-3 text-sm font-medium transition-all active:scale-[0.97] ${
       on ? 'border-ember-400 bg-ember-500/15 text-white' : 'border-white/8 bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08]'}`
       }>
       
@@ -312,6 +312,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
                 <input
                   id="rule-start"
                   type="time"
+                  value={start}
                   onChange={(e) => setStart(e.target.value)}
                   style={{ colorScheme: 'dark' }}
                   className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white focus:outline-none focus:border-ember-400" />
@@ -320,6 +321,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
               <div>
                 <label htmlFor="rule-end" className="mb-2 block text-xs font-medium text-neutral-400">Ends at</label>
                 <input
+                  id="rule-end"
                   type="time"
                   value={end}
                   onChange={(e) => setEnd(e.target.value)}
@@ -355,6 +357,11 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
               value={websitesRaw}
               onChange={(e) => setWebsitesRaw(e.target.value)}
               placeholder="instagram.com, reddit.com"
+              type="text"
+              inputMode="url"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               className="glass-inset w-full rounded-2xl py-3 pl-10 pr-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
             
           </div>
