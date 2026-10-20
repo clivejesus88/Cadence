@@ -6,11 +6,15 @@ interface StreakHeatmapProps {
   sessions: FocusSession[];
 }
 
-const CELL = 11;
-const GAP = 3;
+const TOTAL_DAYS = 91; // ~13 full weeks, GitHub-style
+const WEEKS = TOTAL_DAYS / 7;
 
 export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
-  const days = Array.from({ length: 28 }, (_, i) => subDays(new Date(), 27 - i));
+  const today = new Date();
+  // End the grid on the most recent Saturday so columns line up as weeks.
+  const end = subDays(today, (today.getDay() + 1) % 7);
+  const days = Array.from({ length: TOTAL_DAYS }, (_, i) => subDays(end, TOTAL_DAYS - 1 - i));
+
   const minutesByDate = new Map<string, number>();
   sessions.
   filter((s) => s.type === 'focus' && s.completed).
@@ -24,11 +28,19 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
 
   return (
     <div className="glass rounded-2xl p-4">
-      <div className="grid grid-cols-7 justify-start" style={{ gap: GAP, width: 'fit-content' }}>
+      <div
+        className="grid w-full"
+        style={{
+          gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))`,
+          gridAutoFlow: 'column',
+          gridTemplateRows: 'repeat(7, minmax(0, 1fr))',
+          gap: 3
+        }}>
         {days.map((d, i) => {
           const iso = format(d, 'yyyy-MM-dd');
           const minutes = minutesByDate.get(iso) ?? 0;
           const intensity = minutes === 0 ? 0 : Math.min(1, minutes / max);
+          const future = d > today;
           const label = `${format(d, 'MMM d')}: ${minutes} min`;
           return (
             <button
@@ -37,12 +49,11 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
               title={label}
               aria-label={label}
               aria-pressed={selected === iso}
+              disabled={future}
               onClick={() => setSelected(selected === iso ? null : iso)}
-              className="rounded-[3px] transition-transform active:scale-90"
+              className="aspect-square w-full rounded-[3px] transition-transform active:scale-90"
               style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.22 + intensity * 0.78})`,
+                backgroundColor: future ? 'transparent' : intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.22 + intensity * 0.78})`,
                 boxShadow: selected === iso ? '0 0 0 1.5px rgba(255,255,255,0.85)' : undefined
               }} />);
         })}
