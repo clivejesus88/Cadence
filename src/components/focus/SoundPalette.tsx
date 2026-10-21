@@ -10,6 +10,7 @@ interface SoundPaletteProps {
   onUpgrade?: (feature: FeatureKey) => void;
   pro: boolean;
   hideHeader?: boolean;
+  hideSelected?: boolean;
 }
 
 export function Equalizer({ active, className = '' }: {active: boolean;className?: string;}) {
@@ -30,7 +31,7 @@ export function Equalizer({ active, className = '' }: {active: boolean;className
     </span>);
 }
 
-export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeader }: SoundPaletteProps) {
+export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeader, hideSelected }: SoundPaletteProps) {
   const selected = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
   const SelectedIcon = selected.icon;
   const selectedLocked = selected.premium && !pro;
@@ -48,6 +49,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
       }
 
       {/* Now-selected hero */}
+      {!hideSelected &&
       <div className="glass-strong relative overflow-hidden rounded-2xl p-4">
         <div
           className="pointer-events-none absolute inset-0"
@@ -82,6 +84,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
           </span>
         </div>
       </div>
+      }
 
       {/* Grouped palette */}
       {soundCategories.map((cat, catIndex) => {
