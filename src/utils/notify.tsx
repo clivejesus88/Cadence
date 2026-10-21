@@ -11,7 +11,7 @@ export function notifySessionStarted(minutes: number, blockingEnabled: boolean) 
       id={id}
       icon={blockingEnabled ? ShieldCheckIcon : TimerIcon}
       title="Focus session started"
-      description={`${formatMinutes(minutes)} · ${blockingEnabled ? 'Distractions blocked' : 'Distractions allowed'}`} />,
+      description={`${formatMinutes(minutes)} · ${blockingEnabled ? 'Stay off distractions' : 'Distraction plan off'}`} />,
 
 
     { duration: 3000 }

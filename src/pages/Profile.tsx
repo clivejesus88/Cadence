@@ -170,8 +170,8 @@ export function Profile() {
       <section className="mt-7">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus shield</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
-          <SettingRow icon={ShieldCheckIcon} title="Block during focus" description="Mute distracting apps while a session runs." control={<ToggleSwitch label="Block during focus" checked={preferences.blockDuringFocus} onChange={(v) => updatePreference('blockDuringFocus', v)} />} />
-          <SettingRow icon={CalendarClockIcon} title="Blocking rules" description={profile.plan === 'pro' ? 'Schedule, per-app, per-website' : 'Manage what stays muted'} onClick={() => navigate('/app/blocking')} />
+          <SettingRow icon={ShieldCheckIcon} title="Stay off distractions" description="Nudge me if I switch away during a session." control={<ToggleSwitch label="Stay off distractions" checked={preferences.blockDuringFocus} onChange={(v) => updatePreference('blockDuringFocus', v)} />} />
+          <SettingRow icon={CalendarClockIcon} title="Distraction plan" description={profile.plan === 'pro' ? 'Plan by schedule, per-app, per-website' : 'Plan what to avoid during focus'} onClick={() => navigate('/app/blocking')} />
           <SettingRow icon={LockIcon} title="Strict mode" description="Sessions can't be ended early." control={<ToggleSwitch label="Strict mode" checked={preferences.strictMode} onChange={(v) => updatePreference('strictMode', v)} />} />
         </div>
       </section>
@@ -180,7 +180,7 @@ export function Profile() {
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Account</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={UserRoundIcon} title="Edit profile" description="Update your name, school, email and photo." onClick={() => setEditing(true)} />
-          <SettingRow icon={CreditCardIcon} title="Manage subscription" description={profile.plan === 'pro' ? `Cadence Pro · member since ${profile.memberSince}` : 'Unlock Cadence Pro for soundscapes and blocking rules'} onClick={() => navigate('/?paywall=1')} />
+          <SettingRow icon={CreditCardIcon} title="Manage subscription" description={profile.plan === 'pro' ? `Cadence Pro · member since ${profile.memberSince}` : 'Unlock Cadence Pro for soundscapes and distraction planning'} onClick={() => navigate('/?paywall=1')} />
           <SettingRow icon={BoxIcon} title="Help & support" onClick={notifySupport} />
           <SettingRow icon={LogOutIcon} title={isGuest ? 'Leave guest mode' : 'Sign out'} onClick={handleSignOut} danger />
         </div>

@@ -159,9 +159,9 @@ export function ActiveSession({
             </button>
           </div>
           {blockingEnabled &&
-        <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+            <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
               <ShieldCheckIcon className="w-4 h-4 text-ember-400 flex-shrink-0" />
-              <p className="text-sm text-white flex-1">Distractions blocked</p>
+              <p className="text-sm text-white flex-1">Staying off distractions</p>
               <span className="text-xs text-neutral-400">Active</span>
             </div>
         }

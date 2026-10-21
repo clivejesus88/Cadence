@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDownIcon, RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
-import { blockedApps } from '../../data/blockedApps';
 import { ambientSounds } from '../../data/ambientSounds';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Task } from '../../types/task';
@@ -163,9 +162,11 @@ export function SessionSetup({
           <div className="flex items-center gap-3">
             <ShieldCheckIcon className={`w-5 h-5 ${blockingEnabled ? 'text-ember-400' : 'text-neutral-500'}`} />
             <div className="text-left">
-              <p className="text-sm text-white font-medium">Block Distractions</p>
+              <p className="text-sm text-white font-medium">Stay off distractions</p>
               <p className="text-xs text-neutral-400">
-                {blockedApps.filter((a) => a.blockedByDefault).length} apps muted during focus
+                {blockingEnabled
+                  ? `Nudges you if you leave during focus`
+                  : 'No reminders if you switch away'}
               </p>
             </div>
           </div>

@@ -24,18 +24,18 @@ function ruleTitle(rule: BlockingRule): string {
     const apps = (rule.appIds ?? []);
     if (apps.length === 1) {
       const app = blockedApps.find((a) => a.id === apps[0]);
-      return `Block ${app?.name ?? 'app'}`;
+      return `Avoid ${app?.name ?? 'app'}`;
     }
-    return `Block ${apps.length} apps`;
+    return `Avoid ${apps.length} apps`;
   }
-  if (rule.kind === 'schedule') return 'Scheduled blocking';
+  if (rule.kind === 'schedule') return 'Scheduled focus windows';
   const sites = (rule.websites ?? []);
-  return sites.length === 1 ? `Block ${sites[0]}` : `Block ${sites.length} websites`;
+  return sites.length === 1 ? `Avoid ${sites[0]}` : `Avoid ${sites.length} websites`;
 }
 
 function ruleSummary(rule: BlockingRule): string {
-  if (rule.kind === 'app') return 'Blocks selected apps during focus';
-  if (rule.kind === 'website') return 'Blocks selected sites during focus';
+  if (rule.kind === 'app') return 'Reminds you to keep these closed during focus';
+  if (rule.kind === 'website') return 'Reminds you to keep these tabs closed';
   const days = (rule.days ?? []).map((d) => dayLabels[d]).join(', ');
   const window = rule.start && rule.end ? `${rule.start}–${rule.end}` : 'any time';
   return `${days || 'Every day'} · ${window}`;
@@ -65,12 +65,14 @@ export function BlockingRules() {
         <button onClick={() => navigate('/app/profile')} aria-label="Back to profile" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-2xl text-white">Blocking rules</h1>
+        <h1 className="font-display text-2xl text-white">Distraction plan</h1>
       </header>
 
       {pro ?
       <>
-        <p className="mt-2 text-sm text-neutral-400">Customize what stays muted — by app, schedule, or website.</p>
+        <p className="mt-2 text-sm text-neutral-400">
+          Cadence can't close other apps for you — but it can remind you what you chose to avoid, by app, schedule, or website.
+        </p>
 
         <section className="mt-6">
           <div className="flex items-center justify-between mb-3">
@@ -89,7 +91,7 @@ export function BlockingRules() {
                 <ShieldCheckIcon className="h-6 w-6 text-neutral-400" />
               </div>
               <p className="mt-3 text-sm font-medium text-white">No rules yet</p>
-              <p className="mt-1 text-xs text-neutral-500">Add a schedule, app, or website rule to take control.</p>
+              <p className="mt-1 text-xs text-neutral-500">Add a schedule, app, or website to plan your focus.</p>
             </div>
           }
 
@@ -127,13 +129,13 @@ export function BlockingRules() {
               <LockIcon className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Advanced blocking rules</p>
-              <p className="mt-0.5 text-xs text-neutral-400">Block by schedule, per app, or per website with Pro.</p>
+              <p className="text-sm font-semibold text-white">Advanced distraction plan</p>
+              <p className="mt-0.5 text-xs text-neutral-400">Plan by schedule, per app, or per website with Pro.</p>
               <button
                 onClick={() => setUpgrade('blockingRules')}
                 className="hit-slop mt-3 inline-flex items-center gap-1.5 rounded-full bg-ember-500/15 px-3.5 py-2 text-xs font-semibold text-ember-400 transition-colors hover:bg-ember-500/25 active:bg-ember-500/30">
                 <CrownIcon className="h-3.5 w-3.5" />
-                Unlock blocking rules
+                Unlock distraction plan
               </button>
             </div>
           </div>
@@ -235,7 +237,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
       <ModalHeader
       eyebrow="Blocking rule"
       title={initial.id ? 'Edit rule' : 'New rule'}
-      subtitle="Control what stays muted during your focus sessions."
+      subtitle="Choose what you'll be reminded to avoid during focus."
       onClose={onClose} />
 
       <div className="modal-divider my-5 h-px" />
@@ -276,7 +278,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
             )}
           </div>
           <p className="mt-3 text-xs text-neutral-500">
-            {appIds.length === 0 ? 'Pick at least one app to block.' : `${appIds.length} app${appIds.length === 1 ? '' : 's'} selected · blocked during focus`}
+            {appIds.length === 0 ? 'Pick at least one app to avoid.' : `${appIds.length} app${appIds.length === 1 ? '' : 's'} in your plan · you'll be nudged during focus`}
           </p>
         </>
         }
@@ -332,9 +334,9 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
             </div>
 
             <div className="rounded-2xl border border-white/8 bg-white/[0.04] px-4 py-3.5">
-              <p className="mb-2 text-xs font-medium text-neutral-400">Apps to mute in this window</p>
+              <p className="mb-2 text-xs font-medium text-neutral-400">Apps to avoid in this window</p>
               {appIds.length === 0 ?
-              <p className="text-xs text-neutral-500 py-1">No apps selected — blocks nothing extra right now.</p> :
+              <p className="text-xs text-neutral-500 py-1">No apps selected — nothing extra to avoid right now.</p> :
               <div className="flex flex-wrap gap-1.5">
                 {selectedApps.map((a) =>
                 <span key={a.id} className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.07] px-2.5 py-1 text-xs font-medium text-neutral-200">
@@ -368,7 +370,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
           <p className="mt-2.5 text-xs text-neutral-500">
             {parsedWebsites().length === 0 ?
             'Separate sites with commas — e.g. instagram.com, reddit.com' :
-            `${parsedWebsites().length} site${parsedWebsites().length === 1 ? '' : 's'} to block during focus`}
+            `${parsedWebsites().length} site${parsedWebsites().length === 1 ? '' : 's'} in your plan`}
           </p>
         </>
         }

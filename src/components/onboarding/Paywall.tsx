@@ -15,7 +15,7 @@ const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 
 const benefits = [
 { icon: TimerIcon, title: 'Unlimited custom sessions', desc: 'Create any timer length for any subject.', bg: '#0ea5e9' },
-{ icon: ShieldCheckIcon, title: 'Advanced distraction blocking', desc: 'Block by schedule, app, or website—automatically.', bg: '#059669' },
+{ icon: ShieldCheckIcon, title: 'Advanced distraction plan', desc: 'Plan what to avoid by schedule, app, or website.', bg: '#059669' },
 { icon: LineChartIcon, title: 'Deeper insights', desc: 'See patterns across months, not just weeks.', bg: '#8b5cf6' },
 { icon: PaletteIcon, title: 'Premium focus sounds', desc: 'Unlock the full library of ambient sounds for deep focus.', bg: '#f59e0b' }];
 
@@ -211,7 +211,7 @@ export function Paywall({ onClose }: PaywallProps) {
           <ShieldCheckIcon className="mx-auto h-8 w-8 text-ember-400" />
           <p className="mt-2 text-base font-bold text-white">You're on Cadence Pro</p>
           <p className="mx-auto mt-1 max-w-[280px] text-xs leading-5 text-neutral-400">
-            Thanks for being a member — the full sound library and advanced blocking rules are unlocked.
+            Thanks for being a member — the full sound library and the advanced distraction plan are unlocked.
           </p>
         </div>
         }

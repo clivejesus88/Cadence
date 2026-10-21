@@ -16,9 +16,9 @@ export function FocusShield({ visible, taskTitle, onContinue, onEndSession }: Fo
       </div>
 
       <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.2em] text-ember-300">Cadence</p>
-      <h2 className="font-display mt-1.5 text-2xl text-white">Focus shield</h2>
+      <h2 className="font-display mt-1.5 text-2xl text-white">Still focusing?</h2>
       <p className="mx-auto mt-2.5 max-w-[300px] text-sm leading-6 text-neutral-400">
-        You switched away from Cadence while blocking was on. What you're doing here is up to you
+        You switched away from Cadence, so this is your reminder to come back. There's nothing to stop in the background
         {taskTitle ? <> — your <span className="text-white">{taskTitle}</span> timer is still running.</> : ' — your timer is still running.'}
       </p>
 

@@ -8,5 +8,5 @@ export function isPro(profile: UserProfile | null | undefined): boolean {
 
 export const FEATURE_COPY: Record<FeatureKey, { title: string; desc: string }> = {
   premiumSounds: { title: 'Premium soundscapes', desc: 'Unlock every focus sound in the library.' },
-  blockingRules: { title: 'Advanced blocking rules', desc: 'Block by schedule, per app, or per website.' }
+  blockingRules: { title: 'Advanced distraction plan', desc: 'Choose what to avoid by schedule, per app, or per website.' }
 };
