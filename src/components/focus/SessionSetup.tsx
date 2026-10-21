@@ -1,12 +1,15 @@
 
-import { RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDownIcon, RotateCcwIcon, ShieldCheckIcon, XIcon } from 'lucide-react';
 import { blockedApps } from '../../data/blockedApps';
+import { ambientSounds } from '../../data/ambientSounds';
 import { useSettings } from '../../contexts/SettingsContext';
 import { Task } from '../../types/task';
 import { formatCountdown } from '../../utils/time';
 import { isPro, FeatureKey } from '../../utils/premium';
 import { DurationDial } from './DurationDial';
-import { SoundPalette } from './SoundPalette';
+import { Equalizer, SoundPalette } from './SoundPalette';
 
 interface SessionSetupProps {
   durationMinutes: number;
@@ -39,6 +42,10 @@ export function SessionSetup({
 }: SessionSetupProps) {
   const { profile } = useSettings();
   const pro = isPro(profile);
+  const [soundOpen, setSoundOpen] = useState(false);
+  const selectedSound = ambientSounds.find((s) => s.id === soundId) ?? ambientSounds[0];
+  const SelectedSoundIcon = selectedSound.icon;
+  const selectedSoundLocked = selectedSound.premium && !pro;
   return (
     <div className="px-5 pt-8 pb-4">
       <h1 className="font-display text-2xl text-white">Focus Session</h1>
@@ -91,7 +98,60 @@ export function SessionSetup({
         </div>
       </div>
 
-      <SoundPalette soundId={soundId} onChangeSound={onChangeSound} onUpgrade={onUpgrade} pro={pro} />
+      <button
+        onClick={onStart}
+        className="w-full mt-8 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 active:scale-[0.98] transition-transform">
+        
+        {resumeSeconds > 0 ? 'Resume Session' : 'Start Focusing'}
+      </button>
+
+      <div className="mt-5">
+        <button
+          type="button"
+          onClick={() => setSoundOpen((v) => !v)}
+          aria-expanded={soundOpen}
+          className="glass-strong flex w-full items-center gap-3 rounded-2xl p-3.5 text-left transition-transform active:scale-[0.99]">
+          
+          <div
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
+            style={{ background: `linear-gradient(140deg, ${selectedSound.accent}, ${selectedSound.accent}66)` }}>
+            
+            <SelectedSoundIcon className="h-5 w-5 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm font-semibold text-white">{selectedSound.name}</p>
+              {selectedSound.premium &&
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ember-300">
+                  Pro
+                </span>
+              }
+            </div>
+            <p className="mt-0.5 truncate text-xs text-neutral-400">Focus Sound</p>
+          </div>
+          <span className="flex-shrink-0" style={{ color: selectedSound.accent }}>
+            <Equalizer active={!selectedSoundLocked} />
+          </span>
+          <ChevronDownIcon
+            className={`h-4 w-4 flex-shrink-0 text-neutral-400 transition-transform ${soundOpen ? 'rotate-180' : ''}`} />
+          
+        </button>
+
+        <AnimatePresence initial={false}>
+          {soundOpen &&
+          <motion.div
+            key="sound-palette"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="overflow-hidden">
+            
+              <SoundPalette soundId={soundId} onChangeSound={onChangeSound} onUpgrade={onUpgrade} pro={pro} hideHeader />
+            </motion.div>
+          }
+        </AnimatePresence>
+      </div>
 
       <div className="mt-6">
         <button
@@ -118,13 +178,5 @@ export function SessionSetup({
           </div>
         </button>
       </div>
-
-      <button
-        onClick={onStart}
-        className="w-full mt-8 py-4 rounded-full font-semibold text-[15px] bg-gradient-to-r from-ember-400 to-ember-600 text-ink-950 active:scale-[0.98] transition-transform">
-        
-        {resumeSeconds > 0 ? 'Resume Session' : 'Start Focusing'}
-      </button>
     </div>);
-
 }
