@@ -52,7 +52,7 @@ function toAppUser(user: User): AppUser {
   return {
     id: user.id,
     email: user.email ?? '',
-    name: metaName.length > 0 ? metaName : 'Guest'
+    name: metaName
   };
 }
 
@@ -62,7 +62,7 @@ async function applyUserSession(user: User): Promise<void> {
   await adoptLocalData(user.id);
 
   const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
-  await updateProfile({ name: metaName.length > 0 ? metaName : 'Guest', email: user.email ?? '' });
+  await updateProfile({ name: metaName, email: user.email ?? '' });
 
   await runSync();
 }

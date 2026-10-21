@@ -3,7 +3,7 @@ import * as Sentry from "npm:@sentry/deno";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 Sentry.init({
-  dsn: "https://7ea99e2c5dda2c502de6d9817be5c06c@o4512283907981312.ingest.de.sentry.io/4512284060287056",
+  dsn: Deno.env.get("SENTRY_DSN") ?? "",
 });
 
 const CORS_HEADERS: Record<string, string> = {

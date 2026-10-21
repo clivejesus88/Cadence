@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Edge function deps are installed by the Supabase CLI at deploy time
+supabase/functions/**/node_modules
+
+# Dev server logs
+opencode-vite.log
+*.log
+
 # Local env / secrets
 .env
 .env.*
