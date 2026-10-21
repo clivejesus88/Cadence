@@ -8,8 +8,9 @@ export interface AvatarPreset {
   colors: string[];
 }
 
-// A warm, cohesive palette shared across all presets so avatars feel native.
-export const avatarPalette = ['#fb923c', '#38bdf8', '#a78bfa', '#34d399', '#fbbf24'];
+// A cool, near-monochrome palette so avatars feel native to the dark UI.
+// Muted slate/graphite tones with a single warm ember accent for life.
+export const avatarPalette = ['#e5e7eb', '#64748b', '#1f2937', '#334155', '#fb923c'];
 
 interface PresetDef {
   id: string;
@@ -20,18 +21,18 @@ interface PresetDef {
 }
 
 const defs: PresetDef[] = [
-  { id: 'beam-ember', name: 'Ember', variant: 'beam', seed: 'cadence-ember' },
-  { id: 'beam-sky', name: 'Tide', variant: 'beam', seed: 'cadence-tide', colors: ['#38bdf8', '#a78bfa', '#121b29'] },
-  { id: 'beam-violet', name: 'Dusk', variant: 'beam', seed: 'cadence-dusk', colors: ['#a78bfa', '#fbbf24', '#121b29'] },
-  { id: 'beam-mint', name: 'Mint', variant: 'beam', seed: 'cadence-mint', colors: ['#34d399', '#38bdf8', '#121b29'] },
-  { id: 'marble-ember', name: 'Flare', variant: 'marble', seed: 'cadence-flare' },
-  { id: 'marble-sky', name: 'Lagoon', variant: 'marble', seed: 'cadence-lagoon', colors: ['#38bdf8', '#34d399', '#fbbf24'] },
-  { id: 'sunset-ember', name: 'Sunset', variant: 'sunset', seed: 'cadence-sunset' },
-  { id: 'sunset-rose', name: 'Blush', variant: 'sunset', seed: 'cadence-blush', colors: ['#fb923c', '#f43f5e', '#a78bfa'] },
-  { id: 'bauhaus-violet', name: 'Bauhaus', variant: 'bauhaus', seed: 'cadence-bauhaus' },
-  { id: 'ring-sky', name: 'Halo', variant: 'ring', seed: 'cadence-halo', colors: ['#38bdf8', '#a78bfa', '#121b29'] },
-  { id: 'geometric-mint', name: 'Prism', variant: 'geometric', seed: 'cadence-prism' },
-  { id: 'abstract-magma', name: 'Magma', variant: 'abstract', seed: 'cadence-magma', colors: ['#fb923c', '#fbbf24', '#121b29'] }
+  { id: 'beam-ember', name: 'Ember', variant: 'beam', seed: 'cadence-ember', colors: ['#e5e7eb', '#334155', '#fb923c', '#0b0d10'] },
+  { id: 'beam-sky', name: 'Tide', variant: 'beam', seed: 'cadence-tide', colors: ['#cbd5e1', '#475569', '#94a3b8', '#0b0d10'] },
+  { id: 'beam-violet', name: 'Dusk', variant: 'beam', seed: 'cadence-dusk', colors: ['#d1d5db', '#1f2937', '#6b7280', '#0b0d10'] },
+  { id: 'beam-mint', name: 'Mint', variant: 'beam', seed: 'cadence-mint', colors: ['#e2e8f0', '#374151', '#9ca3af', '#0b0d10'] },
+  { id: 'marble-ember', name: 'Flare', variant: 'marble', seed: 'cadence-flare', colors: ['#f1f5f9', '#475569', '#111827'] },
+  { id: 'marble-sky', name: 'Lagoon', variant: 'marble', seed: 'cadence-lagoon', colors: ['#e5e7eb', '#64748b', '#1f2937'] },
+  { id: 'sunset-ember', name: 'Sunset', variant: 'sunset', seed: 'cadence-sunset', colors: ['#f1f5f9', '#6b7280', '#fb923c'] },
+  { id: 'sunset-rose', name: 'Blush', variant: 'sunset', seed: 'cadence-blush', colors: ['#e5e7eb', '#94a3b8', '#334155'] },
+  { id: 'bauhaus-violet', name: 'Bauhaus', variant: 'bauhaus', seed: 'cadence-bauhaus', colors: ['#e5e7eb', '#475569', '#111827', '#fb923c'] },
+  { id: 'ring-sky', name: 'Halo', variant: 'ring', seed: 'cadence-halo', colors: ['#cbd5e1', '#334155', '#0f172a'] },
+  { id: 'geometric-mint', name: 'Prism', variant: 'geometric', seed: 'cadence-prism', colors: ['#e2e8f0', '#64748b', '#1f2937', '#fb923c'] },
+  { id: 'abstract-magma', name: 'Magma', variant: 'abstract', seed: 'cadence-magma', colors: ['#e5e7eb', '#374151', '#fb923c', '#0b0d10'] }
 ];
 
 export const avatarPresets: AvatarPreset[] = defs.map((d) => ({

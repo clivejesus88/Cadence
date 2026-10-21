@@ -68,24 +68,33 @@ export function AppLayout() {
 
   // Hide the bar while scrolling down; the instant scrolling stops, bring it
   // back at the bottom of the viewport. Never leave the user without the bar.
-  const handleScroll = () => {
+  useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const y = el.scrollTop;
-    const prev = lastScrollRef.current;
-    lastScrollRef.current = y;
 
-    if (y <= 24) {
-      setNavVisible(true);
-      return;
-    }
+    const onScroll = () => {
+      const y = el.scrollTop;
+      const prev = lastScrollRef.current;
+      lastScrollRef.current = y;
 
-    const delta = y - prev;
-    if (delta > 4) setNavVisible(false);
+      if (y <= 24) {
+        setNavVisible(true);
+      } else {
+        const delta = y - prev;
+        if (delta > 4) setNavVisible(false);
+        else if (delta < -4) setNavVisible(true);
+      }
 
-    if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-    settleTimer.current = window.setTimeout(() => setNavVisible(true), 160);
-  };
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+      settleTimer.current = window.setTimeout(() => setNavVisible(true), 180);
+    };
+
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+    };
+  }, []);
 
   return (
     <div className="w-full min-h-[100dvh] bg-ink-950 flex justify-center">
@@ -97,7 +106,6 @@ export function AppLayout() {
         </div>
         <div
           ref={scrollRef}
-          onScroll={handleScroll}
           className="scroll-contain relative flex-1 overflow-y-auto pb-32 no-scrollbar">
           <Outlet />
         </div>
