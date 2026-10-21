@@ -6,14 +6,14 @@ interface StreakHeatmapProps {
   sessions: FocusSession[];
 }
 
-const TOTAL_DAYS = 91; // ~13 full weeks, GitHub-style
+const TOTAL_DAYS = 91;
 const WEEKS = TOTAL_DAYS / 7;
 
 export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
-  const today = new Date();
-  // End the grid on the most recent Saturday so columns line up as weeks.
-  const end = subDays(today, (today.getDay() + 1) % 7);
-  const days = Array.from({ length: TOTAL_DAYS }, (_, i) => subDays(end, TOTAL_DAYS - 1 - i));
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todayDow = new Date().getDay();
+  const endOfWeek = subDays(new Date(), (todayDow + 1) % 7);
+  const days = Array.from({ length: TOTAL_DAYS }, (_, i) => subDays(endOfWeek, TOTAL_DAYS - 1 - i));
 
   const minutesByDate = new Map<string, number>();
   sessions.
@@ -25,22 +25,24 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const selectedMinutes = selected ? minutesByDate.get(selected) ?? 0 : null;
+  const hasData = minutesByDate.size > 0;
 
   return (
     <div className="glass rounded-2xl p-4">
       <div
         className="grid w-full"
         style={{
+          aspectRatio: `${WEEKS} / 7`,
           gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))`,
-          gridAutoFlow: 'column',
           gridTemplateRows: 'repeat(7, minmax(0, 1fr))',
+          gridAutoFlow: 'column',
           gap: 3
         }}>
         {days.map((d, i) => {
           const iso = format(d, 'yyyy-MM-dd');
           const minutes = minutesByDate.get(iso) ?? 0;
           const intensity = minutes === 0 ? 0 : Math.min(1, minutes / max);
-          const future = d > today;
+          const future = iso > todayStr;
           const label = `${format(d, 'MMM d')}: ${minutes} min`;
           return (
             <button
@@ -49,23 +51,27 @@ export function StreakHeatmap({ sessions }: StreakHeatmapProps) {
               title={label}
               aria-label={label}
               aria-pressed={selected === iso}
+              aria-hidden={future}
+              tabIndex={future ? -1 : 0}
               disabled={future}
               onClick={() => setSelected(selected === iso ? null : iso)}
-              className="aspect-square w-full rounded-[3px] transition-transform active:scale-90"
+              className="h-full w-full rounded-[3px] transition-transform active:scale-90 disabled:pointer-events-none"
               style={{
                 backgroundColor: future ? 'transparent' : intensity === 0 ? '#20252c' : `rgba(251,146,60,${0.22 + intensity * 0.78})`,
                 boxShadow: selected === iso ? '0 0 0 1.5px rgba(255,255,255,0.85)' : undefined
               }} />);
         })}
       </div>
-      <p className="mt-2 min-h-[15px] text-[11px] text-neutral-400" aria-live="polite">
+      <p className="mt-3 min-h-[15px] text-[11px] text-neutral-400" aria-live="polite">
         {selected ?
         <span className="font-medium text-neutral-200">
             {format(new Date(selected), 'EEE, MMM d')} · {selectedMinutes} min
           </span> :
-        'Tap a day for focus minutes'}
+        hasData ?
+        'Tap a day for focus minutes' :
+        'Log a session to start filling your grid'}
       </p>
-      <div className="flex items-center justify-end gap-1 mt-1">
+      <div className="mt-2 flex items-center justify-end gap-1">
         <span className="text-[10px] text-neutral-500">Less</span>
         <div className="h-2.5 w-2.5 rounded-[3px] bg-ink-700" />
         <div className="h-2.5 w-2.5 rounded-[3px]" style={{ backgroundColor: 'rgba(251,146,60,0.4)' }} />

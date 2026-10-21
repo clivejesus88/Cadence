@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
-import { ClockIcon, FlameIcon, ListChecksIcon, TrendingUpIcon } from 'lucide-react';
+import { BarChart3Icon, ClockIcon, FlameIcon, ListChecksIcon, TrendingUpIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { formatMinutes } from '../utils/time';
 import { rangeFocusMinutes, monthlyFocusMinutes, longestFocusStreak } from '../utils/streak';
@@ -19,6 +19,7 @@ export function Insights() {
   const weekTotal = weeklyData.reduce((sum, d) => sum + d.minutes, 0);
   const focusSessions = sessions.filter((s) => s.type === 'focus' && s.completed);
   const chartData = useMemo(() => rangeFocusMinutes(sessions, rangeDays), [sessions, rangeDays]);
+  const rangeTotal = useMemo(() => chartData.reduce((sum, d) => sum + d.minutes, 0), [chartData]);
   const monthlyData = useMemo(() => monthlyFocusMinutes(sessions), [sessions]);
   const totalFocusMinutes = focusSessions.reduce((s, se) => s + se.durationMinutes, 0);
   const longestStreak = useMemo(() => longestFocusStreak(sessions), [sessions]);
@@ -53,14 +54,18 @@ export function Insights() {
       </div>
 
       <section className="mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-white font-semibold text-sm">Daily focus time</p>
-          <div className="glass-inset flex rounded-full p-0.5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-white font-semibold text-sm">Daily focus time</p>
+            <p className="mt-0.5 text-xs text-neutral-500">{formatMinutes(rangeTotal)} in the last {rangeDays} days</p>
+          </div>
+          <div className="glass-inset flex flex-shrink-0 rounded-full p-0.5">
             {rangeOptions.map((o) =>
             <button
               key={o.days}
               onClick={() => setRangeDays(o.days)}
-              className={`rounded-full px-3.5 py-2.5 text-xs font-semibold transition-all active:scale-95 ${
+              aria-pressed={rangeDays === o.days}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
               rangeDays === o.days ? 'bg-ember-500 text-ink-950' : 'text-neutral-400'}`
               }>
               
@@ -69,20 +74,27 @@ export function Insights() {
             )}
           </div>
         </div>
-        <div className="glass rounded-2xl p-4 h-52">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-              <XAxis dataKey="day" interval="preserveStartEnd" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <Tooltip
-                cursor={{ fill: 'rgba(251,146,60,0.08)' }}
-                contentStyle={{ background: '#181c22', border: '1px solid #2a3038', borderRadius: 12, fontSize: 12 }}
-                labelStyle={{ color: '#9ca3af' }}
-                itemStyle={{ color: '#fb923c' }}
-                formatter={(v: number) => [`${v} min`, 'Focused']} />
-              
-              <Bar dataKey="minutes" radius={[8, 8, 8, 8]} fill="#fb923c" maxBarSize={28} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="glass rounded-2xl p-4">
+          {focusSessions.length === 0 ?
+          <div className="flex h-44 flex-col items-center justify-center text-center">
+              <BarChart3Icon className="h-6 w-6 text-neutral-600" />
+              <p className="mt-2 text-sm text-neutral-500">Your daily focus will chart here after your first session.</p>
+            </div> :
+          <div className="h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                <BarChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="day" interval="preserveStartEnd" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(251,146,60,0.08)' }}
+                    contentStyle={{ background: '#181c22', border: '1px solid #2a3038', borderRadius: 12, fontSize: 12 }}
+                    labelStyle={{ color: '#9ca3af' }}
+                    itemStyle={{ color: '#fb923c' }}
+                    formatter={(v: number) => [`${v} min`, 'Focused']} />
+                  <Bar dataKey="minutes" radius={[8, 8, 8, 8]} fill="#fb923c" maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          }
         </div>
       </section>
 
@@ -93,20 +105,27 @@ export function Insights() {
 
       <section className="mt-6">
         <p className="text-white font-semibold text-sm mb-3">Monthly trend</p>
-        <div className="glass rounded-2xl p-4 h-44">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-              <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <Tooltip
-                cursor={{ fill: 'rgba(139,92,246,0.08)' }}
-                contentStyle={{ background: '#181c22', border: '1px solid #2a3038', borderRadius: 12, fontSize: 12 }}
-                labelStyle={{ color: '#9ca3af' }}
-                itemStyle={{ color: '#a78bfa' }}
-                formatter={(v: number) => [`${formatMinutes(v)}`, 'Focused']} />
-              
-              <Bar dataKey="minutes" radius={[8, 8, 8, 8]} fill="#8b5cf6" maxBarSize={32} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="glass rounded-2xl p-4">
+          {focusSessions.length === 0 ?
+          <div className="flex h-40 flex-col items-center justify-center text-center">
+              <TrendingUpIcon className="h-6 w-6 text-neutral-600" />
+              <p className="mt-2 text-sm text-neutral-500">Monthly trends appear once you have sessions.</p>
+            </div> :
+          <div className="h-40 w-full">
+              <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                <BarChart data={monthlyData} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 11 }} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(139,92,246,0.08)' }}
+                    contentStyle={{ background: '#181c22', border: '1px solid #2a3038', borderRadius: 12, fontSize: 12 }}
+                    labelStyle={{ color: '#9ca3af' }}
+                    itemStyle={{ color: '#a78bfa' }}
+                    formatter={(v: number) => [`${formatMinutes(v)}`, 'Focused']} />
+                  <Bar dataKey="minutes" radius={[8, 8, 8, 8]} fill="#8b5cf6" maxBarSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          }
         </div>
       </section>
 

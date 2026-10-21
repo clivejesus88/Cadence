@@ -9,9 +9,12 @@ export function StatCard({
   label,
   value
 }: StatCardProps) {
-  return <div className="glass rounded-2xl p-4">
-      <Icon className="w-4 h-4 text-ember-400" />
-      <p className="text-lg font-semibold text-white mt-2">{value}</p>
-      <p className="text-xs text-neutral-400 mt-0.5">{label}</p>
-    </div>;
+  return (
+    <div className="glass rounded-2xl p-4">
+      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.07]">
+        <Icon className="h-4 w-4 text-ember-400" />
+      </div>
+      <p className="font-numeric mt-3 truncate text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-0.5 truncate text-xs text-neutral-400">{label}</p>
+    </div>);
 }
