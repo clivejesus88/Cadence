@@ -201,14 +201,14 @@ export function DurationDial({ value, onChange, min = 5, max = 1440, step = 5, s
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         {dragging ?
-        <p className="font-display text-5xl text-white tabular-nums">{value}</p> :
+        <p className="font-numeric text-5xl font-semibold text-white tabular-nums">{value}</p> :
 
         <motion.p
           key={value}
           initial={{ opacity: 0, y: 6, scale: 0.94 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.16, ease: 'easeOut' }}
-          className="font-display text-5xl text-white tabular-nums">
+          className="font-numeric text-5xl font-semibold text-white tabular-nums">
           
             {value}
           </motion.p>

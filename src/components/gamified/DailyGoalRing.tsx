@@ -45,7 +45,7 @@ export function DailyGoalRing({ minutes, goal, size = 108, stroke = 9 }: DailyGo
           transition={{ type: 'spring', stiffness: 90, damping: 20 }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-2xl text-white tabular-nums">{minutes}</span>
+        <span className="font-numeric text-2xl font-semibold text-white tabular-nums">{minutes}</span>
         <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           of {safeGoal}m
         </span>

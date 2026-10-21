@@ -7,7 +7,8 @@ export default {content: [
     extend: {
       fontFamily: {
         display: ['Fraunces', 'serif'],
-        sans: ['Inter', 'sans-serif']
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
+        numeric: ['Space Grotesk', 'sans-serif']
       },
       colors: {
         ink: {

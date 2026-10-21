@@ -17,7 +17,7 @@ export function TimerVisual() {
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <CircularTimer progress={PROGRESS} size={SIZE} strokeWidth={STROKE_WIDTH}>
           <div className="text-center">
-            <p className="font-display text-4xl text-white">18:24</p>
+            <p className="font-numeric text-4xl font-semibold text-white tabular-nums">18:24</p>
             <p className="text-xs text-neutral-400 mt-1 tracking-wide uppercase">Focus Session</p>
           </div>
         </CircularTimer>

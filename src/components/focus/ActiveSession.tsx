@@ -75,7 +75,7 @@ export function ActiveSession({
           <TickRing size={240} radius={95} progress={progress} tickCount={40} />
           <CircularTimer progress={progress} size={240} strokeWidth={12}>
             <div className="text-center">
-              <p className="font-display text-5xl text-white tabular-nums">
+              <p className="font-numeric text-5xl font-semibold text-white tabular-nums">
                 {isOvertime && <span className="text-ember-400">+</span>}
                 {formatCountdown(displaySeconds)}
               </p>

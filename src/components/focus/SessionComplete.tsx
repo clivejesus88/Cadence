@@ -38,7 +38,7 @@ export function SessionComplete({ minutes, breakMinutes, onBreak, onDone }: Sess
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ember-400">
             <ZapIcon className="h-3.5 w-3.5" /> XP earned
           </span>
-          <span className="font-display text-xl text-white tabular-nums">+{xpGained}</span>
+          <span className="font-numeric text-xl font-semibold text-white tabular-nums">+{xpGained}</span>
         </div>
         <XpBar progress={level.progress} className="mt-3" />
         <p className="mt-2 text-xs text-neutral-400 tabular-nums">
