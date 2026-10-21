@@ -38,7 +38,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
   const freeCount = ambientSounds.filter((s) => !s.premium).length;
 
   return (
-    <div className={hideHeader ? '' : 'mt-8'}>
+    <div className={hideHeader ? 'pt-4' : 'mt-8'}>
       {!hideHeader &&
       <div className="mb-3 flex items-end justify-between">
         <p className="text-sm font-semibold text-white">Focus Sound</p>
@@ -90,7 +90,7 @@ export function SoundPalette({ soundId, onChangeSound, onUpgrade, pro, hideHeade
       {soundCategories.map((cat, catIndex) => {
         const sounds = ambientSounds.filter((s) => s.category === cat.id);
         return (
-          <div key={cat.id} className="mt-6">
+          <div key={cat.id} className={catIndex === 0 ? '' : 'mt-6'}>
             <div className="mb-2.5 flex items-center gap-2">
               <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">{cat.label}</p>
               <span className="h-px flex-1 bg-white/5" />
