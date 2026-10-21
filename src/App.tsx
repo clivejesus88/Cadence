@@ -62,7 +62,7 @@ export function App() {
         <AuthProvider>
           <SettingsProvider>
             <AppDataProvider>
-              <div className="w-full min-h-[100dvh] bg-ink-950">
+              <div className="h-[100dvh] w-full overflow-hidden bg-ink-950">
                 <BrowserRouter>
               <SentryRoutes>
                 <Route path="/" element={<OnboardingFlow />} />
