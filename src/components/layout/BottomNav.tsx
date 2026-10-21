@@ -25,7 +25,7 @@ export function BottomNav({ visible = true }: {visible?: boolean;}) {
     <motion.div
       className="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
       initial={false}
-      animate={{ y: visible ? 0 : 140, opacity: visible ? 1 : 0 }}
+      animate={{ y: visible ? 0 : 140 }}
       transition={{ type: 'spring', stiffness: 480, damping: 40, mass: 0.9 }}>
       
       <nav

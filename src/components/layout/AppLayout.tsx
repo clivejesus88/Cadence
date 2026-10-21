@@ -79,10 +79,9 @@ export function AppLayout() {
 
       if (y <= 24) {
         setNavVisible(true);
-      } else {
-        const delta = y - prev;
-        if (delta > 4) setNavVisible(false);
-        else if (delta < -4) setNavVisible(true);
+      } else if (Math.abs(y - prev) > 4) {
+        // Any real scrolling (either direction) hides the bar.
+        setNavVisible(false);
       }
 
       if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
