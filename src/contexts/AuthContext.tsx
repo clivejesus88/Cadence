@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { adoptLocalData, setSyncUserId, updateProfile } from '../db/repo';
 import { runSync, initSync } from '../db/sync';
 import { seedIfEmpty } from '../db/seed';
+import { detectTimezone } from '../utils/timezone';
 
 export interface AppUser {
   id: string;
@@ -62,7 +63,7 @@ async function applyUserSession(user: User): Promise<void> {
   await adoptLocalData(user.id);
 
   const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
-  await updateProfile({ name: metaName, email: user.email ?? '' });
+  await updateProfile({ name: metaName, email: user.email ?? '', timezone: detectTimezone() });
 
   await runSync();
 }

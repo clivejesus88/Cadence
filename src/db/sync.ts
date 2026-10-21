@@ -67,6 +67,7 @@ function profileToRemote(row: ProfileRow, uid: string): Record<string, unknown> 
     email: row.value.email,
     school: row.value.school,
     avatar_url: row.value.avatarUrl,
+    timezone: row.value.timezone,
     updated_at: row.updatedAt
   };
 }
@@ -198,7 +199,8 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
         school: String(remote.school ?? ''),
         avatarUrl: String(remote.avatar_url ?? defaultAvatar()),
         plan: remotePlan,
-        memberSince: remoteMemberSince
+        memberSince: remoteMemberSince,
+        timezone: String(remote.timezone ?? '')
       },
       updatedAt,
       deleted: false

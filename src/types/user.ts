@@ -8,6 +8,7 @@ export interface UserProfile {
   avatarUrl: string;
   plan: 'free' | 'pro';
   memberSince: string;
+  timezone: string;
 }
 
 export interface Preferences {
@@ -30,7 +31,8 @@ export const defaultProfile: UserProfile = {
   school: '',
   avatarUrl: 'preset:beam-ember',
   plan: 'free',
-  memberSince: ''
+  memberSince: '',
+  timezone: ''
 };
 
 export const defaultPreferences: Preferences = {
