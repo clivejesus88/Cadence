@@ -105,12 +105,12 @@ export function Paywall({ onClose }: PaywallProps) {
       <button
         onClick={onClose}
         aria-label="Skip Pro"
-        className="glass-inset hit-slop absolute right-5 top-[max(1.5rem,env(safe-area-inset-top))] z-20 flex h-9 w-9 items-center justify-center rounded-full text-white transition-all hover:opacity-70 active:scale-95">
+        className="glass-inset hit-slop absolute right-5 top-[calc(env(safe-area-inset-top)+0.75rem)] z-20 flex h-10 w-10 items-center justify-center rounded-full text-white transition-all hover:opacity-70 active:scale-95">
         
         <XIcon className="h-5 w-5" />
       </button>
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-40 pt-14 sm:px-6">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-40 pt-[calc(env(safe-area-inset-top)+4.5rem)] sm:px-6">
         <div className="mx-auto w-60 -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
           <div className="flex justify-between">
             {Array.from({ length: 9 }).map((_, i) =>

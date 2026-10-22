@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon, ShieldCheckIcon, CrownIcon, AwardIcon, TargetIcon } from 'lucide-react';
+import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon, ShieldCheckIcon, CrownIcon, AwardIcon, TargetIcon, RefreshCwIcon, DownloadCloudIcon } from 'lucide-react';
 import { SessionToast } from '../components/notifications/SessionToast';
 import { formatMinutes } from './time';
 
@@ -152,6 +152,37 @@ export function notifyUpgrade(feature: string) {
 
 
     { duration: 4000 }
+  );
+}
+
+export function notifyUpdateReady(onUpdate: () => void) {
+  toast.custom(
+    (id) =>
+    <SessionToast
+      id={id}
+      icon={RefreshCwIcon}
+      title="Update ready"
+      description="A new version of Cadence is available."
+      tone="ember"
+      action={{ label: 'Reload', onClick: () => { toast.dismiss(id); onUpdate(); } }} />,
+
+
+    { duration: 8000 }
+  );
+}
+
+export function notifyOfflineReady() {
+  toast.custom(
+    (id) =>
+    <SessionToast
+      id={id}
+      icon={DownloadCloudIcon}
+      title="Ready offline"
+      description="Cadence now works without a connection."
+      tone="success" />,
+
+
+    { duration: 3500 }
   );
 }
 
