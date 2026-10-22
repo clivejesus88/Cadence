@@ -18,6 +18,8 @@ import { Profile } from './pages/Profile';
 const SentryRoutes = Sentry.wrapReactRouterRouting(Routes);
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
 const BlockingRules = lazy(() => import('./pages/BlockingRules').then((m) => ({ default: m.BlockingRules })));
+const PrivacyPolicy = lazy(() => import('./pages/Legal').then((m) => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import('./pages/Legal').then((m) => ({ default: m.TermsOfService })));
 
 function PageLoader() {
   return (
@@ -67,6 +69,22 @@ export function App() {
               <SentryRoutes>
                 <Route path="/" element={<OnboardingFlow />} />
                 <Route path="/sign-in" element={<SignInRoute />} />
+                <Route
+                  path="/privacy"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <PrivacyPolicy />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/terms"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <TermsOfService />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="/app"
                   element={

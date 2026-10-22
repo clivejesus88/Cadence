@@ -213,7 +213,12 @@ export function Profile() {
         </div>
       </section>
 
-      <p className="mt-6 text-center text-[11px] text-neutral-600">Cadence v1.0 · Made for focused students</p>
+      <p className="mt-6 flex items-center justify-center gap-3 text-center text-[11px] text-neutral-600">
+        <button onClick={() => navigate('/privacy')} className="hit-slop transition-colors hover:text-neutral-400">Privacy</button>
+        <span className="text-neutral-700">·</span>
+        <button onClick={() => navigate('/terms')} className="hit-slop transition-colors hover:text-neutral-400">Terms</button>
+      </p>
+      <p className="mt-2 text-center text-[11px] text-neutral-600">Cadence v1.0 · Made for focused students</p>
       {editing && <EditProfileSheet profile={profile} onClose={() => setEditing(false)} />}
     </div>;
 }

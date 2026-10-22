@@ -250,6 +250,14 @@ export function Paywall({ onClose }: PaywallProps) {
               Not now
             </button>
           )}
+          {!isPro && (
+            <p className="mt-3 text-center text-[11px] leading-4 text-neutral-500">
+              Renews automatically until cancelled. By subscribing you agree to our{' '}
+              <a href="/terms" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Terms</a>{' '}
+              and{' '}
+              <a href="/privacy" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Privacy Policy</a>.
+            </p>
+          )}
         </div>
       </div>
     </div>);
