@@ -1,5 +1,6 @@
-export type AvatarVariant = 'pixel' | 'bauhaus' | 'ring' | 'beam' | 'sunset' | 'marble' | 'geometric' | 'abstract';
+import { sanitizeAvatarUrl } from '../utils/sanitize';
 
+export type AvatarVariant = 'pixel' | 'bauhaus' | 'ring' | 'beam' | 'sunset' | 'marble' | 'geometric' | 'abstract';
 export interface AvatarPreset {
   id: string;
   name: string;
@@ -59,13 +60,16 @@ export function isPresetAvatar(id: string): boolean {
 }
 
 // A stored avatar is either a preset token ("preset:<id>") or a legacy
-// path/data-URL. Resolve it to whichever the renderer should use.
+// path/data-URL. Resolve it to whichever the renderer should use. Any value that
+// isn't a preset or a safe image source is dropped so <img src> can never be
+// pointed at a javascript:/data:text/html URL (including values from sync).
 export function resolveAvatar(value: string | undefined): { preset: AvatarPreset | null; src: string | null } {
   const v = (value ?? '').trim();
   if (v.startsWith(PRESET_PREFIX)) {
     const id = v.slice(PRESET_PREFIX.length);
     return { preset: isPresetAvatar(id) ? findAvatar(id) : findAvatar(defaultAvatarId), src: null };
   }
-  if (v.length > 0) return { preset: null, src: v };
+  const safe = sanitizeAvatarUrl(v);
+  if (safe.length > 0) return { preset: null, src: safe };
   return { preset: findAvatar(defaultAvatarId), src: null };
 }

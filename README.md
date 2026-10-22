@@ -60,6 +60,8 @@ Or paste each file into the Supabase SQL editor in order.
 | `005_payment_security` | client cannot self-assign Pro |
 | `006_daily_goal` | daily goal preference |
 | `007_push` | push subscriptions + profile timezone |
+| `008_reminder_cron` | schedules the hourly reminder dispatcher |
+| `009_rate_limits` | server-side rate limiting for Edge Functions |
 
 ## Edge functions
 

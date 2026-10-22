@@ -2,7 +2,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { db, SyncTableName, SyncStateRow } from './db';
 import { getSyncUserId } from './repo';
 import { TaskRow, SessionRow, PreferencesRow, ProfileRow } from './db';
-import { BlockingRule } from '../types/blocklist';
+import { sanitizeText, sanitizeEmail, sanitizeAvatarUrl, sanitizeBlockingRules } from '../utils/sanitize';
 
 type RemoteTable = 'tasks' | 'focus_sessions' | 'preferences' | 'profile';
 
@@ -121,11 +121,11 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
     await db.tasks.put({
       id,
       userId: String(remote.user_id),
-      title: String(remote.title ?? ''),
-      subject: remote.subject ? String(remote.subject) : '',
+      title: sanitizeText(remote.title, 140) || 'Untitled task',
+      subject: sanitizeText(remote.subject, 60) || 'General',
       estimatedPomodoros: Number(remote.estimated_pomodoros),
       completedPomodoros: Number(remote.completed_pomodoros),
-      dueDate: remote.due_date ? String(remote.due_date) : '',
+      dueDate: sanitizeText(remote.due_date, 10),
       completed: Boolean(remote.completed),
       deleted: Boolean(remote.deleted),
       createdAt: Number(remote.created_at),
@@ -168,7 +168,7 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
         blockDuringFocus: Boolean(remote.block_during_focus),
         strictMode: Boolean(remote.strict_mode),
         dailyGoalMinutes: Number(remote.daily_goal_minutes ?? 60),
-        blockingRules: Array.isArray(remote.blocking_rules) ? (remote.blocking_rules as BlockingRule[]) : []
+        blockingRules: sanitizeBlockingRules(remote.blocking_rules)
       },
       updatedAt,
       deleted: false
@@ -194,13 +194,13 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
       key: uid,
       value: {
         id: uid,
-        name: String(remote.name ?? ''),
-        email: String(remote.email ?? ''),
-        school: String(remote.school ?? ''),
-        avatarUrl: String(remote.avatar_url ?? defaultAvatar()),
+        name: sanitizeText(remote.name, 60),
+        email: sanitizeEmail(remote.email),
+        school: sanitizeText(remote.school, 80),
+        avatarUrl: sanitizeAvatarUrl(remote.avatar_url) || defaultAvatar(),
         plan: remotePlan,
         memberSince: remoteMemberSince,
-        timezone: String(remote.timezone ?? '')
+        timezone: sanitizeText(remote.timezone, 64)
       },
       updatedAt,
       deleted: false

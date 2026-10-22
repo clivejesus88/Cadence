@@ -81,6 +81,35 @@ async function getAccessToken(): Promise<string | null> {
   }
 }
 
+// Sliding-window limiter backed by public.check_rate_limit (migration 009).
+async function rateLimit(
+  key: string,
+  max: number,
+  windowMs: number,
+  lockMs: number
+): Promise<{ allowed: boolean; retryAfterMs: number }> {
+  try {
+    const { data, error } = await supabase.rpc("check_rate_limit", {
+      p_key: key,
+      p_max: max,
+      p_window_ms: windowMs,
+      p_lock_ms: lockMs,
+    });
+    if (error) {
+      console.error("[rate-limit] rpc error:", error);
+      return { allowed: true, retryAfterMs: 0 }; // fail open — never block real users on limiter faults
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      allowed: Boolean(row?.allowed),
+      retryAfterMs: Number(row?.retry_after_ms ?? 0),
+    };
+  } catch (e) {
+    console.error("[rate-limit] unexpected error:", e);
+    return { allowed: true, retryAfterMs: 0 };
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -97,6 +126,16 @@ Deno.serve(async (req: Request) => {
   } = await supabase.auth.getUser(jwt);
   if (authError || !user) {
     return err("Unauthorized", 401);
+  }
+
+  // Max 5 subscription creations per minute per user.
+  const limit = await rateLimit(`paypal-create:${user.id}`, 5, 60_000, 60_000);
+  if (!limit.allowed) {
+    const retrySeconds = Math.ceil(limit.retryAfterMs / 1000);
+    return new Response("Too many requests", {
+      status: 429,
+      headers: { ...CORS_HEADERS, "Retry-After": String(retrySeconds) },
+    });
   }
 
   let body: Record<string, unknown>;

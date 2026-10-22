@@ -5,8 +5,10 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { Modal, ModalHeader } from '../ui/Modal';
 import { Avatar } from './Avatar';
 import { avatarPresets, presetAvatarValue, resolveAvatar, PRESET_PREFIX } from '../../data/avatars';
+import { sanitizeText, sanitizeEmail, isValidEmail, sanitizeAvatarUrl } from '../../utils/sanitize';
 
 const AVATAR_SIZE = 256;
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8MB
 
 interface EditProfileSheetProps {
   profile: UserProfile;
@@ -21,7 +23,8 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
   const [email, setEmail] = useState(profile.email);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
 
-  const canSave = name.trim().length > 0;
+  const cleanName = sanitizeText(name, 60);
+  const canSave = cleanName.length > 0 && (email.trim().length === 0 || isValidEmail(sanitizeEmail(email)));
   const activePreset = resolveAvatar(avatarUrl).preset;
   const isCustomAvatar = !avatarUrl.trim().startsWith(PRESET_PREFIX);
 
@@ -29,6 +32,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !file.type.startsWith('image/')) return;
+    if (file.size > MAX_UPLOAD_BYTES) return;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -57,12 +61,13 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
   };
 
   const handleSave = () => {
-    if (!canSave) return;
+    const cleanName = sanitizeText(name, 60);
+    if (!cleanName) return;
     updateProfile({
-      name: name.trim(),
-      school: school.trim(),
-      email: email.trim(),
-      avatarUrl: avatarUrl.trim() || presetAvatarValue('beam-ember')
+      name: cleanName,
+      school: sanitizeText(school, 80),
+      email: sanitizeEmail(email),
+      avatarUrl: sanitizeAvatarUrl(avatarUrl) || presetAvatarValue('beam-ember')
     });
     onClose();
   };
@@ -132,6 +137,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
             <input
               id="edit-name"
               value={name}
+              maxLength={60}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
@@ -142,6 +148,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
             <input
               id="edit-school"
               value={school}
+              maxLength={80}
               onChange={(e) => setSchool(e.target.value)}
               placeholder="e.g. Second year · Biology"
               className="glass-inset w-full rounded-2xl px-3.5 py-3 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-ember-400" />
@@ -152,6 +159,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
             <input
               id="edit-email"
               value={email}
+              maxLength={254}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               placeholder="you@university.edu"

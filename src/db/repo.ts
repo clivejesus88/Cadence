@@ -3,6 +3,7 @@ import { db, SyncTableName, SyncQueueRow } from './db';
 import { Task } from '../types/task';
 import { FocusSession } from '../types/session';
 import { UserProfile, Preferences, defaultPreferences, defaultProfile } from '../types/user';
+import { sanitizeText, sanitizeEmail, sanitizeAvatarUrl, sanitizeBlockingRules } from '../utils/sanitize';
 
 const seedIds = new Set<string>();
 
@@ -26,9 +27,25 @@ function enqueueOutbox(table: SyncTableName, entityId: string, op: SyncQueueRow[
 
 const newRowCommon = (now: number) => ({ userId, createdAt: now, updatedAt: now, deleted: false });
 
+function sanitizeTaskInput(input: Omit<Task, 'id' | 'completedPomodoros' | 'completed'>) {
+  return {
+    ...input,
+    title: sanitizeText(input.title, 140) || 'Untitled task',
+    subject: sanitizeText(input.subject, 60) || 'General',
+    estimatedPomodoros: clampInt(input.estimatedPomodoros, 1, 20),
+    dueDate: sanitizeText(input.dueDate, 10)
+  };
+}
+
+function clampInt(value: unknown, min: number, max: number): number {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, n));
+}
+
 export async function addTask(input: Omit<Task, 'id' | 'completedPomodoros' | 'completed'>): Promise<Task> {
   const now = Date.now();
-  const row = { ...input, id: makeId('t'), completedPomodoros: 0, completed: false, ...newRowCommon(now) };
+  const row = { ...sanitizeTaskInput(input), id: makeId('t'), completedPomodoros: 0, completed: false, ...newRowCommon(now) };
   await db.tasks.put(row);
   enqueueOutbox('tasks', row.id, 'upsert', row);
   return row;
@@ -71,7 +88,12 @@ export async function updatePreferences(patch: Partial<Preferences>): Promise<vo
   const key = userId ?? 'local';
   const existing = await db.preferences.get(key);
   const now = Date.now();
-  const value = { ...defaultPreferences, ...(existing?.value ?? {}), ...patch };
+  const safe: Partial<Preferences> = { ...patch };
+  if (patch.defaultDuration !== undefined) safe.defaultDuration = clampInt(patch.defaultDuration, 1, 180);
+  if (patch.breakLength !== undefined) safe.breakLength = clampInt(patch.breakLength, 1, 60);
+  if (patch.dailyGoalMinutes !== undefined) safe.dailyGoalMinutes = clampInt(patch.dailyGoalMinutes, 5, 720);
+  if (patch.blockingRules !== undefined) safe.blockingRules = sanitizeBlockingRules(patch.blockingRules);
+  const value = { ...defaultPreferences, ...(existing?.value ?? {}), ...safe };
   const row = { key, value, updatedAt: now, deleted: false };
   await db.preferences.put(row);
   enqueueOutbox('preferences', key, 'upsert', row);
@@ -81,7 +103,18 @@ export async function updateProfile(patch: Partial<UserProfile>): Promise<void> 
   const key = userId ?? 'local';
   const existing = await db.profile.get(key);
   const now = Date.now();
-  const value = { ...defaultProfile, ...(existing?.value ?? {}), ...patch, id: key };
+  // plan/memberSince are server-authoritative (see migration 005) and must never
+  // originate from the client store.
+  const { plan: _plan, memberSince: _memberSince, ...rest } = patch;
+  void _plan;
+  void _memberSince;
+  const safe: Partial<UserProfile> = { ...rest };
+  if (rest.name !== undefined) safe.name = sanitizeText(rest.name, 60);
+  if (rest.school !== undefined) safe.school = sanitizeText(rest.school, 80);
+  if (rest.email !== undefined) safe.email = sanitizeEmail(rest.email);
+  if (rest.avatarUrl !== undefined) safe.avatarUrl = sanitizeAvatarUrl(rest.avatarUrl);
+  if (rest.timezone !== undefined) safe.timezone = sanitizeText(rest.timezone, 64);
+  const value = { ...defaultProfile, ...(existing?.value ?? {}), ...safe, id: key };
   const row = { key, value, updatedAt: now, deleted: false };
   await db.profile.put(row);
   enqueueOutbox('profile', key, 'upsert', row);

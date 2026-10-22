@@ -41,6 +41,32 @@ type PushSubscriptionRow = {
   auth: string;
 };
 
+// Sliding-window limiter backed by public.check_rate_limit (migration 009).
+async function rateLimit(
+  key: string,
+  max: number,
+  windowMs: number,
+  lockMs: number
+): Promise<{ allowed: boolean; retryAfterMs: number }> {
+  try {
+    const { data, error } = await supabase.rpc("check_rate_limit", {
+      p_key: key,
+      p_max: max,
+      p_window_ms: windowMs,
+      p_lock_ms: lockMs,
+    });
+    if (error) {
+      console.error("[rate-limit] rpc error:", error);
+      return { allowed: true, retryAfterMs: 0 };
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return { allowed: Boolean(row?.allowed), retryAfterMs: Number(row?.retry_after_ms ?? 0) };
+  } catch (e) {
+    console.error("[rate-limit] unexpected error:", e);
+    return { allowed: true, retryAfterMs: 0 };
+  }
+}
+
 async function sendToSubscriptions(
   subs: PushSubscriptionRow[],
   payload: { title: string; body: string; url?: string; tag?: string }
@@ -111,6 +137,21 @@ Deno.serve(async (req: Request) => {
     return err("userId and title are required", 400);
   }
 
+  // Cap outbound push per user (e.g. 30/min) so a bug or abuse can't spam them.
+  const limit = await rateLimit(`send-push:${body.userId}`, 30, 60_000, 60_000);
+  if (!limit.allowed) {
+    return new Response("Too many requests", {
+      status: 429,
+      headers: { ...CORS_HEADERS, "Retry-After": String(Math.ceil(limit.retryAfterMs / 1000)) },
+    });
+  }
+
+  // Bound and sanitize free-text fields before they reach a notification.
+  const title = String(body.title).slice(0, 120);
+  const message = String(body.body ?? "").slice(0, 300);
+  const url = typeof body.url === "string" && /^\/[^\s]*$/.test(body.url) ? body.url : "/";
+  const tag = typeof body.tag === "string" ? body.tag.slice(0, 60) : undefined;
+
   const { data, error } = await supabase
     .from("push_subscriptions")
     .select("id, user_id, endpoint, p256dh, auth")
@@ -123,10 +164,10 @@ Deno.serve(async (req: Request) => {
 
   try {
     const result = await sendToSubscriptions((data ?? []) as PushSubscriptionRow[], {
-      title: body.title,
-      body: body.body ?? "",
-      url: body.url,
-      tag: body.tag,
+      title,
+      body: message,
+      url,
+      tag,
     });
     return json(result);
   } catch (e) {

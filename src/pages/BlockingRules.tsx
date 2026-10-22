@@ -5,6 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { blockedApps } from '../data/blockedApps';
 import { BlockingRule, BlockingRuleKind } from '../types/blocklist';
 import { isPro, FeatureKey } from '../utils/premium';
+import { sanitizeDomains } from '../utils/sanitize';
 import { ToggleSwitch } from '../components/profile/ToggleSwitch';
 import { UpgradeSheet } from '../components/premium/UpgradeSheet';
 import { Modal, ModalHeader } from '../components/ui/Modal';
@@ -227,8 +228,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
     });
   };
 
-  const parsedWebsites = () =>
-    websitesRaw.split(',').map((w) => w.trim().toLowerCase()).filter((w) => w.length > 0);
+  const parsedWebsites = () => sanitizeDomains(websitesRaw);
 
   const selectedApps = blockedApps.filter((a) => appIds.includes(a.id));
 
@@ -360,6 +360,7 @@ function RuleEditor({ initial, onClose, onSave }: RuleEditorProps) {
               onChange={(e) => setWebsitesRaw(e.target.value)}
               placeholder="instagram.com, reddit.com"
               type="text"
+              maxLength={500}
               inputMode="url"
               autoCapitalize="off"
               autoCorrect="off"

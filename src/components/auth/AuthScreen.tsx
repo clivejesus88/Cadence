@@ -9,6 +9,7 @@ import {
   ShieldCheckIcon
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { sanitizeText, sanitizeEmail, isValidEmail } from '../../utils/sanitize';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -33,18 +34,26 @@ export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
     e.preventDefault();
     setError(null);
     setNotice(null);
+
+    const cleanEmail = sanitizeEmail(email);
+    const cleanName = sanitizeText(name, 60);
+    if (!isValidEmail(cleanEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     setBusy(true);
     try {
       if (mode === 'signup') {
-        const { needsConfirmation } = await signUp(email.trim(), password, name.trim());
+        const { needsConfirmation } = await signUp(cleanEmail, password, cleanName);
         if (needsConfirmation) {
-          setNotice(`We sent a confirmation link to ${email.trim()}. Confirm it, then sign in.`);
+          setNotice(`We sent a confirmation link to ${cleanEmail}. Confirm it, then sign in.`);
           setMode('signin');
           setPassword('');
           return;
         }
       } else {
-        await signIn(email.trim(), password);
+        await signIn(cleanEmail, password);
       }
       onSuccess();
     } catch (err) {
@@ -115,6 +124,7 @@ export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
+                      maxLength={60}
                       autoComplete="name"
                       placeholder="e.g. Alex Rivera"
                       className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"
@@ -132,6 +142,7 @@ export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    maxLength={254}
                     autoComplete="email"
                     placeholder="you@school.edu"
                     className="w-full bg-transparent text-base text-white placeholder:text-neutral-600 focus:outline-none"
@@ -149,6 +160,7 @@ export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
+                    maxLength={72}
                     autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                     placeholder="At least 6 characters"
                     className="w-full bg-transparent text-sm text-white placeholder:text-neutral-600 focus:outline-none"

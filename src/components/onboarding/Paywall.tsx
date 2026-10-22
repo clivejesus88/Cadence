@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { runSync, scheduleSync } from '../../db/sync';
 import { notifyError } from '../../utils/notify';
+import { consume, formatRetry, CHECKOUT_LIMIT } from '../../utils/rateLimit';
 
 interface PaywallProps {
   onStart: () => void;
@@ -75,6 +76,12 @@ export function Paywall({ onClose }: PaywallProps) {
     }
     setLoading(true);
     try {
+      const limit = consume('checkout', CHECKOUT_LIMIT);
+      if (!limit.allowed) {
+        notifyError('Please wait a moment', `Too many checkout attempts. Try again in ${formatRetry(limit.retryAfterMs)}.`);
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase.functions.invoke('paypal-create-subscription', {
         body: { plan, redirectUrl: `${window.location.origin}/?paywall=1` }
       });

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { format, addDays } from 'date-fns';
 import { useAppData } from '../../contexts/AppDataContext';
 import { Modal, ModalHeader } from '../ui/Modal';
+import { sanitizeText } from '../../utils/sanitize';
 
 interface AddTaskSheetProps {
   onClose: () => void;
@@ -18,10 +19,11 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    const cleanTitle = sanitizeText(title, 140);
+    if (!cleanTitle) return;
     addTask({
-      title: title.trim(),
-      subject: subject.trim() || 'General',
+      title: cleanTitle,
+      subject: sanitizeText(subject, 60) || 'General',
       estimatedPomodoros: pomodoros,
       dueDate
     });
@@ -51,6 +53,7 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
               id="new-task-title"
               autoFocus
               enterKeyHint="next"
+              maxLength={140}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Read Chapter 5"
@@ -61,6 +64,7 @@ export function AddTaskSheet({ onClose }: AddTaskSheetProps) {
             <label htmlFor="new-task-subject" className="text-xs text-neutral-500 mb-1.5 block">Subject</label>
             <input
               id="new-task-subject"
+              maxLength={60}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="e.g. Biology"

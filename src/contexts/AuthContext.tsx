@@ -6,6 +6,7 @@ import { runSync, initSync } from '../db/sync';
 import { seedIfEmpty } from '../db/seed';
 import { detectTimezone } from '../utils/timezone';
 import { syncPushSubscription } from '../utils/push';
+import { consume, reset, formatRetry, AUTH_LIMIT } from '../utils/rateLimit';
 
 export interface AppUser {
   id: string;
@@ -131,12 +132,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string): Promise<void> => {
     if (!supabase) throw new Error('Supabase isn’t configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to enable accounts.');
+    const limit = consume('auth', AUTH_LIMIT);
+    if (!limit.allowed) {
+      throw new Error(`Too many attempts. Please wait ${formatRetry(limit.retryAfterMs)} and try again.`);
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    reset('auth');
   };
 
   const signUp = async (email: string, password: string, name: string): Promise<{ needsConfirmation: boolean }> => {
     if (!supabase) throw new Error('Supabase isn’t configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env to enable accounts.');
+    const limit = consume('auth', AUTH_LIMIT);
+    if (!limit.allowed) {
+      throw new Error(`Too many attempts. Please wait ${formatRetry(limit.retryAfterMs)} and try again.`);
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -146,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data.user && data.session) {
       await applyUserSession(data.user);
     }
+    reset('auth');
     return { needsConfirmation: !data.session };
   };
 

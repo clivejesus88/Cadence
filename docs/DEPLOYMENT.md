@@ -17,6 +17,7 @@ Everything needed to take Cadence live on Vercel + Supabase.
    006_daily_goal.sql
    007_push.sql          -- push_subscriptions + reminder_log + profile.timezone
    008_reminder_cron.sql -- enable pg_cron/pg_net, then schedule (see file)
+   009_rate_limits.sql   -- rate_limits table + check_rate_limit() RPC
    ```
 
 3. Enable extensions `pg_cron` and `pg_net` (Dashboard → Database → Extensions).
