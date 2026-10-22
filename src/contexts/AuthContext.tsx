@@ -5,6 +5,7 @@ import { adoptLocalData, setSyncUserId, updateProfile } from '../db/repo';
 import { runSync, initSync } from '../db/sync';
 import { seedIfEmpty } from '../db/seed';
 import { detectTimezone } from '../utils/timezone';
+import { syncPushSubscription } from '../utils/push';
 
 export interface AppUser {
   id: string;
@@ -65,6 +66,7 @@ async function applyUserSession(user: User): Promise<void> {
   const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
   await updateProfile({ name: metaName, email: user.email ?? '', timezone: detectTimezone() });
 
+  void syncPushSubscription(user.id);
   await runSync();
 }
 

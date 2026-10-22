@@ -6,6 +6,8 @@ import { useSettings } from "../contexts/SettingsContext";
 import { useAuth } from "../contexts/AuthContext";
 import { formatMinutes } from "../utils/time";
 import { notifySupport } from "../utils/notify";
+import { notifyError } from "../utils/notify";
+import { enablePush, disablePush, pushSupported } from "../utils/push";
 import { SettingRow } from "../components/profile/SettingRow";
 import { ToggleSwitch } from "../components/profile/ToggleSwitch";
 import { EditProfileSheet } from "../components/profile/EditProfileSheet";
@@ -19,7 +21,7 @@ const breakOptions = [5, 10, 15];
 const goalOptions = [30, 60, 90, 120];
 export function Profile() {
   const navigate = useNavigate();
-  const { signOut, isGuest } = useAuth();
+  const { signOut, isGuest, user } = useAuth();
   const {
     currentStreak,
     totalSessionsCompleted,
@@ -35,9 +37,24 @@ export function Profile() {
     updatePreference
   } = useSettings();
   const [editing, setEditing] = useState(false);
+
+  const reminderKeys = ['sessionReminders', 'taskReminders', 'dailySummary'] as const;
+  const handleReminderToggle = async (key: typeof reminderKeys[number], value: boolean) => {
+    updatePreference(key, value);
+    if (!value || isGuest || !user) return;
+    if (!pushSupported()) return;
+    const ok = await enablePush(user.id);
+    if (!ok) {
+      notifyError('Notifications are off', 'Enable notifications in your browser settings to get reminders.');
+    }
+  };
+
+  const allRemindersOff =
+    !preferences.sessionReminders && !preferences.taskReminders && !preferences.dailySummary;
   const totalMinutes = sessions.filter((s) => s.type === 'focus' && s.completed).reduce((sum, s) => sum + s.durationMinutes, 0);
 
   const handleSignOut = async () => {
+    await disablePush();
     await signOut();
     navigate('/', { replace: true });
   };
@@ -161,10 +178,20 @@ export function Profile() {
       <section className="mt-7">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Notifications</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
-          <SettingRow icon={BellIcon} title="Session reminders" description="Nudge me when it's time to study." control={<ToggleSwitch label="Session reminders" checked={preferences.sessionReminders} onChange={(v) => updatePreference('sessionReminders', v)} />} />
-          <SettingRow icon={ListChecksIcon} title="Task reminders" description="Remind me about overdue and due-today tasks." control={<ToggleSwitch label="Task reminders" checked={preferences.taskReminders} onChange={(v) => updatePreference('taskReminders', v)} />} />
-          <SettingRow icon={MailIcon} title="Daily summary" description="A recap of your focus time each evening." control={<ToggleSwitch label="Daily summary" checked={preferences.dailySummary} onChange={(v) => updatePreference('dailySummary', v)} />} />
+          <SettingRow icon={BellIcon} title="Session reminders" description="Nudge me when it's time to study." control={<ToggleSwitch label="Session reminders" checked={preferences.sessionReminders} onChange={(v) => handleReminderToggle('sessionReminders', v)} />} />
+          <SettingRow icon={ListChecksIcon} title="Task reminders" description="Remind me about overdue and due-today tasks." control={<ToggleSwitch label="Task reminders" checked={preferences.taskReminders} onChange={(v) => handleReminderToggle('taskReminders', v)} />} />
+          <SettingRow icon={MailIcon} title="Daily summary" description="A recap of your focus time each evening." control={<ToggleSwitch label="Daily summary" checked={preferences.dailySummary} onChange={(v) => handleReminderToggle('dailySummary', v)} />} />
         </div>
+        {!isGuest && pushSupported() && !allRemindersOff && Notification.permission !== 'granted' && (
+          <button
+            onClick={() => user && void enablePush(user.id)}
+            className="mt-2.5 w-full rounded-2xl border border-ember-500/30 bg-ember-500/10 px-4 py-3 text-left text-xs text-ember-200 transition-all active:scale-[0.99]">
+            <span className="font-semibold text-ember-300">Turn on notifications for this device</span>
+            <span className="mt-0.5 block text-ember-200/70">
+              Reminders only arrive when notifications are allowed and Cadence is installed.
+            </span>
+          </button>
+        )}
       </section>
 
       <section className="mt-7">

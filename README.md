@@ -73,6 +73,33 @@ supabase functions deploy dispatch-reminders
 Set secrets first (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`,
 `PAYPAL_*`, `ALLOWED_REDIRECT_ORIGINS`, `VAPID_*`, `CRON_SECRET`).
 
+## Push notifications (Web Push)
+
+Cadence sends real push reminders via a service worker + Supabase, no third
+party.
+
+1. **Generate a VAPID keypair** (once):
+
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+
+   - Public key → `VITE_VAPID_PUBLIC_KEY` (browser) **and** `VAPID_PUBLIC_KEY` (edge secret)
+   - Private key → `VAPID_PRIVATE_KEY` (edge secret only)
+   - `VAPID_SUBJECT` → `mailto:` address
+
+2. Users enable reminders in **Profile → Notifications**; the browser asks for
+   permission from that gesture and the device subscription is stored in
+   `push_subscriptions`.
+
+3. Schedule the dispatcher (hourly) — see `supabase/migrations/008_reminder_cron.sql`.
+   Fixed schedule: session nudge at 16:00 local, evening summary at 18:00 local.
+   `reminder_log` prevents duplicate sends.
+
+4. **iOS**: Web Push requires iOS 16.4+, the app **installed to the home screen**,
+   and permission granted from a tap. Android/Chrome works from the browser tab.
+
+
 ## Deploy
 
 The app is deployed on Vercel (SPA rewrites in `vercel.json`). Set the `VITE_*`

@@ -39,3 +39,20 @@ create policy "own push subscriptions only"
 -- Profile timezone for computing local reminder times server-side.
 alter table public.profile
   add column if not exists timezone text not null default '';
+
+-- Dedupe log so an hourly cron never sends the same reminder twice in a day.
+create table if not exists public.reminder_log (
+  user_id   uuid not null references auth.users (id) on delete cascade,
+  kind      text not null,
+  local_date text not null,
+  sent_at   bigint not null default (extract(epoch from now()) * 1000)::bigint,
+  primary key (user_id, kind, local_date)
+);
+
+alter table public.reminder_log enable row level security;
+
+drop policy if exists "own reminder log only" on public.reminder_log;
+create policy "own reminder log only"
+  on public.reminder_log for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
