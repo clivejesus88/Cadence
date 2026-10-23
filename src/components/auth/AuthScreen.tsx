@@ -87,13 +87,29 @@ export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 py-10 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
-          <p className="font-display text-2xl text-white">Cadence</p>
-          <h1 className="mt-1 font-display text-3xl text-white sm:text-4xl">
-            {mode === 'signin' ? 'Welcome back' : 'Create your account'}
-          </h1>
-          <p className="mt-1.5 text-sm text-neutral-400">
-            {mode === 'signin' ? 'Sign in to access your focus space.' : 'Sign up to sync your focus data across devices.'}
-          </p>
+          <div className="mb-8 flex w-full flex-col items-center text-center">
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05, duration: 0.5, ease: 'easeOut' }}
+              className="font-display italic text-4xl tracking-tight text-white sm:text-5xl">
+              Cadence
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
+              className="mt-2 text-sm text-neutral-300">
+              {mode === 'signin' ? 'Welcome back' : 'Create your account'}
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.5, ease: 'easeOut' }}
+              className="mt-1.5 text-sm text-neutral-400">
+              {mode === 'signin' ? 'Sign in to access your focus space.' : 'Sign up to sync your focus data across devices.'}
+            </motion.p>
+          </div>
 
           <div className="glass-strong mt-6 rounded-3xl p-5">
             <div className="glass-inset flex rounded-full p-1">
