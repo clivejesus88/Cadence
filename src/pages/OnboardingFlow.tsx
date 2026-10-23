@@ -11,6 +11,7 @@ import { PlannerVisual } from '../components/onboarding/PlannerVisual';
 import { Paywall } from '../components/onboarding/Paywall';
 
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
+const HERO_BLUR_URL = "/hero-blur.jpg";
 
 const features = [
   {
@@ -72,6 +73,9 @@ export function OnboardingFlow() {
           transition={{ duration: 1.2, ease: 'easeOut' }}
           src={HERO_IMAGE_URL}
           alt=""
+          aria-hidden="true"
+          decoding="async"
+          fetchPriority="high"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/15" />
@@ -114,9 +118,11 @@ export function OnboardingFlow() {
             initial={{ scale: 1.12 }}
             animate={{ scale: 1.1 }}
             transition={{ duration: 1.2, ease: 'easeOut' }}
-            src={HERO_IMAGE_URL}
+            src={HERO_BLUR_URL}
             alt=""
-            className="h-full w-full object-cover blur-2xl"
+            aria-hidden="true"
+            decoding="async"
+            className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-ink-950/45" />
           <div className="absolute -top-10 -right-16 h-72 w-72 rounded-full bg-ember-500/25 blur-[100px]" />

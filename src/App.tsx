@@ -7,15 +7,15 @@ import { AuthProvider } from './contexts/AuthContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { RequireAuth } from './components/auth/RequireAuth';
-import { AuthScreen } from './components/auth/AuthScreen';
-import { OnboardingFlow } from './pages/OnboardingFlow';
 import { AppLayout } from './components/layout/AppLayout';
-import { Home } from './pages/Home';
-import { Focus } from './pages/Focus';
-import { Planner } from './pages/Planner';
-import { Profile } from './pages/Profile';
 
 const SentryRoutes = Sentry.wrapReactRouterRouting(Routes);
+const OnboardingFlow = lazy(() => import('./pages/OnboardingFlow').then((m) => ({ default: m.OnboardingFlow })));
+const AuthScreen = lazy(() => import('./components/auth/AuthScreen').then((m) => ({ default: m.AuthScreen })));
+const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
+const Focus = lazy(() => import('./pages/Focus').then((m) => ({ default: m.Focus })));
+const Planner = lazy(() => import('./pages/Planner').then((m) => ({ default: m.Planner })));
+const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
 const BlockingRules = lazy(() => import('./pages/BlockingRules').then((m) => ({ default: m.BlockingRules })));
 const PrivacyPolicy = lazy(() => import('./pages/Legal').then((m) => ({ default: m.PrivacyPolicy })));
@@ -24,6 +24,14 @@ const TermsOfService = lazy(() => import('./pages/Legal').then((m) => ({ default
 function PageLoader() {
   return (
     <div className="flex w-full items-center justify-center py-24">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-ember-400" />
+    </div>
+  );
+}
+
+function FullPageLoader() {
+  return (
+    <div className="flex w-full min-h-[100dvh] items-center justify-center bg-ink-950">
       <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-ember-400" />
     </div>
   );
@@ -67,8 +75,22 @@ export function App() {
               <div className="h-[100dvh] w-full overflow-hidden bg-ink-950">
                 <BrowserRouter>
               <SentryRoutes>
-                <Route path="/" element={<OnboardingFlow />} />
-                <Route path="/sign-in" element={<SignInRoute />} />
+                <Route
+                  path="/"
+                  element={
+                    <Suspense fallback={<FullPageLoader />}>
+                      <OnboardingFlow />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/sign-in"
+                  element={
+                    <Suspense fallback={<FullPageLoader />}>
+                      <SignInRoute />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="/privacy"
                   element={
@@ -93,8 +115,22 @@ export function App() {
                     </RequireAuth>
                   }>
                   <Route index element={<Navigate to="home" replace />} />
-                  <Route path="home" element={<Home />} />
-                  <Route path="focus" element={<Focus />} />
+                  <Route
+                    path="home"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Home />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="focus"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Focus />
+                      </Suspense>
+                    }
+                  />
                   <Route
                     path="insights"
                     element={
@@ -103,7 +139,14 @@ export function App() {
                       </Suspense>
                     }
                   />
-                  <Route path="planner" element={<Planner />} />
+                  <Route
+                    path="planner"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Planner />
+                      </Suspense>
+                    }
+                  />
                   <Route
                     path="blocking"
                     element={
@@ -112,7 +155,14 @@ export function App() {
                       </Suspense>
                     }
                   />
-                  <Route path="profile" element={<Profile />} />
+                  <Route
+                    path="profile"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Profile />
+                      </Suspense>
+                    }
+                  />
                 </Route>
                 <Route path="*" element={<NotFoundRedirect />} />
               </SentryRoutes>

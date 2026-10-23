@@ -12,7 +12,7 @@ interface PaywallProps {
   onClose: () => void;
 }
 
-const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
+const HERO_BLUR_URL = "/hero-blur.jpg";
 
 const benefits = [
 { icon: TimerIcon, title: 'Unlimited custom sessions', desc: 'Create any timer length for any subject.', bg: '#0ea5e9' },
@@ -98,13 +98,16 @@ export function Paywall({ onClose }: PaywallProps) {
   };
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-ink-950">
+    <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-ink-950">
+      {/* Static, non-scrolling background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <img
-          src={HERO_IMAGE_URL}
+          src={HERO_BLUR_URL}
           alt=""
-          className="h-full w-full scale-110 object-cover object-bottom blur-2xl" />
-        
+          aria-hidden="true"
+          decoding="async"
+          className="h-full w-full scale-110 object-cover object-bottom" />
+
         <div className="absolute inset-0 bg-ink-950/50" />
         <div className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-ember-600/35 via-ember-500/10 to-transparent" />
       </div>
@@ -112,72 +115,97 @@ export function Paywall({ onClose }: PaywallProps) {
       <button
         onClick={onClose}
         aria-label="Skip Pro"
-        className="glass-inset hit-slop absolute right-5 top-[calc(env(safe-area-inset-top)+0.75rem)] z-20 flex h-10 w-10 items-center justify-center rounded-full text-white transition-all hover:opacity-70 active:scale-95">
-        
+        className="glass-inset hit-slop absolute right-4 top-[calc(env(safe-area-inset-top)+0.75rem)] z-30 flex h-11 w-11 items-center justify-center rounded-full text-white transition-all hover:opacity-70 active:scale-95 sm:right-5">
+
         <XIcon className="h-5 w-5" />
       </button>
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-40 pt-[calc(env(safe-area-inset-top)+4.5rem)] sm:px-6">
-        <div className="mx-auto w-60 -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
-          <div className="flex justify-between">
-            {Array.from({ length: 9 }).map((_, i) =>
-            <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
-            )}
-          </div>
-          <div className="mt-2.5 flex items-center justify-between">
-            <p className="text-[13px] font-bold text-ink-950">
-              Focus Pass{' '}
-              <span className="ml-1 rounded bg-ember-500/15 px-1 py-0.5 text-[9px] font-bold text-ember-600">PRO</span>
-            </p>
-            <p className="font-display text-sm italic text-ink-950/50">Cadence</p>
-          </div>
-          <div className="mt-3 space-y-2 text-left">
-            <div>
-              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Student</p>
-              <p className="truncate text-xs font-medium text-ink-950/80">{displayName}</p>
+      {/* Scrollable content */}
+      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
+        <div className="mx-auto flex w-full max-w-md flex-col px-5 pb-8 pt-[calc(env(safe-area-inset-top)+4rem)] sm:px-6">
+          <div className="mx-auto w-full max-w-[15rem] -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
+            <div className="flex justify-between">
+              {Array.from({ length: 9 }).map((_, i) =>
+              <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
+              )}
             </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Focus goal</p>
-              <p className="text-xs font-medium text-ink-950/80">Deep Work</p>
+            <div className="mt-2.5 flex items-center justify-between gap-2">
+              <p className="text-[13px] font-bold text-ink-950">
+                Focus Pass{' '}
+                <span className="ml-1 rounded bg-ember-500/15 px-1 py-0.5 text-[9px] font-bold text-ember-600">PRO</span>
+              </p>
+              <p className="shrink-0 font-display text-sm italic text-ink-950/50">Cadence</p>
             </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Signed</p>
-              <p className="font-display text-sm italic text-ink-950/70">{signature}</p>
+            <div className="mt-3 space-y-2 text-left">
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Student</p>
+                <p className="truncate text-xs font-medium text-ink-950/80">{displayName}</p>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Focus goal</p>
+                <p className="text-xs font-medium text-ink-950/80">Deep Work</p>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-wide text-ink-950/40">Signed</p>
+                <p className="truncate font-display text-sm italic text-ink-950/70">{signature}</p>
+              </div>
+            </div>
+            <div className="mt-3 flex justify-between">
+              {Array.from({ length: 9 }).map((_, i) =>
+              <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
+              )}
             </div>
           </div>
-          <div className="mt-3 flex justify-between">
-            {Array.from({ length: 9 }).map((_, i) =>
-            <span key={i} className="h-1 w-1 rounded-full bg-black/15" />
-            )}
-          </div>
-        </div>
 
-        <p className="mt-6 text-center font-display text-3xl tracking-tight text-white sm:text-4xl">
-          Cadence <span className="italic text-ember-400">Pro</span>
-        </p>
-        <p className="mx-auto mt-2 max-w-[240px] text-center text-sm leading-6 text-neutral-400">
-          Launch special is on!
-          <br />
-          Unlock your best study habits now!
-        </p>
+          <p className="mt-6 text-center font-display text-[28px] leading-tight tracking-tight text-white sm:text-4xl">
+            Cadence <span className="italic text-ember-400">Pro</span>
+          </p>
+          <p className="mx-auto mt-2 max-w-[260px] text-center text-sm leading-6 text-neutral-400">
+            Launch special is on!
+            <br />
+            Unlock your best study habits now!
+          </p>
 
-        {!isPro &&
-        <div className="mt-7 space-y-3">
-          <div className="relative">
-            <span className="absolute -top-2.5 left-4 z-10 rounded-full bg-gradient-to-r from-ember-500 to-orange-600 px-2.5 py-1 text-[10px] font-bold text-white">
-              Save 40%
-            </span>
+          {!isPro &&
+          <div className="mt-7 space-y-3">
+            <div className="relative">
+              <span className="absolute -top-2.5 left-4 z-10 rounded-full bg-gradient-to-r from-ember-500 to-orange-600 px-2.5 py-1 text-[10px] font-bold text-white">
+                Save 40%
+              </span>
+              <button
+                onClick={() => setPlan('yearly')}
+                aria-pressed={plan === 'yearly'}
+                style={plan === 'yearly' ? { borderColor: 'rgba(255,255,255,0.85)' } : undefined}
+                className="glass-strong w-full rounded-2xl px-4 py-4 text-left transition-all active:scale-[0.99]">
+
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-base font-bold text-white">Yearly</p>
+                  <div className="flex shrink-0 items-center gap-2.5">
+                    <p className="text-xs text-neutral-300">$3.99/mo</p>
+                    {plan === 'yearly' ?
+                    <span className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-2 border-white">
+                        <span className="h-2 w-2 rounded-full bg-white" />
+                      </span> :
+
+                    <span className="h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-white/30" />
+                    }
+                  </div>
+                </div>
+                <p className="mt-1 text-xs text-neutral-400">$47.99/yr</p>
+              </button>
+            </div>
+
             <button
-              onClick={() => setPlan('yearly')}
-              aria-pressed={plan === 'yearly'}
-              style={plan === 'yearly' ? { borderColor: 'rgba(255,255,255,0.85)' } : undefined}
+              onClick={() => setPlan('monthly')}
+              aria-pressed={plan === 'monthly'}
+              style={plan === 'monthly' ? { borderColor: 'rgba(255,255,255,0.85)' } : undefined}
               className="glass-strong w-full rounded-2xl px-4 py-4 text-left transition-all active:scale-[0.99]">
-              
-              <div className="flex items-center justify-between">
-                <p className="text-base font-bold text-white">Yearly</p>
-                <div className="flex items-center gap-2.5">
-                  <p className="text-xs text-neutral-300">$3.99/mo</p>
-                  {plan === 'yearly' ?
+
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-base font-bold text-white">Monthly</p>
+                <div className="flex shrink-0 items-center gap-2.5">
+                  <p className="text-xs text-neutral-300">$6.99/mo</p>
+                  {plan === 'monthly' ?
                   <span className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-2 border-white">
                       <span className="h-2 w-2 rounded-full bg-white" />
                     </span> :
@@ -186,65 +214,44 @@ export function Paywall({ onClose }: PaywallProps) {
                   }
                 </div>
               </div>
-              <p className="mt-1 text-xs text-neutral-400">$47.99/yr</p>
             </button>
           </div>
+          }
 
-          <button
-            onClick={() => setPlan('monthly')}
-            aria-pressed={plan === 'monthly'}
-            style={plan === 'monthly' ? { borderColor: 'rgba(255,255,255,0.85)' } : undefined}
-            className="glass-strong w-full rounded-2xl px-4 py-4 text-left transition-all active:scale-[0.99]">
-            
-            <div className="flex items-center justify-between">
-              <p className="text-base font-bold text-white">Monthly</p>
-              <div className="flex items-center gap-2.5">
-                <p className="text-xs text-neutral-300">$6.99/mo</p>
-                {plan === 'monthly' ?
-                <span className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full border-2 border-white">
-                    <span className="h-2 w-2 rounded-full bg-white" />
-                  </span> :
-
-                <span className="h-[18px] w-[18px] flex-shrink-0 rounded-full border-2 border-white/30" />
-                }
-              </div>
-            </div>
-          </button>
-        </div>
-        }
-
-        {isPro &&
-        <div className="glass-strong mt-7 rounded-2xl px-4 py-5 text-center">
-          <ShieldCheckIcon className="mx-auto h-8 w-8 text-ember-400" />
-          <p className="mt-2 text-base font-bold text-white">You're on Cadence Pro</p>
-          <p className="mx-auto mt-1 max-w-[280px] text-xs leading-5 text-neutral-400">
-            Thanks for being a member — the full sound library and the advanced distraction plan are unlocked.
-          </p>
-        </div>
-        }
-
-        <section className="mt-8">
-          <p className="text-lg font-bold text-white">PRO Benefits</p>
-          <div className="mt-4 space-y-5">
-            {benefits.map(({ icon: Icon, title, desc, bg }) =>
-            <div key={title} className="flex items-start gap-3">
-                <div
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
-                style={{ backgroundColor: bg }}>
-                
-                  <Icon className="h-[18px] w-[18px] text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{title}</p>
-                  <p className="text-xs text-neutral-400">{desc}</p>
-                </div>
-              </div>
-            )}
+          {isPro &&
+          <div className="glass-strong mt-7 rounded-2xl px-4 py-5 text-center">
+            <ShieldCheckIcon className="mx-auto h-8 w-8 text-ember-400" />
+            <p className="mt-2 text-base font-bold text-white">You're on Cadence Pro</p>
+            <p className="mx-auto mt-1 max-w-[280px] text-xs leading-5 text-neutral-400">
+              Thanks for being a member — the full sound library and the advanced distraction plan are unlocked.
+            </p>
           </div>
-        </section>
+          }
+
+          <section className="mt-8">
+            <p className="text-lg font-bold text-white">PRO Benefits</p>
+            <div className="mt-4 space-y-5">
+              {benefits.map(({ icon: Icon, title, desc, bg }) =>
+              <div key={title} className="flex items-start gap-3">
+                  <div
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: bg }}>
+
+                    <Icon className="h-[18px] w-[18px] text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="text-xs leading-5 text-neutral-400">{desc}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-ink-950 via-ink-950/95 to-transparent px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-10 sm:px-6">
+      {/* Action bar — part of the flex column, so it never covers content */}
+      <div className="relative z-20 shrink-0 border-t border-white/5 bg-ink-950/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6">
         <div className="mx-auto w-full max-w-md">
           <button
             onClick={isPro ? onClose : handleStart}
@@ -253,12 +260,12 @@ export function Paywall({ onClose }: PaywallProps) {
             {isPro ? 'Back to Cadence' : plan === 'yearly' ? 'Start Pro • Yearly' : 'Start Pro • Monthly'}
           </button>
           {!isPro && (
-            <button onClick={onClose} className="hit-slop mt-3 w-full py-1 text-center text-sm text-neutral-400 transition-colors hover:text-neutral-300 active:text-white">
+            <button onClick={onClose} className="hit-slop mt-2 w-full py-1.5 text-center text-sm text-neutral-400 transition-colors hover:text-neutral-300 active:text-white">
               Not now
             </button>
           )}
           {!isPro && (
-            <p className="mt-3 text-center text-[11px] leading-4 text-neutral-500">
+            <p className="mt-1 text-center text-[11px] leading-4 text-neutral-500">
               Renews automatically until cancelled. By subscribing you agree to our{' '}
               <a href="/terms" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Terms</a>{' '}
               and{' '}
