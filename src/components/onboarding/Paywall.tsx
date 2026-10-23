@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { XIcon, TimerIcon, ShieldCheckIcon, LineChartIcon, PaletteIcon } from 'lucide-react';
+import { TimerIcon, ShieldCheckIcon, LineChartIcon, PaletteIcon } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
@@ -112,17 +112,9 @@ export function Paywall({ onClose }: PaywallProps) {
         <div className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-ember-600/35 via-ember-500/10 to-transparent" />
       </div>
 
-      <button
-        onClick={onClose}
-        aria-label="Skip Pro"
-        className="glass-inset hit-slop absolute right-4 top-[calc(env(safe-area-inset-top)+0.75rem)] z-30 flex h-11 w-11 items-center justify-center rounded-full text-white transition-all hover:opacity-70 active:scale-95 sm:right-5">
-
-        <XIcon className="h-5 w-5" />
-      </button>
-
       {/* Scrollable content */}
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
-        <div className="mx-auto flex w-full max-w-md flex-col px-5 pb-8 pt-[calc(env(safe-area-inset-top)+4rem)] sm:px-6">
+        <div className="mx-auto flex w-full max-w-md flex-col px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1.75rem)] sm:px-6">
           <div className="mx-auto w-full max-w-[15rem] -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
             <div className="flex justify-between">
               {Array.from({ length: 9 }).map((_, i) =>
