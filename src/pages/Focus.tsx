@@ -76,15 +76,17 @@ export function Focus() {
       setShielded(false);
       return;
     }
-    const onBlur = () => setShielded(true);
-    const onVisibility = () => {
-      if (document.hidden) setShielded(true);
+    const onBlur = () => {
+      // Only trigger when switching to another tab/app/window.
+      // Don't trigger when the screen turns off (visibility becomes hidden
+      // without a user-initiated focus change to another app in this context).
+      if (document.visibilityState === 'visible') {
+        setShielded(true);
+      }
     };
     window.addEventListener('blur', onBlur);
-    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('blur', onBlur);
-      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [shieldActive]);
 

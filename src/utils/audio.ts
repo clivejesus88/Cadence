@@ -98,12 +98,14 @@ function strike(ctx: AudioContext, out: GainNode, opts: {
   attack?: number;
   decay: number;
   at?: number;
+  detune?: number;
   filter?: { type: BiquadFilterType; freq: number; q?: number };
 }): void {
   const t = opts.at ?? ctx.currentTime;
   const osc = ctx.createOscillator();
   osc.type = opts.type ?? 'sine';
   osc.frequency.value = opts.freq;
+  if (opts.detune) osc.detune.value = opts.detune;
   const amp = ctx.createGain();
   const peak = opts.peak ?? 0.4;
   const attack = opts.attack ?? 0.008;
@@ -170,6 +172,78 @@ function scheduleLoop(
     }
   }, 25);
   return () => window.clearInterval(timer);
+}
+
+function hz(midi: number): number {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+interface ScoreEvent {
+  step: number;
+  note: number;
+  len?: number;
+  peak?: number;
+  type?: OscillatorType;
+  attack?: number;
+  detune?: number;
+}
+
+// Renders a looping note score. Notes are given as MIDI numbers and placed on
+// fixed steps, which keeps the timing sample-accurate through scheduleLoop.
+function buildScore(
+  ctx: AudioContext,
+  out: GainNode,
+  opts: {
+    stepMs: number;
+    steps: number;
+    bus?: number;
+    filter?: { type: BiquadFilterType; freq: number; q?: number };
+    events: ScoreEvent[];
+  }
+): () => void {
+  const stops: Array<() => void> = [];
+  const bus = ctx.createGain();
+  bus.gain.value = opts.bus ?? 0.06;
+  if (opts.filter) {
+    const f = ctx.createBiquadFilter();
+    f.type = opts.filter.type;
+    f.frequency.value = opts.filter.freq;
+    if (opts.filter.q !== undefined) f.Q.value = opts.filter.q;
+    bus.connect(f);
+    f.connect(out);
+    stops.push(() => {
+      bus.disconnect();
+      f.disconnect();
+    });
+  } else {
+    bus.connect(out);
+    stops.push(() => bus.disconnect());
+  }
+
+  const byStep = new Map<number, ScoreEvent[]>();
+  for (const e of opts.events) {
+    const list = byStep.get(e.step);
+    if (list) list.push(e);
+    else byStep.set(e.step, [e]);
+  }
+
+  const stopLoop = scheduleLoop(ctx, opts.stepMs, opts.steps, (step, time) => {
+    const list = byStep.get(step);
+    if (!list) return;
+    for (const e of list) {
+      strike(ctx, bus, {
+        freq: hz(e.note),
+        type: e.type ?? 'sine',
+        peak: e.peak ?? 0.28,
+        attack: e.attack ?? 0.012,
+        decay: e.len ?? 1.6,
+        at: time,
+        detune: e.detune
+      });
+    }
+  });
+  stops.push(stopLoop);
+  return () => stops.forEach((s) => s());
 }
 
 const builders: Record<string, SoundBuilder> = {
@@ -338,6 +412,187 @@ const builders: Record<string, SoundBuilder> = {
     });
     stops.push(stopLoop);
     return () => stops.forEach((s) => s());
+  },
+
+  gymnopedie(ctx, out) {
+    // Satie — Gymnopédie No. 1 (public domain). A slow 3/4 waltz of soft
+    // seventh chords with a weightless melody floating above.
+    const bar = 6; // eighth notes per 3/4 bar
+    const chords = [
+      { bass: 43, notes: [59, 62, 66] }, // G · Gmaj7
+      { bass: 38, notes: [54, 57, 61] }, // D · Dmaj7
+      { bass: 43, notes: [59, 62, 66] },
+      { bass: 38, notes: [54, 57, 61] }
+    ];
+    const melody = [78, 81, 79, 78]; // F#5 A5 G5 F#5
+    const events: ScoreEvent[] = [];
+    chords.forEach((c, b) => {
+      const base = b * bar;
+      events.push({ step: base, note: c.bass, len: 2.6, peak: 0.24, type: 'sine' });
+      c.notes.forEach((n, i) => {
+        events.push({ step: base + 3, note: n, len: 2.0, peak: 0.09, type: 'triangle', detune: i === 1 ? 5 : -5 });
+      });
+      events.push({ step: base, note: melody[b], len: 3.2, peak: 0.18, type: 'triangle' });
+    });
+    return buildScore(ctx, out, {
+      stepMs: 450,
+      steps: bar * chords.length,
+      bus: 0.055,
+      filter: { type: 'lowpass', freq: 2400 },
+      events
+    });
+  },
+
+  moonlight(ctx, out) {
+    // Beethoven — Moonlight Sonata, first movement (public domain). Rolling
+    // triplet arpeggios in C# minor: the defining soft, restless mood.
+    const bar = 12; // eighth-note triplets across 4/4
+    const chords = [
+      [49, 52, 56, 61], // C#m
+      [45, 49, 52, 57], // A
+      [52, 56, 59, 64], // E
+      [44, 47, 51, 56]  // G#m
+    ];
+    const pattern = [0, 1, 2, 3, 2, 1];
+    const events: ScoreEvent[] = [];
+    chords.forEach((c, b) => {
+      const base = b * bar;
+      for (let i = 0; i < bar; i++) {
+        events.push({ step: base + i, note: c[pattern[i % pattern.length]], len: 1.5, peak: 0.13, type: 'sine' });
+      }
+      events.push({ step: base, note: c[0] - 12, len: 3.4, peak: 0.16, type: 'sine' });
+    });
+    return buildScore(ctx, out, {
+      stepMs: 370,
+      steps: bar * chords.length,
+      bus: 0.05,
+      filter: { type: 'lowpass', freq: 2000 },
+      events
+    });
+  },
+
+  canon(ctx, out) {
+    // Pachelbel — Canon in D (public domain). The familiar descending line
+    // over gently rolling arpeggios.
+    const bar = 8; // eighth notes per 4/4 bar
+    const progression = [
+      [50, 54, 57, 62], // D
+      [45, 49, 52, 57], // A
+      [47, 50, 54, 59], // Bm
+      [42, 45, 49, 54], // F#m
+      [43, 47, 50, 55], // G
+      [50, 54, 57, 62], // D
+      [43, 47, 50, 55], // G
+      [45, 49, 52, 57]  // A
+    ];
+    const melody = [78, 76, 74, 73, 71, 69, 71, 73];
+    const arp = [0, 1, 2, 3, 2, 1, 2, 1];
+    const events: ScoreEvent[] = [];
+    progression.forEach((notes, b) => {
+      const base = b * bar;
+      for (let i = 0; i < bar; i++) {
+        events.push({ step: base + i, note: notes[arp[i]], len: 1.4, peak: 0.1, type: 'triangle' });
+      }
+      events.push({ step: base, note: melody[b], len: 3.0, peak: 0.16, type: 'sine' });
+    });
+    return buildScore(ctx, out, {
+      stepMs: 470,
+      steps: bar * progression.length,
+      bus: 0.05,
+      filter: { type: 'lowpass', freq: 2600 },
+      events
+    });
+  },
+
+  cinematic(ctx, out) {
+    // Original piece in the Einaudi / "Experience" spirit: a repeating minimal
+    // arpeggio over a vi–IV–I–V progression. Written for this app.
+    const bar = 8;
+    const progression = [
+      { bass: 45, notes: [57, 60, 64, 69] }, // Am
+      { bass: 41, notes: [53, 57, 60, 65] }, // F
+      { bass: 48, notes: [52, 55, 60, 64] }, // C
+      { bass: 43, notes: [55, 59, 62, 67] }  // G
+    ];
+    const melody = [76, 72, 67, 74]; // E5 C5 G4 D5 — original motif
+    const arp = [0, 1, 2, 3, 1, 2, 3, 2];
+    const events: ScoreEvent[] = [];
+    progression.forEach((c, b) => {
+      const base = b * bar;
+      for (let i = 0; i < bar; i++) {
+        events.push({ step: base + i, note: c.notes[arp[i]], len: 1.8, peak: 0.11, type: 'sine' });
+      }
+      events.push({ step: base, note: c.bass, len: 2.8, peak: 0.18, type: 'sine' });
+      events.push({ step: base, note: melody[b], len: 3.4, peak: 0.16, type: 'triangle' });
+    });
+    return buildScore(ctx, out, {
+      stepMs: 430,
+      steps: bar * progression.length,
+      bus: 0.055,
+      filter: { type: 'lowpass', freq: 2600 },
+      events
+    });
+  },
+
+  cinematicStrings(ctx, out) {
+    // Original in the Zimmer / "Time" spirit: slow swelling string pads over a
+    // i–VI–III–VII progression. Written for this app.
+    const bar = 8;
+    const progression = [
+      [50, 53, 57, 62], // Dm
+      [46, 50, 53, 58], // Bb
+      [41, 45, 48, 53], // F
+      [48, 52, 55, 60]  // C
+    ];
+    const events: ScoreEvent[] = [];
+    progression.forEach((notes, b) => {
+      const base = b * bar;
+      notes.forEach((n, i) => {
+        // Two slightly detuned voices per note thicken the pad.
+        events.push({ step: base, note: n, len: 5, peak: 0.06, attack: 1.1, type: 'triangle', detune: -6 });
+        events.push({ step: base, note: n, len: 5, peak: 0.06, attack: 1.1, type: 'triangle', detune: 6 });
+        if (i === 0) events.push({ step: base, note: n - 12, len: 5.2, peak: 0.1, attack: 1.2, type: 'sine' });
+      });
+      // A soft bell-like motif on the second half of each chord.
+      events.push({ step: base + 4, note: notes[2] + 12, len: 2.6, peak: 0.05, type: 'sine' });
+    });
+    return buildScore(ctx, out, {
+      stepMs: 600,
+      steps: bar * progression.length,
+      bus: 0.07,
+      filter: { type: 'lowpass', freq: 1200 },
+      events
+    });
+  },
+
+  nocturne(ctx, out) {
+    // Original Chopin-inspired nocturne: flowing left-hand arpeggios with a
+    // quiet, singing melody. Written for this app.
+    const bar = 8;
+    const progression = [
+      { bass: 40, notes: [52, 55, 59, 64] }, // Em
+      { bass: 36, notes: [48, 52, 55, 60] }, // C
+      { bass: 43, notes: [55, 59, 62, 67] }, // G
+      { bass: 38, notes: [50, 54, 57, 62] }  // D
+    ];
+    const melody = [71, 72, 74, 69]; // B4 C5 D5 A4 — original motif
+    const arp = [0, 1, 2, 3, 2, 1, 2, 3];
+    const events: ScoreEvent[] = [];
+    progression.forEach((c, b) => {
+      const base = b * bar;
+      for (let i = 0; i < bar; i++) {
+        events.push({ step: base + i, note: c.notes[arp[i]], len: 1.7, peak: 0.09, type: 'sine' });
+      }
+      events.push({ step: base, note: c.bass, len: 2.6, peak: 0.16, type: 'sine' });
+      events.push({ step: base + 1, note: melody[b], len: 3.2, peak: 0.14, type: 'triangle' });
+    });
+    return buildScore(ctx, out, {
+      stepMs: 480,
+      steps: bar * progression.length,
+      bus: 0.05,
+      filter: { type: 'lowpass', freq: 2400 },
+      events
+    });
   },
 
   beats(ctx, out) {

@@ -36,9 +36,17 @@ export const ambientSounds: AmbientSound[] = [
 { id: 'fireplace', name: 'Fireplace', description: 'Crackling logs & warmth', icon: FlameIcon, premium: true, category: 'ambience', accent: '#ef4444' },
 { id: 'night', name: 'Night Fall', description: 'Crickets & calm darkness', icon: MoonIcon, premium: true, category: 'ambience', accent: '#8b5cf6' },
 
-// Music — instrumental, study-tuned (no lyrics, steady tempo)
+// Music — soft classical & cinematic (free during launch)
+{ id: 'classical', name: 'Classical Piano', description: 'Unhurried chamber harmony', icon: PianoIcon, premium: false, category: 'music', accent: '#fbbf24', tag: 'Soft · Bach & Satie' },
+{ id: 'gymnopedie', name: 'Gymnopédie', description: 'Satie · weightless, slow piano', icon: PianoIcon, premium: false, category: 'music', accent: '#facc15', tag: 'Satie · public domain' },
+{ id: 'moonlight', name: 'Moonlight Sonata', description: 'Beethoven · rolling triplets', icon: MoonIcon, premium: false, category: 'music', accent: '#93c5fd', tag: 'Beethoven · public domain' },
+{ id: 'canon', name: 'Canon in D', description: 'Pachelbel · gentle arpeggios', icon: GuitarIcon, premium: false, category: 'music', accent: '#86efac', tag: 'Pachelbel · public domain' },
+{ id: 'cinematic', name: 'Cinematic Piano', description: 'Emotional, repeating arpeggios', icon: PianoIcon, premium: false, category: 'music', accent: '#f9a8d4', tag: 'Original · Einaudi-inspired' },
+{ id: 'cinematicStrings', name: 'Cinematic Strings', description: 'Warm, slowly swelling pads', icon: Music2Icon, premium: false, category: 'music', accent: '#c4b5fd', tag: 'Original · Zimmer-inspired' },
+{ id: 'nocturne', name: 'Nocturne', description: 'Flowing night piano', icon: PianoIcon, premium: false, category: 'music', accent: '#fcd34d', tag: 'Original · Chopin-inspired' },
+
+// Music — study beats & textures
 { id: 'lofi', name: 'Lo-fi Beats', description: 'Chill instrumental loops', icon: Music2Icon, premium: false, category: 'music', accent: '#f472b6', tag: 'No lyrics · ~70 BPM' },
-{ id: 'classical', name: 'Classical Piano', description: 'Instrumental, unhurried harmony', icon: PianoIcon, premium: false, category: 'music', accent: '#fbbf24', tag: 'Instrumental · Bach & Satie' },
 { id: 'beats', name: 'Study Beats', description: 'Steady pulse for deep work', icon: DrumIcon, premium: true, category: 'music', accent: '#fb7185', tag: 'No lyrics · ~75 BPM' },
 { id: 'guitar', name: 'Ambient Guitar', description: 'Slow arpeggios, soft ambience', icon: GuitarIcon, premium: true, category: 'music', accent: '#34d399', tag: 'No lyrics · slow arpeggios' },
 { id: 'focuswave', name: 'Focus Waves', description: 'Warm alpha pulse for calm focus', icon: ActivityIcon, premium: true, category: 'music', accent: '#818cf8', tag: '8 Hz alpha pulsing' },
