@@ -19,6 +19,7 @@ Everything needed to take Cadence live on Vercel + Supabase.
    008_reminder_cron.sql -- enable pg_cron/pg_net, then schedule (see file)
    009_rate_limits.sql   -- rate_limits table + check_rate_limit() RPC
    010_revenuecat.sql    -- RevenueCat subscription metadata and webhook tracking
+   011_revenuecat_atomic_events.sql -- atomically deduplicates/orders webhook updates
    ```
 
 3. Enable extensions `pg_cron` and `pg_net` (Dashboard → Database → Extensions).
@@ -65,12 +66,15 @@ supabase secrets set \
 Deploy:
 
 ```bash
-supabase functions deploy revenuecat-webhook
+supabase functions deploy revenuecat-webhook --no-verify-jwt
 supabase functions deploy send-push
 supabase functions deploy dispatch-reminders
 ```
 
-Set the RevenueCat webhook Authorization header to the exact same value as
+RevenueCat authenticates with the configured Authorization header, not a
+Supabase JWT, so the webhook function must be deployed with JWT verification
+disabled. The function validates the shared secret itself. Set the RevenueCat
+webhook Authorization header to the exact same value as
 `REVENUECAT_WEBHOOK_AUTHORIZATION`.
 
 Schedule the dispatcher with the same `CRON_SECRET` (see `008_reminder_cron.sql`).

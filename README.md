@@ -63,11 +63,12 @@ Or paste each file into the Supabase SQL editor in order.
 | `008_reminder_cron` | schedules the hourly reminder dispatcher |
 | `009_rate_limits` | server-side rate limiting for Edge Functions |
 | `010_revenuecat` | RevenueCat subscription metadata and webhook event tracking |
+| `011_revenuecat_atomic_events` | atomically orders and applies RevenueCat webhook events |
 
 ## Edge functions
 
 ```bash
-supabase functions deploy revenuecat-webhook
+supabase functions deploy revenuecat-webhook --no-verify-jwt
 supabase functions deploy send-push
 supabase functions deploy dispatch-reminders
 ```

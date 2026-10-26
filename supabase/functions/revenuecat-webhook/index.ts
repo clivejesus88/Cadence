@@ -63,111 +63,33 @@ Deno.serve(async (req: Request) => {
       : [];
   if (!entitlementIds.includes(proEntitlementId)) return response("Ignored");
 
-  const { data: seenEvent, error: seenError } = await supabase
-    .from("revenuecat_webhook_events")
-    .select("event_id")
-    .eq("event_id", eventId)
-    .maybeSingle();
-  if (seenError) {
-    console.error("[revenuecat] failed to check duplicate event:", seenError);
-    return response("Could not check event", 500);
-  }
-  if (seenEvent) return response("OK");
+  const purchasedAt = Number(event.purchased_at_ms) || Date.now();
+  const plan = planFromProduct(event.product_id);
+  const externalSubscriptionId = typeof event.original_transaction_id === "string"
+    ? event.original_transaction_id
+    : typeof event.transaction_id === "string"
+      ? event.transaction_id
+      : null;
+  const expirationAt = Number(event.expiration_at_ms) || 0;
 
-  const { data: latestEvents, error: latestError } = await supabase
-    .from("revenuecat_webhook_events")
-    .select("event_timestamp_ms")
-    .eq("user_id", appUserId)
-    .order("event_timestamp_ms", { ascending: false })
-    .limit(1);
-  if (latestError) {
-    console.error("[revenuecat] failed to check event order:", latestError);
-    return response("Could not check event order", 500);
-  }
-
-  const latestTimestamp = Number(latestEvents?.[0]?.event_timestamp_ms ?? 0);
-  if (timestamp <= latestTimestamp) {
-    const { error } = await supabase.from("revenuecat_webhook_events").insert({
-      event_id: eventId,
-      user_id: appUserId,
-      event_type: eventType,
-      event_timestamp_ms: timestamp,
-    });
-    if (error) {
-      console.error("[revenuecat] failed to record stale event:", error);
-      return response("Could not record event", 500);
-    }
-    return response("Ignored stale event");
-  }
-
-  const activeEvents = new Set([
-    "INITIAL_PURCHASE",
-    "RENEWAL",
-    "UNCANCELLATION",
-    "PRODUCT_CHANGE",
-    "SUBSCRIPTION_EXTENDED",
-    "NON_RENEWING_PURCHASE",
-    "REFUND_REVERSED",
-  ]);
-  const expiration = eventType === "EXPIRATION";
-  if (!expiration && !activeEvents.has(eventType)) {
-    const { error } = await supabase.from("revenuecat_webhook_events").insert({
-      event_id: eventId,
-      user_id: appUserId,
-      event_type: eventType,
-      event_timestamp_ms: timestamp,
-    });
-    if (error) {
-      console.error("[revenuecat] failed to record ignored event:", error);
-      return response("Could not record event", 500);
-    }
-    return response("Ignored");
-  }
-
-  const now = Date.now();
-  const status = expiration ? "expired" : "active";
-  const { error: profileError } = await supabase
-    .from("profile")
-    .update(expiration
-      ? { plan: "free", member_since: "" }
-      : { plan: "pro", member_since: memberSinceLabel(Number(event.purchased_at_ms) || now) })
-    .eq("user_id", appUserId);
-  if (profileError) {
-    console.error("[revenuecat] failed to update profile:", profileError);
-    return response("Could not update subscription access", 500);
-  }
-
-  const { error: subscriptionError } = await supabase.from("subscriptions").upsert({
-    id: `revenuecat-${appUserId}`,
-    user_id: appUserId,
-    provider: "revenuecat",
-    status,
-    plan: planFromProduct(event.product_id),
-    external_subscription_id: typeof event.original_transaction_id === "string"
-      ? event.original_transaction_id
-      : typeof event.transaction_id === "string"
-        ? event.transaction_id
-        : null,
-    current_period_end: Number(event.expiration_at_ms) || null,
-    cancelled_at: expiration ? now : null,
-    last_event_at: timestamp,
-    updated_at: now,
-  }, { onConflict: "id" });
-  if (subscriptionError) {
-    console.error("[revenuecat] failed to update subscription record:", subscriptionError);
-    return response("Could not record subscription", 500);
-  }
-
-  const { error: recordError } = await supabase.from("revenuecat_webhook_events").insert({
-    event_id: eventId,
-    user_id: appUserId,
-    event_type: eventType,
-    event_timestamp_ms: timestamp,
+  const { data: result, error } = await supabase.rpc("process_revenuecat_event", {
+    p_event_id: eventId,
+    p_user_id: appUserId,
+    p_event_type: eventType,
+    p_event_timestamp_ms: timestamp,
+    p_plan: plan,
+    p_external_subscription_id: externalSubscriptionId,
+    p_expiration_at_ms: expirationAt,
+    p_member_since: memberSinceLabel(purchasedAt),
   });
-  if (recordError) {
-    console.error("[revenuecat] failed to record processed event:", recordError);
-    return response("Could not record event", 500);
+  if (error) {
+    console.error("[revenuecat] failed to atomically process event:", error);
+    return response("Could not process subscription event", 500);
+  }
+  if (result === "processed" || result === "duplicate" || result === "stale" || result === "ignored") {
+    return response(result === "stale" ? "Ignored stale event" : "OK");
   }
 
-  return response("OK");
+  console.error("[revenuecat] unexpected event processing result:", result);
+  return response("Could not process subscription event", 500);
 });
