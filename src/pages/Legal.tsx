@@ -8,19 +8,21 @@ const CONTACT_EMAIL = 'support@cadence.app';
 function LegalShell({ title, children }: { title: string; children: ReactNode }) {
   const navigate = useNavigate();
   return (
-    <div className="mx-auto max-w-2xl px-5 pb-16 pt-[calc(env(safe-area-inset-top)+2rem)]">
-      <header className="flex items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-          className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
-          <ChevronLeftIcon className="h-5 w-5" />
-        </button>
-        <h1 className="font-display text-2xl text-white">{title}</h1>
-      </header>
-      <p className="mt-2 px-1 text-xs text-neutral-500">Last updated {EFFECTIVE_DATE}</p>
-      <div className="legal mt-6 space-y-5 text-sm leading-6 text-neutral-300">{children}</div>
-    </div>
+    <main className="scroll-contain h-full w-full overflow-x-hidden overflow-y-auto">
+      <article className="mx-auto min-h-full w-full max-w-2xl break-words px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6 sm:pt-8">
+        <header className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Back"
+            className="hit-slop glass-inset flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
+            <ChevronLeftIcon className="h-5 w-5" />
+          </button>
+          <h1 className="font-display text-2xl text-white sm:text-3xl">{title}</h1>
+        </header>
+        <p className="mt-2 px-1 text-xs text-neutral-500">Last updated {EFFECTIVE_DATE}</p>
+        <div className="legal mt-6 space-y-5 text-sm leading-6 text-neutral-300">{children}</div>
+      </article>
+    </main>
   );
 }
 

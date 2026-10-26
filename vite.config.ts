@@ -20,12 +20,15 @@ export default defineConfig({
         theme_color: '#0a0d10',
         background_color: '#0a0d10',
         display: 'standalone',
+        lang: 'en',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-squircle-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-round-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ]
       },
