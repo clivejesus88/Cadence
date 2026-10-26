@@ -66,8 +66,8 @@ export function Home() {
   }, [preferences.taskReminders, preferences.sessionReminders, preferences.dailySummary, todayMinutes, totalSessionsCompleted, overdueCount, todayDueCount, firstReminderTask]);
 
   return (
-    <div className="px-5 pt-8">
-      <header className="flex items-center justify-between">
+    <div className="px-5 pt-8 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-10">
+      <header className="flex items-center justify-between lg:col-span-2">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/app/profile')}
@@ -92,7 +92,7 @@ export function Home() {
 
       <button
         onClick={() => navigate('/app/focus')}
-        className="glass-strong mt-6 w-full text-left rounded-3xl p-5 relative overflow-hidden active:scale-[0.99] transition-transform">
+        className="glass-strong mt-6 w-full text-left rounded-3xl p-5 relative overflow-hidden active:scale-[0.99] transition-transform lg:col-span-2 lg:mt-0 lg:p-7">
         
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -110,7 +110,7 @@ export function Home() {
         </div>
       </button>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0">
         <div className="flex items-center justify-between mb-3">
           <p className="text-white font-semibold">This week</p>
           <button
@@ -123,7 +123,7 @@ export function Home() {
         <WeeklyPreview data={weeklyData} />
       </section>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0">
         <div className="flex items-center justify-between mb-3">
           <p className="text-white font-semibold">Up next</p>
           <button
@@ -136,7 +136,7 @@ export function Home() {
         <TaskPreviewList tasks={todaysTasks} />
       </section>
 
-      <section className="glass mt-6 mb-8 flex items-start gap-3 rounded-2xl p-4">
+      <section className="glass mt-6 mb-8 flex items-start gap-3 rounded-2xl p-4 lg:col-span-2 lg:mt-0 lg:mb-0 lg:p-5">
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
           <LightbulbIcon className="w-4 h-4 text-neutral-300" />
         </div>

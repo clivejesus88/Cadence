@@ -85,7 +85,7 @@ export function AuthScreen({ onSuccess, onBack, onGuest }: AuthScreenProps) {
         <ChevronLeftIcon className="h-5 w-5" />
       </button>
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 py-10 sm:px-6">
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 py-10 sm:px-6 md:max-w-lg lg:max-w-xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
           <div className="mb-8 flex w-full flex-col items-center text-center">
             <motion.p

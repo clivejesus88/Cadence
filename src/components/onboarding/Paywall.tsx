@@ -114,7 +114,7 @@ export function Paywall({ onClose }: PaywallProps) {
 
       {/* Scrollable content */}
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain">
-        <div className="mx-auto flex w-full max-w-md flex-col px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1.75rem)] sm:px-6">
+        <div className="mx-auto flex w-full max-w-md flex-col px-5 pb-8 pt-[calc(env(safe-area-inset-top)+1.75rem)] sm:px-6 md:max-w-xl lg:max-w-2xl">
           <div className="mx-auto w-full max-w-[15rem] -rotate-6 rounded-2xl bg-[#f3efe6] px-4 pb-4 pt-3 shadow-2xl">
             <div className="flex justify-between">
               {Array.from({ length: 9 }).map((_, i) =>
@@ -222,7 +222,7 @@ export function Paywall({ onClose }: PaywallProps) {
 
           <section className="mt-8">
             <p className="text-lg font-bold text-white">PRO Benefits</p>
-            <div className="mt-4 space-y-5">
+            <div className="mt-4 space-y-5 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-5 md:space-y-0">
               {benefits.map(({ icon: Icon, title, desc, bg }) =>
               <div key={title} className="flex items-start gap-3">
                   <div
@@ -244,7 +244,7 @@ export function Paywall({ onClose }: PaywallProps) {
 
       {/* Action bar — part of the flex column, so it never covers content */}
       <div className="relative z-20 shrink-0 border-t border-white/5 bg-ink-950/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6">
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-md md:max-w-xl lg:max-w-2xl">
           <button
             onClick={isPro ? onClose : handleStart}
             disabled={loading}

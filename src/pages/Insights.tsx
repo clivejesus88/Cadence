@@ -42,18 +42,20 @@ export function Insights() {
   }, [tasks, focusSessions]);
 
   return (
-    <div className="px-5 pt-8 pb-8">
-      <h1 className="font-display text-2xl text-white">Insights</h1>
-      <p className="text-neutral-400 text-sm mt-1">Your focus patterns, at a glance.</p>
+    <div className="px-5 pt-8 pb-8 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-10">
+      <header className="lg:col-span-2">
+        <h1 className="font-display text-2xl text-white">Insights</h1>
+        <p className="text-neutral-400 text-sm mt-1">Your focus patterns, at a glance.</p>
+      </header>
 
-      <div className="grid grid-cols-2 gap-3 mt-6">
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:col-span-2 lg:mt-0 lg:grid-cols-4">
         <StatCard icon={ClockIcon} label="This Week" value={formatMinutes(weekTotal)} />
         <StatCard icon={FlameIcon} label="Current Streak" value={`${currentStreak} days`} />
         <StatCard icon={ListChecksIcon} label="Sessions" value={`${totalSessionsCompleted}`} />
         <StatCard icon={TrendingUpIcon} label="Avg Session" value={formatMinutes(avgSession)} />
       </div>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-white font-semibold text-sm">Daily focus time</p>
@@ -98,12 +100,12 @@ export function Insights() {
         </div>
       </section>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0">
         <p className="text-white font-semibold text-sm mb-3">Consistency</p>
         <StreakHeatmap sessions={sessions} />
       </section>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0">
         <p className="text-white font-semibold text-sm mb-3">Monthly trend</p>
         <div className="glass rounded-2xl p-4">
           {focusSessions.length === 0 ?
@@ -129,7 +131,7 @@ export function Insights() {
         </div>
       </section>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0">
         <p className="text-white font-semibold text-sm mb-3">By subject</p>
         <div className="glass rounded-2xl p-4">
           {subjectBreakdown.length === 0 &&
@@ -151,7 +153,7 @@ export function Insights() {
         </div>
       </section>
 
-      <section className="mt-6">
+      <section className="mt-6 lg:mt-0 lg:col-span-2">
         <p className="text-white font-semibold text-sm mb-3">Focus summary</p>
         <div className="glass rounded-2xl divide-y divide-white/5">
           {totalSessionsCompleted === 0 ?

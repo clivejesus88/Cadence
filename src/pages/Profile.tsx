@@ -58,15 +58,15 @@ export function Profile() {
     await signOut();
     navigate('/', { replace: true });
   };
-  return <div className="px-5 pt-8 pb-8">
-      <header className="flex items-center gap-3">
+  return <div className="px-5 pt-8 pb-8 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-10">
+      <header className="flex items-center gap-3 lg:col-span-2">
         <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         <h1 className="font-display text-2xl text-white">Profile</h1>
       </header>
 
-      <section className="glass-strong mt-6 rounded-3xl p-5">
+      <section className="glass-strong mt-6 rounded-3xl p-5 lg:col-span-2 lg:mt-0 lg:p-7">
         <div className="flex items-start gap-4">
           <Avatar value={profile.avatarUrl} className="h-16 w-16 flex-shrink-0 ring-2 ring-white/20" alt={profile.name} />
           <div className="min-w-0 flex-1">
@@ -107,7 +107,7 @@ export function Profile() {
         </div>
       </section>
 
-      <section className="mt-7">
+      <section className="mt-7 lg:col-span-2 lg:mt-0">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Progress</h2>
         <div className="glass-strong rounded-3xl p-5">
           <div className="flex items-center justify-between gap-4">
@@ -126,7 +126,7 @@ export function Profile() {
         </div>
       </section>
 
-      <section className="mt-7">
+      <section className="mt-7 lg:mt-0">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus preferences</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <div className="px-4 py-3.5">
@@ -175,7 +175,7 @@ export function Profile() {
         </div>
       </section>
 
-      <section className="mt-7">
+      <section className="mt-7 lg:mt-0">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Notifications</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={BellIcon} title="Session reminders" description="Nudge me when it's time to study." control={<ToggleSwitch label="Session reminders" checked={preferences.sessionReminders} onChange={(v) => handleReminderToggle('sessionReminders', v)} />} />
@@ -194,7 +194,7 @@ export function Profile() {
         )}
       </section>
 
-      <section className="mt-7">
+      <section className="mt-7 lg:mt-0">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus shield</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={ShieldCheckIcon} title="Stay off distractions" description="Nudge me if I switch away during a session." control={<ToggleSwitch label="Stay off distractions" checked={preferences.blockDuringFocus} onChange={(v) => updatePreference('blockDuringFocus', v)} />} />
@@ -203,7 +203,7 @@ export function Profile() {
         </div>
       </section>
 
-      <section className="mt-7">
+      <section className="mt-7 lg:mt-0">
         <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Account</h2>
         <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
           <SettingRow icon={UserRoundIcon} title="Edit profile" description="Update your name, school, email and photo." onClick={() => setEditing(true)} />
@@ -213,12 +213,12 @@ export function Profile() {
         </div>
       </section>
 
-      <p className="mt-6 flex items-center justify-center gap-3 text-center text-[11px] text-neutral-600">
+      <p className="mt-6 flex items-center justify-center gap-3 text-center text-[11px] text-neutral-600 lg:col-span-2 lg:mt-0">
         <button onClick={() => navigate('/privacy')} className="hit-slop transition-colors hover:text-neutral-400">Privacy</button>
         <span className="text-neutral-700">·</span>
         <button onClick={() => navigate('/terms')} className="hit-slop transition-colors hover:text-neutral-400">Terms</button>
       </p>
-      <p className="mt-2 text-center text-[11px] text-neutral-600">Cadence v1.0 · Made for focused students</p>
+      <p className="mt-2 text-center text-[11px] text-neutral-600 lg:col-span-2 lg:mt-0">Cadence v1.0 · Made for focused students</p>
       {editing && <EditProfileSheet profile={profile} onClose={() => setEditing(false)} />}
     </div>;
 }

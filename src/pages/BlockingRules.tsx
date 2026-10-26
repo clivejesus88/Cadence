@@ -61,7 +61,7 @@ export function BlockingRules() {
   };
 
   return (
-    <div className="px-5 pt-8 pb-8">
+    <div className="px-5 pt-8 pb-8 lg:px-8 lg:pt-10">
       <header className="flex items-center gap-3">
         <button onClick={() => navigate('/app/profile')} aria-label="Back to profile" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
@@ -75,7 +75,7 @@ export function BlockingRules() {
           Cadence can't close other apps for you — but it can remind you what you chose to avoid, by app, schedule, or website.
         </p>
 
-        <section className="mt-6">
+        <section className="mt-6 lg:mt-8">
           <div className="flex items-center justify-between mb-3">
             <p className="text-white font-semibold text-sm">Rules</p>
             <button
@@ -96,7 +96,7 @@ export function BlockingRules() {
             </div>
           }
 
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {rules.map((rule) =>
             <div key={rule.id} className={`glass rounded-2xl px-4 py-3.5 transition-opacity ${rule.enabled ? '' : 'opacity-50'}`}>
                 <div className="flex items-center gap-3">

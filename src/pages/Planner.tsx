@@ -36,7 +36,7 @@ export function Planner() {
   };
 
   return (
-    <div className="px-5 pt-8 pb-8">
+    <div className="px-5 pt-8 pb-8 lg:px-8 lg:pt-10">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl text-white">Planner</h1>
@@ -53,7 +53,7 @@ export function Planner() {
         </button>
       </div>
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-6 space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
         {groups.map((g) =>
         <div key={g.label}>
             <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2.5">{g.label}</p>

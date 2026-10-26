@@ -16,7 +16,7 @@ export function SessionComplete({ minutes, breakMinutes, onBreak, onDone }: Sess
   const { level } = useAppData();
   const xpGained = minutes + 5;
   return (
-    <div className="px-5 pt-16 pb-8 flex flex-col items-center text-center min-h-[calc(100dvh-8rem)]">
+    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-lg flex-col items-center px-5 pt-16 pb-8 text-center lg:px-8">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

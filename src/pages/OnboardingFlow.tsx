@@ -128,7 +128,7 @@ export function OnboardingFlow() {
           <div className="absolute -top-10 -right-16 h-72 w-72 rounded-full bg-ember-500/25 blur-[100px]" />
           <div className="absolute bottom-0 -left-16 h-72 w-72 rounded-full bg-sky-500/15 blur-[100px]" />
         </div>
-        <div className="mx-auto flex w-full max-w-md items-center justify-end">
+        <div className="mx-auto flex w-full max-w-md items-center justify-end md:max-w-5xl">
           <button
             onClick={() => setStep(isConfigured ? 5 : 6)}
             className="hit-slop px-3 py-1 text-sm text-neutral-500 transition-colors hover:text-neutral-300 active:text-white">
@@ -142,21 +142,24 @@ export function OnboardingFlow() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -12, scale: 0.995 }}
             transition={{ duration: 0.28, ease: 'easeOut' }}
-            className="mx-auto flex flex-1 w-full max-w-md flex-col items-center justify-center text-center">
+            className="mx-auto flex flex-1 w-full max-w-md flex-col items-center justify-center text-center md:max-w-5xl md:flex-row md:gap-12 md:text-left">
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.08, duration: 0.32, ease: 'easeOut' }}>
+              transition={{ delay: 0.08, duration: 0.32, ease: 'easeOut' }}
+              className="md:flex-1 md:scale-110">
               <Visual />
             </motion.div>
-            <p className="mt-8 font-display text-2xl text-white tracking-tight">{title}</p>
-            <p className="mt-2.5 max-w-[280px] text-sm leading-6 text-neutral-400">{subtitle}</p>
+            <div className="md:flex-1">
+              <p className="mt-8 font-display text-2xl text-white tracking-tight md:mt-0 md:text-4xl">{title}</p>
+              <p className="mt-2.5 max-w-[280px] text-sm leading-6 text-neutral-400 md:max-w-md md:text-base md:leading-7">{subtitle}</p>
+            </div>
           </motion.div>
         </AnimatePresence>
-        <div className="mx-auto mb-6 w-full max-w-md">
+        <div className="mx-auto mb-6 w-full max-w-md md:max-w-5xl">
           <OnboardingDots total={4} current={idx} />
         </div>
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-md md:max-w-5xl">
           <button
             onClick={next}
             className="w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.995]">

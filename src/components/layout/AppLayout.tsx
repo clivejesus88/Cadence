@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { BottomNav } from './BottomNav';
+import { BottomNav, DesktopNav } from './BottomNav';
 import { useAuth } from '../../contexts/AuthContext';
 import { SessionToast } from '../notifications/SessionToast';
 import { LogInIcon } from 'lucide-react';
@@ -97,18 +97,23 @@ export function AppLayout() {
 
   return (
     <div className="flex h-[100dvh] w-full justify-center overflow-hidden bg-ink-950">
-      <div className="relative flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-ink-950">
+      <div className="relative flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-ink-950 md:max-w-none md:flex-row">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-16 -right-12 h-80 w-80 rounded-full bg-ember-500/30 blur-[100px]" />
           <div className="absolute top-1/3 -left-20 h-72 w-72 rounded-full bg-sky-500/20 blur-[100px]" />
           <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-violet-500/20 blur-[100px]" />
         </div>
+        <DesktopNav />
         <div
           ref={scrollRef}
-          className="scroll-contain relative flex-1 overflow-y-auto pb-32 no-scrollbar">
-          <Outlet />
+          className="scroll-contain relative min-w-0 flex-1 overflow-y-auto pb-32 no-scrollbar md:pb-10">
+          <div className="mx-auto w-full max-w-7xl">
+            <Outlet />
+          </div>
         </div>
-        <BottomNav visible={navVisible} />
+        <div className="md:hidden">
+          <BottomNav visible={navVisible} />
+        </div>
       </div>
     </div>);
 }

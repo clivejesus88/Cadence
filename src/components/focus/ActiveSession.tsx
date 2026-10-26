@@ -56,7 +56,7 @@ export function ActiveSession({
   const isBreathing = sessionType === 'focus' && !isPaused;
 
   return (
-    <div className="px-5 pt-10 pb-6 flex flex-col items-center min-h-[calc(100dvh-8rem)]">
+    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-lg flex-col items-center px-5 pt-10 pb-6 lg:px-8">
       <p className="text-neutral-400 text-sm uppercase tracking-wide font-medium">
         {sessionType === 'focus' ? 'Focusing' : 'Break'}
       </p>

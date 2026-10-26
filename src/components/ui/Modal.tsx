@@ -148,7 +148,7 @@ export function Modal({
         if (info.offset.y > 110 || info.velocity.y > 700) onClose();
       }}
       className={`modal-card flex w-full flex-col rounded-[30px] ${
-        isSheet ? 'max-h-full max-w-sm' : 'max-h-full max-w-md'
+        isSheet ? 'max-h-full max-w-sm md:max-h-[85dvh] md:max-w-lg' : 'max-h-full max-w-md md:max-h-[85dvh] md:max-w-xl'
       }`}
     >
       {isSheet && (
@@ -180,7 +180,7 @@ export function Modal({
           style={viewport ? { top: viewport.top, height: viewport.height } : undefined}
           className={`fixed inset-0 z-[60] flex justify-center ${
             isSheet
-              ? 'items-end px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]'
+              ? 'items-end px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:items-center md:px-8 md:py-8'
               : 'items-center px-5 py-10'
           }`}
         >
