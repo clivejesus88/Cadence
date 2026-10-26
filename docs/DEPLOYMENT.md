@@ -40,8 +40,8 @@ npx web-push generate-vapid-keys
 
 1. Create a RevenueCat Web Billing app and connect your Stripe account.
 2. Create monthly and annual products. In the current offering, add packages
-   using RevenueCat's predefined **Monthly** (`$rc_monthly`) and **Annual**
-   (`$rc_annual`) package identifiers, and attach the matching products.
+   with the exact custom identifiers `rc_monthly` and `rc_annual`, and attach
+   the matching products.
 3. Create the `pro` entitlement and attach both products to it.
 4. Copy the Web Billing public API key to Vercel as
    `VITE_REVENUECAT_WEB_API_KEY`.
@@ -49,9 +49,10 @@ npx web-push generate-vapid-keys
 
    `https://<ref>.supabase.co/functions/v1/revenuecat-webhook`
 
-The app loads the current offering's predefined monthly and annual packages.
+The app loads `rc_monthly` and `rc_annual` from the current offering. It also
+falls back to RevenueCat's predefined monthly and annual package types.
 If the paywall says a plan is unavailable, verify that this offering is marked
-**Current**, both packages use the predefined identifiers above, and each
+**Current**, both packages use the exact custom identifiers above, and each
 package's product is attached to the `pro` entitlement. Also confirm the web
 API key belongs to this RevenueCat project and the app has been redeployed
 after changing the Vercel environment variable.

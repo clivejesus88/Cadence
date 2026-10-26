@@ -35,8 +35,12 @@ export function Paywall({ onClose }: PaywallProps) {
   const displayName = user ? profile.name || user.email?.split('@')[0] || 'Student' : 'Guest';
   const nameParts = displayName.trim().split(/\s+/);
   const signature = nameParts.length > 1 ? `${nameParts[0]} ${nameParts[nameParts.length - 1].charAt(0)}.` : displayName;
-  const monthlyPackage = offering?.monthly ?? null;
-  const yearlyPackage = offering?.annual ?? null;
+  const monthlyPackage = offering?.availablePackages.find(
+    (pkg) => pkg.identifier === 'rc_monthly',
+  ) ?? offering?.monthly ?? null;
+  const yearlyPackage = offering?.availablePackages.find(
+    (pkg) => pkg.identifier === 'rc_annual',
+  ) ?? offering?.annual ?? null;
   const selectedPackage: Package | null = plan === 'yearly' ? yearlyPackage : monthlyPackage;
 
   useEffect(() => {
@@ -166,11 +170,11 @@ export function Paywall({ onClose }: PaywallProps) {
                   <p className="text-base font-bold text-white">Monthly</p>
                   <span className="text-xs text-neutral-300">{monthlyPackage?.product.price.formattedPrice ?? 'Unavailable'}</span>
                 </div>
-                {!monthlyPackage && !plansLoading && <p className="mt-1 text-xs text-neutral-400">Monthly package is not in the current RevenueCat offering.</p>}
+                {!monthlyPackage && !plansLoading && <p className="mt-1 text-xs text-neutral-400">Add the `rc_monthly` package to the current RevenueCat offering.</p>}
               </button>
               {offeringError && <p role="status" className="px-2 text-xs text-neutral-300">{offeringError}</p>}
               {!offeringError && !plansLoading && !monthlyPackage && !yearlyPackage && (
-                <p role="status" className="px-2 text-xs text-neutral-300">No monthly or annual package was found in the current offering. Check the RevenueCat offering and its package identifiers.</p>
+                <p role="status" className="px-2 text-xs text-neutral-300">No `rc_monthly` or `rc_annual` package was found in the current offering. Check the offering’s package identifiers.</p>
               )}
             </div>
           )}
