@@ -4548,6 +4548,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@emotion/react@^11.13.3",
+        "npm:@revenuecat/purchases-js@^1.73.1",
         "npm:@sentry/react@^11.8.0",
         "npm:@supabase/supabase-js@^2.116.0",
         "npm:@types/node@^20.11.18",

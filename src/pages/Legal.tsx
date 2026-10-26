@@ -43,7 +43,7 @@ export function PrivacyPolicy() {
       <ul className="list-disc space-y-1.5 pl-5">
         <li><span className="text-neutral-200">Account data:</span> your email address and, if you provide it, a display name.</li>
         <li><span className="text-neutral-200">Study data:</span> tasks, focus sessions, preferences, goals, and distraction-plan rules you create.</li>
-        <li><span className="text-neutral-200">Subscription data:</span> your plan status and PayPal subscription reference. We never see or store your card details — PayPal handles payment.</li>
+        <li><span className="text-neutral-200">Subscription data:</span> your plan status and subscription reference. RevenueCat and its payment processor handle new payments; we never see or store your card details.</li>
         <li><span className="text-neutral-200">Push data:</span> a device push endpoint and key, plus your timezone, used only to deliver reminders you enable.</li>
         <li><span className="text-neutral-200">Diagnostics:</span> crash and error reports (Sentry) containing technical context, not your study content.</li>
       </ul>
@@ -58,8 +58,9 @@ export function PrivacyPolicy() {
       <H>Where it is stored</H>
       <p>
         Data is stored in our Supabase backend and, for offline use, in your browser's
-        local storage on your device. Payments are processed by PayPal under their own
-        privacy policy.
+        local storage on your device. New payments are processed through RevenueCat
+        Web Billing and its payment processor under their privacy policies. Existing
+        PayPal subscriptions continue to be processed by PayPal.
       </p>
 
       <H>Retention & deletion</H>
@@ -113,10 +114,12 @@ export function TermsOfService() {
 
       <H>Subscriptions & billing</H>
       <p>
-        Cadence Pro is a paid subscription billed through PayPal on a monthly or yearly
-        basis. It renews automatically until cancelled. You can cancel any time through
-        PayPal; access continues until the end of the current period. Prices are shown
-        before purchase. Except where required by law, payments are non-refundable.
+        Cadence Pro is a paid subscription billed monthly or yearly through RevenueCat
+        Web Billing and its payment processor. It renews automatically until cancelled.
+        You can manage or cancel through the payment provider; access continues until
+        the end of the current period. Prices are shown before purchase. Except where
+        required by law, payments are non-refundable. Existing PayPal subscriptions
+        remain subject to their PayPal billing terms.
       </p>
 
       <H>Acceptable use</H>

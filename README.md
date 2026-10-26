@@ -9,7 +9,7 @@ reminders.
 - **Frontend**: React 18, Vite 5, TypeScript, Tailwind CSS 3, framer-motion
 - **Data**: Dexie (IndexedDB) offline-first store with last-write-wins sync
 - **Backend**: Supabase (Postgres + Auth + Row-Level Security + Edge Functions)
-- **Payments**: PayPal subscriptions (server-verified webhooks)
+- **Payments**: RevenueCat Web Billing with server-verified subscription webhooks
 - **PWA**: `vite-plugin-pwa` (Workbox service worker + manifest)
 - **Notifications**: self-hosted Web Push (VAPID) via Supabase Edge Functions + pg_cron
 - **Monitoring**: Sentry (client + edge functions)
@@ -56,24 +56,35 @@ Or paste each file into the Supabase SQL editor in order.
 | `0001_init` | tasks / focus_sessions / preferences / profile + RLS |
 | `002_task_reminders` | task reminder preference |
 | `003_blocking_rules` | blocking rules preference |
-| `004_subscriptions` | PayPal subscription records |
+| `004_subscriptions` | subscription records (initially PayPal) |
 | `005_payment_security` | client cannot self-assign Pro |
 | `006_daily_goal` | daily goal preference |
 | `007_push` | push subscriptions + profile timezone |
 | `008_reminder_cron` | schedules the hourly reminder dispatcher |
 | `009_rate_limits` | server-side rate limiting for Edge Functions |
+| `010_revenuecat` | RevenueCat subscription metadata and webhook event tracking |
 
 ## Edge functions
 
 ```bash
-supabase functions deploy paypal-create-subscription
-supabase functions deploy paypal-webhook
+supabase functions deploy revenuecat-webhook
 supabase functions deploy send-push
 supabase functions deploy dispatch-reminders
 ```
 
 Set secrets first (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`,
-`PAYPAL_*`, `ALLOWED_REDIRECT_ORIGINS`, `VAPID_*`, `CRON_SECRET`).
+`REVENUECAT_WEBHOOK_AUTHORIZATION`, `REVENUECAT_PRO_ENTITLEMENT_ID`,
+`VAPID_*`, `CRON_SECRET`). Set `VITE_REVENUECAT_WEB_API_KEY` in Vercel.
+
+In RevenueCat, connect Stripe to a Web Billing app, create monthly and annual
+products, attach them to the current offering using the standard `monthly` and
+`annual` package identifiers, and grant the `pro` entitlement. Configure a
+webhook to `https://<ref>.supabase.co/functions/v1/revenuecat-webhook` and set
+its Authorization header to the exact value stored in
+`REVENUECAT_WEBHOOK_AUTHORIZATION`.
+
+The PayPal webhook remains available for subscriptions sold before the
+RevenueCat migration; new checkout uses RevenueCat.
 
 ## Push notifications (Web Push)
 
@@ -105,8 +116,8 @@ party.
 ## Deploy
 
 The app is deployed on Vercel (SPA rewrites in `vercel.json`). Set the `VITE_*`
-variables in the Vercel project, then deploy. After the first deploy, allowlist
-the production origin via `ALLOWED_REDIRECT_ORIGINS`.
+variables, including `VITE_REVENUECAT_WEB_API_KEY`, in the Vercel project, then
+deploy.
 
 ## Architecture notes
 
