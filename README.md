@@ -80,7 +80,9 @@ Set secrets first (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`,
 In RevenueCat, connect Stripe to a Web Billing app, create monthly and annual
 products, and attach them to the current offering using the exact package
 identifiers `rc_monthly` and `rc_annual`. Grant both products the
-`pro` entitlement. Configure a
+`pro` entitlement. Create and publish a RevenueCat dashboard Paywall for web,
+attach it to the current offering, and include both packages and a purchase
+button. Configure a
 webhook to `https://<ref>.supabase.co/functions/v1/revenuecat-webhook` and set
 its Authorization header to the exact value stored in
 `REVENUECAT_WEBHOOK_AUTHORIZATION`.

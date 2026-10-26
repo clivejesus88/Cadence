@@ -49,13 +49,21 @@ npx web-push generate-vapid-keys
 
    `https://<ref>.supabase.co/functions/v1/revenuecat-webhook`
 
-The app loads `rc_monthly` and `rc_annual` from the current offering. It also
-falls back to RevenueCat's predefined monthly and annual package types.
-If the paywall says a plan is unavailable, verify that this offering is marked
-**Current**, both packages use the exact custom identifiers above, and each
-package's product is attached to the `pro` entitlement. Also confirm the web
-API key belongs to this RevenueCat project and the app has been redeployed
-after changing the Vercel environment variable.
+The dashboard paywall uses packages from the current offering. Verify that this
+offering is marked **Current**, contains packages with the exact identifiers
+above, and each package's product is attached to the `pro` entitlement. Also
+confirm the web API key belongs to this RevenueCat project and the app has been
+redeployed after changing the Vercel environment variable.
+
+### Design the RevenueCat Paywall
+
+The app opens RevenueCat's dashboard-designed paywall from the current
+offering. In RevenueCat, create and publish a Paywall for web, attach it to
+that offering, and add selectable package components for `rc_monthly` and
+`rc_annual` with a purchase button. Use RevenueCat's localized price variables
+and clearly state each billing period and auto-renewal/cancellation terms.
+Include working Terms and Privacy links. Preview the web paywall and verify
+both products are selectable before testing checkout.
 
 ## 4. Edge Function secrets
 

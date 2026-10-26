@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ErrorCode, Offering, Package, PurchasesError } from '@revenuecat/purchases-js';
+import { ErrorCode, Offering, PurchasesError } from '@revenuecat/purchases-js';
 import { LineChartIcon, PaletteIcon, ShieldCheckIcon, TimerIcon } from 'lucide-react';
 import { runSync, scheduleSync } from '../../db/sync';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,11 +22,10 @@ const benefits = [
   { icon: PaletteIcon, title: 'Premium focus sounds', desc: 'Unlock the full library of ambient sounds for deep focus.', bg: '#f59e0b' }
 ];
 
-export function Paywall({ onClose }: PaywallProps) {
+export function Paywall({ onStart, onClose }: PaywallProps) {
   const { profile } = useSettings();
   const { user } = useAuth();
   const isPro = profile.plan === 'pro';
-  const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
   const [loading, setLoading] = useState(false);
   const [plansLoading, setPlansLoading] = useState(false);
   const [offering, setOffering] = useState<Offering | null>(null);
@@ -35,14 +34,6 @@ export function Paywall({ onClose }: PaywallProps) {
   const displayName = user ? profile.name || user.email?.split('@')[0] || 'Student' : 'Guest';
   const nameParts = displayName.trim().split(/\s+/);
   const signature = nameParts.length > 1 ? `${nameParts[0]} ${nameParts[nameParts.length - 1].charAt(0)}.` : displayName;
-  const monthlyPackage = offering?.availablePackages.find(
-    (pkg) => pkg.identifier === 'rc_monthly',
-  ) ?? offering?.monthly ?? null;
-  const yearlyPackage = offering?.availablePackages.find(
-    (pkg) => pkg.identifier === 'rc_annual',
-  ) ?? offering?.annual ?? null;
-  const selectedPackage: Package | null = plan === 'yearly' ? yearlyPackage : monthlyPackage;
-
   useEffect(() => {
     if (!isRevenueCatConfigured() || !user || user.id === 'guest') return;
     let active = true;
@@ -58,7 +49,6 @@ export function Paywall({ onClose }: PaywallProps) {
           return;
         }
         setOffering(offerings.current);
-        if (!offerings.current.annual && offerings.current.monthly) setPlan('monthly');
       } catch (error) {
         if (active) setOfferingError(error instanceof Error ? error.message : 'Could not load subscription plans.');
       } finally {
@@ -105,11 +95,6 @@ export function Paywall({ onClose }: PaywallProps) {
       notifyError('Sign in to subscribe', 'Create an account or sign in before purchasing so your subscription stays linked to your data.');
       return;
     }
-    if (!selectedPackage) {
-      notifyError('Plan unavailable', offeringError ?? 'This plan is not configured in the current RevenueCat offering.');
-      return;
-    }
-
     const limit = consume('checkout', CHECKOUT_LIMIT);
     if (!limit.allowed) {
       notifyError('Please wait a moment', `Too many checkout attempts. Try again in ${formatRetry(limit.retryAfterMs)}.`);
@@ -119,8 +104,22 @@ export function Paywall({ onClose }: PaywallProps) {
     setLoading(true);
     try {
       const purchases = await getRevenueCatPurchases(user.id);
-      const result = await purchases.purchase({ rcPackage: selectedPackage });
-      if (result.customerInfo.entitlements.active.pro) await runSync();
+      const currentOffering = offering ?? (await purchases.getOfferings()).current;
+      if (!currentOffering) {
+        throw new Error('No current offering is configured in RevenueCat.');
+      }
+      const result = await purchases.presentPaywall({
+        offering: currentOffering,
+        customerEmail: user.email ?? undefined,
+        onBack: (closePaywall) => {
+          closePaywall();
+          onClose();
+        },
+      });
+      if (result.customerInfo.entitlements.active.pro) {
+        await runSync();
+        onStart();
+      }
     } catch (error) {
       if (error instanceof PurchasesError && error.errorCode === ErrorCode.UserCancelledError) return;
       notifyError('Could not complete checkout', error instanceof Error ? error.message : 'Please try again in a moment.');
@@ -157,25 +156,10 @@ export function Paywall({ onClose }: PaywallProps) {
           <p className="mx-auto mt-2 max-w-[260px] text-center text-sm leading-6 text-neutral-400">Launch special is on!<br />Unlock your best study habits now!</p>
 
           {!isPro && (
-            <div className="mt-7 space-y-3">
-              <button onClick={() => setPlan('yearly')} aria-pressed={plan === 'yearly'} className={`glass-strong w-full rounded-2xl px-4 py-4 text-left transition-all active:scale-[0.99] ${plan === 'yearly' ? 'border-white/80' : ''}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-base font-bold text-white">Yearly</p>
-                  <span className="text-xs text-neutral-300">{yearlyPackage?.product.price.formattedPrice ?? 'Unavailable'}</span>
-                </div>
-                <p className="mt-1 text-xs text-neutral-400">{yearlyPackage ? 'Billed annually' : 'Annual plan unavailable'}</p>
-              </button>
-              <button onClick={() => setPlan('monthly')} aria-pressed={plan === 'monthly'} className={`glass-strong w-full rounded-2xl px-4 py-4 text-left transition-all active:scale-[0.99] ${plan === 'monthly' ? 'border-white/80' : ''}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-base font-bold text-white">Monthly</p>
-                  <span className="text-xs text-neutral-300">{monthlyPackage?.product.price.formattedPrice ?? 'Unavailable'}</span>
-                </div>
-                {!monthlyPackage && !plansLoading && <p className="mt-1 text-xs text-neutral-400">Add the `rc_monthly` package to the current RevenueCat offering.</p>}
-              </button>
-              {offeringError && <p role="status" className="px-2 text-xs text-neutral-300">{offeringError}</p>}
-              {!offeringError && !plansLoading && !monthlyPackage && !yearlyPackage && (
-                <p role="status" className="px-2 text-xs text-neutral-300">No `rc_monthly` or `rc_annual` package was found in the current offering. Check the offering’s package identifiers.</p>
-              )}
+            <div className="glass-strong mt-7 rounded-2xl px-4 py-4 text-center">
+              <p className="text-sm font-semibold text-white">Choose the plan that works for you</p>
+              <p className="mt-1 text-xs leading-5 text-neutral-400">View available plans, localized prices, and billing terms in the subscription screen.</p>
+              {offeringError && <p role="status" className="mt-3 text-xs text-neutral-300">{offeringError}</p>}
             </div>
           )}
 
@@ -203,8 +187,8 @@ export function Paywall({ onClose }: PaywallProps) {
 
       <div className="relative z-20 shrink-0 border-t border-white/5 bg-ink-950/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6">
         <div className="mx-auto w-full max-w-md md:max-w-xl lg:max-w-2xl">
-          <button onClick={isPro ? onClose : handleStart} disabled={loading || (!isPro && plansLoading) || (!isPro && Boolean(user) && isRevenueCatConfigured() && !selectedPackage)} className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.995] disabled:opacity-60">
-            {isPro ? 'Back to Cadence' : plansLoading ? 'Loading plans…' : loading ? 'Opening checkout…' : `Start Pro • ${plan === 'yearly' ? 'Yearly' : 'Monthly'}`}
+          <button onClick={isPro ? onClose : handleStart} disabled={loading || (!isPro && plansLoading)} className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.995] disabled:opacity-60">
+            {isPro ? 'Back to Cadence' : plansLoading ? 'Loading plans…' : loading ? 'Opening plans…' : 'View subscription plans'}
           </button>
           {!isPro && <button onClick={onClose} className="hit-slop mt-2 w-full py-1.5 text-center text-sm text-neutral-400 transition-colors hover:text-neutral-300 active:text-white">Not now</button>}
           {!isPro && <p className="mt-1 text-center text-[11px] leading-4 text-neutral-500">Renews automatically until cancelled. By subscribing you agree to our <a href="/terms" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Terms</a> and <a href="/privacy" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Privacy Policy</a>.</p>}
