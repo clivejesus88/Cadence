@@ -28,6 +28,7 @@ export function Paywall({ onClose }: PaywallProps) {
   const isPro = profile.plan === 'pro';
   const [plan, setPlan] = useState<'yearly' | 'monthly'>('yearly');
   const [loading, setLoading] = useState(false);
+  const [plansLoading, setPlansLoading] = useState(false);
   const [offering, setOffering] = useState<Offering | null>(null);
   const [offeringError, setOfferingError] = useState<string | null>(null);
 
@@ -41,6 +42,8 @@ export function Paywall({ onClose }: PaywallProps) {
   useEffect(() => {
     if (!isRevenueCatConfigured() || !user || user.id === 'guest') return;
     let active = true;
+    setPlansLoading(true);
+    setOfferingError(null);
     void (async () => {
       try {
         const purchases = await getRevenueCatPurchases(user.id);
@@ -54,6 +57,8 @@ export function Paywall({ onClose }: PaywallProps) {
         if (!offerings.current.annual && offerings.current.monthly) setPlan('monthly');
       } catch (error) {
         if (active) setOfferingError(error instanceof Error ? error.message : 'Could not load subscription plans.');
+      } finally {
+        if (active) setPlansLoading(false);
       }
     })();
     return () => {
@@ -161,8 +166,12 @@ export function Paywall({ onClose }: PaywallProps) {
                   <p className="text-base font-bold text-white">Monthly</p>
                   <span className="text-xs text-neutral-300">{monthlyPackage?.product.price.formattedPrice ?? 'Unavailable'}</span>
                 </div>
+                {!monthlyPackage && !plansLoading && <p className="mt-1 text-xs text-neutral-400">Monthly package is not in the current RevenueCat offering.</p>}
               </button>
-              {offeringError && <p className="px-2 text-xs text-neutral-400">{offeringError}</p>}
+              {offeringError && <p role="status" className="px-2 text-xs text-neutral-300">{offeringError}</p>}
+              {!offeringError && !plansLoading && !monthlyPackage && !yearlyPackage && (
+                <p role="status" className="px-2 text-xs text-neutral-300">No monthly or annual package was found in the current offering. Check the RevenueCat offering and its package identifiers.</p>
+              )}
             </div>
           )}
 
@@ -190,8 +199,8 @@ export function Paywall({ onClose }: PaywallProps) {
 
       <div className="relative z-20 shrink-0 border-t border-white/5 bg-ink-950/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6">
         <div className="mx-auto w-full max-w-md md:max-w-xl lg:max-w-2xl">
-          <button onClick={isPro ? onClose : handleStart} disabled={loading} className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.995] disabled:opacity-60">
-            {isPro ? 'Back to Cadence' : loading ? 'Opening checkout…' : `Start Pro • ${plan === 'yearly' ? 'Yearly' : 'Monthly'}`}
+          <button onClick={isPro ? onClose : handleStart} disabled={loading || (!isPro && plansLoading) || (!isPro && Boolean(user) && isRevenueCatConfigured() && !selectedPackage)} className="w-full rounded-full bg-gradient-to-r from-ember-500 via-ember-600 to-orange-600 py-4 text-[15px] font-bold text-white transition-transform active:scale-[0.995] disabled:opacity-60">
+            {isPro ? 'Back to Cadence' : plansLoading ? 'Loading plans…' : loading ? 'Opening checkout…' : `Start Pro • ${plan === 'yearly' ? 'Yearly' : 'Monthly'}`}
           </button>
           {!isPro && <button onClick={onClose} className="hit-slop mt-2 w-full py-1.5 text-center text-sm text-neutral-400 transition-colors hover:text-neutral-300 active:text-white">Not now</button>}
           {!isPro && <p className="mt-1 text-center text-[11px] leading-4 text-neutral-500">Renews automatically until cancelled. By subscribing you agree to our <a href="/terms" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Terms</a> and <a href="/privacy" className="underline decoration-neutral-600 underline-offset-2 hover:text-neutral-300">Privacy Policy</a>.</p>}

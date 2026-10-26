@@ -78,8 +78,9 @@ Set secrets first (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`,
 `VAPID_*`, `CRON_SECRET`). Set `VITE_REVENUECAT_WEB_API_KEY` in Vercel.
 
 In RevenueCat, connect Stripe to a Web Billing app, create monthly and annual
-products, attach them to the current offering using the standard `monthly` and
-`annual` package identifiers, and grant the `pro` entitlement. Configure a
+products, and attach them to the current offering using the predefined
+`$rc_monthly` and `$rc_annual` package identifiers. Grant both products the
+`pro` entitlement. Configure a
 webhook to `https://<ref>.supabase.co/functions/v1/revenuecat-webhook` and set
 its Authorization header to the exact value stored in
 `REVENUECAT_WEBHOOK_AUTHORIZATION`.
