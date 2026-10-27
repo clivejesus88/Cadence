@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -52,22 +52,53 @@ function SignInRoute() {
   );
 }
 
+function ErrorFallback() {
+  const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
+  const wasOffline = useRef(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOffline = () => {
+      wasOffline.current = true;
+      setIsOffline(true);
+    };
+    const handleOnline = () => {
+      setIsOffline(false);
+      if (wasOffline.current) {
+        wasOffline.current = false;
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
+  return (
+    <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center gap-4 bg-ink-950 px-6 text-center">
+      <p className="font-display text-xl text-white">Something went wrong</p>
+      <p className="max-w-xs text-sm text-neutral-400">
+        {isOffline
+          ? 'You’re offline. Cadence will reload automatically when your connection returns.'
+          : 'An unexpected error occurred. Your data is safe — try loading Cadence again.'}
+      </p>
+      {!isOffline && (
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-950 active:scale-[0.98]">
+          Try again
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function App() {
   return (
-    <Sentry.ErrorBoundary
-      fallback={
-        <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center gap-4 bg-ink-950 px-6 text-center">
-          <p className="font-display text-xl text-white">Something went wrong</p>
-          <p className="max-w-xs text-sm text-neutral-400">
-            An unexpected error occurred. Your data is safe — reload to continue.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-950 active:scale-[0.98]">
-            Reload app
-          </button>
-        </div>
-      }>
+    <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
       <MotionConfig reducedMotion="user">
         <AuthProvider>
           <SettingsProvider>
