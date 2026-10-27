@@ -109,9 +109,11 @@ party.
    permission from that gesture and the device subscription is stored in
    `push_subscriptions`.
 
-3. Schedule the dispatcher (hourly) — see `supabase/migrations/008_reminder_cron.sql`.
-   Fixed schedule: session nudge at 16:00 local, evening summary at 18:00 local.
-   `reminder_log` prevents duplicate sends.
+3. Configure the hourly dispatcher schedule — see
+   `supabase/migrations/008_reminder_cron.sql` and the deployment instructions.
+   Session and due-task nudges are sent from 16:00 local onward; the evening
+   summary is sent from 18:00 local onward. `reminder_log` prevents duplicate
+   successful sends and failed delivery attempts are retried on the next run.
 
 4. **iOS**: Web Push requires iOS 16.4+, the app **installed to the home screen**,
    and permission granted from a tap. Android/Chrome works from the browser tab.

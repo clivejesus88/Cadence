@@ -29,6 +29,7 @@ const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
 // Fixed reminder schedule (local time, hour of day).
 const SESSION_REMINDER_HOUR = 16; // 4pm — study nudge
+const TASK_REMINDER_HOUR = 16; // 4pm — due/overdue task nudge
 const DAILY_SUMMARY_HOUR = 18; // 6pm — evening recap
 
 const supabase = createClient(
@@ -69,6 +70,7 @@ function localDateKey(timezone: string): string {
 
 async function sendTo(subs: SubRow[], payload: { title: string; body: string; url?: string; tag?: string }) {
   let sent = 0;
+  let failed = 0;
   const staleIds: string[] = [];
   await Promise.all(
     subs.map(async (sub) => {
@@ -86,14 +88,20 @@ async function sendTo(subs: SubRow[], payload: { title: string; body: string; ur
       } catch (e) {
         const status = (e as { statusCode?: number }).statusCode;
         if (status === 404 || status === 410) staleIds.push(sub.id);
-        else console.error("[dispatch-reminders] delivery failed:", e);
+        else {
+          failed += 1;
+          console.error("[dispatch-reminders] delivery failed:", e);
+        }
       }
     })
   );
   if (staleIds.length > 0) {
-    await supabase.from("push_subscriptions").delete().in("id", staleIds);
+    const { error } = await supabase.from("push_subscriptions").delete().in("id", staleIds);
+    if (error) {
+      console.error("[dispatch-reminders] failed to prune expired subscriptions:", error);
+    }
   }
-  return sent;
+  return { sent, failed };
 }
 
 Deno.serve(async (req: Request) => {
@@ -114,24 +122,59 @@ Deno.serve(async (req: Request) => {
   }
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
-  // Join subscriptions with preferences + profile timezone.
-  const { data, error } = await supabase
+  const { data: subscriptions, error: subscriptionsError } = await supabase
     .from("push_subscriptions")
-    .select(
-      "id, user_id, endpoint, p256dh, auth, preferences:preferences!inner(session_reminders, daily_summary), profile:profile!inner(timezone)"
-    );
+    .select("id, user_id, endpoint, p256dh, auth");
 
-  if (error) {
-    console.error("[dispatch-reminders] query failed:", error);
+  if (subscriptionsError) {
+    console.error("[dispatch-reminders] loading subscriptions failed:", subscriptionsError);
     return err("Query failed", 500);
   }
 
+  const userIds = [...new Set((subscriptions ?? []).map((sub) => sub.user_id))];
+  if (userIds.length === 0) return json({ dispatched: 0, date: new Date().toISOString().slice(0, 10) });
+
+  const [{ data: preferences, error: preferencesError }, { data: profiles, error: profilesError }] =
+    await Promise.all([
+      supabase
+        .from("preferences")
+        .select("user_id, session_reminders, task_reminders, daily_summary")
+        .in("user_id", userIds),
+      supabase
+        .from("profile")
+        .select("user_id, timezone")
+        .in("user_id", userIds),
+    ]);
+
+  if (preferencesError || profilesError) {
+    console.error("[dispatch-reminders] loading user settings failed:", {
+      preferencesError,
+      profilesError,
+    });
+    return err("Could not load user settings", 500);
+  }
+
   type Joined = SubRow & {
-    preferences: { session_reminders: boolean; daily_summary: boolean };
+    preferences: { session_reminders: boolean; task_reminders: boolean; daily_summary: boolean };
     profile: { timezone: string };
   };
 
-  const rows = (data ?? []) as unknown as Joined[];
+  const preferenceByUser = new Map((preferences ?? []).map((row) => [row.user_id, row]));
+  const profileByUser = new Map((profiles ?? []).map((row) => [row.user_id, row]));
+  const rows: Joined[] = (subscriptions ?? []).flatMap((sub) => {
+    const userPreferences = preferenceByUser.get(sub.user_id);
+    const userProfile = profileByUser.get(sub.user_id);
+    if (!userPreferences || !userProfile) return [];
+    return [{
+      ...sub,
+      preferences: {
+        session_reminders: userPreferences.session_reminders,
+        task_reminders: userPreferences.task_reminders,
+        daily_summary: userPreferences.daily_summary,
+      },
+      profile: { timezone: userProfile.timezone },
+    }];
+  });
   let dispatched = 0;
 
   // Group by user so we send at most one of each reminder per user.
@@ -151,44 +194,133 @@ Deno.serve(async (req: Request) => {
     const dateKey = localDateKey(tz);
     if (hour === null) continue;
 
-    const wantSession = Boolean(prefs?.session_reminders) && hour === SESSION_REMINDER_HOUR;
-    const wantSummary = Boolean(prefs?.daily_summary) && hour === DAILY_SUMMARY_HOUR;
-    if (!wantSession && !wantSummary) continue;
+    const wantSession = Boolean(prefs?.session_reminders) && hour >= SESSION_REMINDER_HOUR;
+    const wantTasks = Boolean(prefs?.task_reminders) && hour >= TASK_REMINDER_HOUR;
+    const wantSummary = Boolean(prefs?.daily_summary) && hour >= DAILY_SUMMARY_HOUR;
+    if (!wantSession && !wantTasks && !wantSummary) continue;
 
     // Dedupe: skip any reminder we've already logged for this user today.
-    const { data: logged } = await supabase
+    const { data: logged, error: logError } = await supabase
       .from("reminder_log")
       .select("kind")
       .eq("user_id", userId)
       .eq("local_date", dateKey);
+    if (logError) {
+      console.error("[dispatch-reminders] failed to check reminder log:", logError);
+      return err("Could not check reminder log", 500);
+    }
     const alreadySent = new Set((logged ?? []).map((r) => r.kind as string));
 
-    const sendSession = wantSession && !alreadySent.has("session");
-    const sendSummary = wantSummary && !alreadySent.has("summary");
+    const shouldCheckSessions =
+      (wantSession && !alreadySent.has("session")) ||
+      (wantSummary && !alreadySent.has("summary"));
+    let completedSessions: { duration_minutes: number }[] = [];
+    if (shouldCheckSessions) {
+      const { data: sessionRows, error: sessionError } = await supabase
+        .from("focus_sessions")
+        .select("duration_minutes")
+        .eq("user_id", userId)
+        .eq("date", dateKey)
+        .eq("type", "focus")
+        .eq("completed", true)
+        .eq("deleted", false);
+      if (sessionError) {
+        console.error("[dispatch-reminders] failed to load today's sessions:", sessionError);
+        return err("Could not load today's sessions", 500);
+      }
+      completedSessions = sessionRows ?? [];
+    }
+
+    const sendSession =
+      wantSession && !alreadySent.has("session") && completedSessions.length === 0;
+    const sendTasks = wantTasks && !alreadySent.has("tasks");
+    const sendSummary =
+      wantSummary && !alreadySent.has("summary") && completedSessions.length > 0;
+
+    if (sendTasks) {
+      const { data: tasks, error: taskError } = await supabase
+        .from("tasks")
+        .select("title,due_date")
+        .eq("user_id", userId)
+        .eq("completed", false)
+        .eq("deleted", false)
+        .neq("due_date", "")
+        .lte("due_date", dateKey)
+        .order("due_date", { ascending: true })
+        .limit(100);
+      if (taskError) {
+        console.error("[dispatch-reminders] failed to load due tasks:", taskError);
+        return err("Could not load due tasks", 500);
+      }
+      if (tasks?.length) {
+        const overdue = tasks.filter((task) => task.due_date < dateKey).length;
+        const dueToday = tasks.length - overdue;
+        const dueText = [
+          overdue ? `${overdue} overdue` : "",
+          dueToday ? `${dueToday} due today` : "",
+        ].filter(Boolean).join(" · ");
+        const title = String(tasks[0].title ?? "").slice(0, 100);
+        const result = await sendTo(subs, {
+          title: "Tasks to do today",
+          body: `${dueText}${title ? ` — first up: ${title}` : ""}`,
+          url: "/app/planner",
+          tag: `tasks-${dateKey}`,
+        });
+        dispatched += result.sent;
+        if (result.sent > 0 && result.failed === 0) {
+          const { error } = await supabase.from("reminder_log").upsert(
+            { user_id: userId, kind: "tasks", local_date: dateKey },
+            { onConflict: "user_id,kind,local_date" }
+          );
+          if (error) {
+            console.error("[dispatch-reminders] failed to record task reminder:", error);
+            return err("Could not record task reminder", 500);
+          }
+        }
+      }
+    }
 
     if (sendSession) {
-      dispatched += await sendTo(subs, {
+      const result = await sendTo(subs, {
         title: "Time to focus",
         body: "A short session now keeps your streak alive. Ready?",
         url: "/app/focus",
         tag: `session-${dateKey}`,
       });
-      await supabase.from("reminder_log").upsert(
-        { user_id: userId, kind: "session", local_date: dateKey },
-        { onConflict: "user_id,kind,local_date" }
-      );
+      dispatched += result.sent;
+      if (result.sent > 0 && result.failed === 0) {
+        const { error } = await supabase.from("reminder_log").upsert(
+          { user_id: userId, kind: "session", local_date: dateKey },
+          { onConflict: "user_id,kind,local_date" }
+        );
+        if (error) {
+          console.error("[dispatch-reminders] failed to record session reminder:", error);
+          return err("Could not record session reminder", 500);
+        }
+      }
     }
     if (sendSummary) {
-      dispatched += await sendTo(subs, {
+      const totalMinutes = completedSessions.reduce(
+        (sum, session) => sum + Number(session.duration_minutes || 0),
+        0,
+      );
+      const result = await sendTo(subs, {
         title: "Your day in focus",
-        body: "Tap to see how today went and set tomorrow's goal.",
+        body: `You focused for ${totalMinutes} minutes across ${completedSessions.length} session${completedSessions.length === 1 ? "" : "s"}. Tap to see your day.`,
         url: "/app/insights",
         tag: `summary-${dateKey}`,
       });
-      await supabase.from("reminder_log").upsert(
-        { user_id: userId, kind: "summary", local_date: dateKey },
-        { onConflict: "user_id,kind,local_date" }
-      );
+      dispatched += result.sent;
+      if (result.sent > 0 && result.failed === 0) {
+        const { error } = await supabase.from("reminder_log").upsert(
+          { user_id: userId, kind: "summary", local_date: dateKey },
+          { onConflict: "user_id,kind,local_date" }
+        );
+        if (error) {
+          console.error("[dispatch-reminders] failed to record summary reminder:", error);
+          return err("Could not record summary reminder", 500);
+        }
+      }
     }
   }
 

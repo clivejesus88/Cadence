@@ -38,19 +38,28 @@ async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
 }
 
 async function persistSubscription(sub: PushSubscription, userId: string): Promise<void> {
-  if (!isSupabaseConfigured || !supabase) return;
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Push notifications require a configured Cadence account.');
+  }
   const json = sub.toJSON();
   const keys = json.keys ?? {};
-  await supabase.from('push_subscriptions').upsert(
+  if (!keys.p256dh || !keys.auth) {
+    throw new Error('The browser returned an incomplete push subscription. Refresh and try again.');
+  }
+  const { error } = await supabase.from('push_subscriptions').upsert(
     {
       user_id: userId,
       endpoint: sub.endpoint,
-      p256dh: keys.p256dh ?? '',
-      auth: keys.auth ?? '',
+      p256dh: keys.p256dh,
+      auth: keys.auth,
       user_agent: navigator.userAgent.slice(0, 300)
     },
     { onConflict: 'endpoint' }
   );
+  if (error) {
+    console.error('[push] failed to save device subscription:', error);
+    throw new Error('Could not save this device for push notifications. Please try again.');
+  }
 }
 
 /**
@@ -60,15 +69,16 @@ async function persistSubscription(sub: PushSubscription, userId: string): Promi
 export async function enablePush(userId: string): Promise<boolean> {
   if (!pushSupported()) return false;
   if (!VAPID_PUBLIC_KEY) {
-    console.warn('[push] VITE_VAPID_PUBLIC_KEY is not set');
-    return false;
+    throw new Error('Push notifications are not configured. Set VITE_VAPID_PUBLIC_KEY and redeploy.');
   }
 
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return false;
 
   const registration = await getRegistration();
-  if (!registration) return false;
+  if (!registration) {
+    throw new Error('Cadence has not finished installing its notification service worker. Refresh and try again.');
+  }
 
   let sub = await registration.pushManager.getSubscription();
   if (!sub) {
@@ -95,7 +105,11 @@ export async function disablePush(): Promise<void> {
     // proceed to delete server-side row regardless
   }
   if (isSupabaseConfigured && supabase) {
-    await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    const { error } = await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    if (error) {
+      console.error('[push] failed to remove device subscription:', error);
+      throw new Error('Could not remove this device’s push subscription.');
+    }
   }
 }
 

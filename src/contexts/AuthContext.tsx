@@ -67,7 +67,9 @@ async function applyUserSession(user: User): Promise<void> {
   const metaName = (user.user_metadata?.name as string | undefined)?.trim() ?? '';
   await updateProfile({ name: metaName, email: user.email ?? '', timezone: detectTimezone() });
 
-  void syncPushSubscription(user.id);
+  void syncPushSubscription(user.id).catch((error) => {
+    console.error('[auth] failed to sync push subscription:', error);
+  });
   await runSync();
 }
 

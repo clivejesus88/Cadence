@@ -22,9 +22,16 @@ Everything needed to take Cadence live on Vercel + Supabase.
    011_revenuecat_atomic_events.sql -- atomically deduplicates/orders webhook updates
    ```
 
-3. Enable extensions `pg_cron` and `pg_net` (Dashboard → Database → Extensions).
+3. Enable extensions `pg_cron`, `pg_net`, and `supabase_vault` (Dashboard →
+   Database → Extensions).
 4. Confirm `profile.plan` / `member_since` are protected (from `005`) and that
    `subscriptions` is read-only for clients.
+5. Schedule the reminder dispatcher as described in
+   `supabase/migrations/008_reminder_cron.sql`. Applying that migration enables
+   the extensions but does not create the scheduled job. The schedule must call
+   `dispatch-reminders` hourly with the same `CRON_SECRET` configured below.
+   Store the project URL and cron secret in Vault; the migration includes the
+   SQL to create the job.
 
 ## 2. VAPID keys
 
@@ -108,6 +115,7 @@ Schedule the dispatcher with the same `CRON_SECRET` (see `008_reminder_cron.sql`
 
 - [ ] Install PWA on Android (Chrome) and iOS 16.4+ (Safari → Add to Home Screen)
 - [ ] Reminder toggle → permission prompt → subscription row appears
+- [ ] Run `dispatch-reminders` with the correct `x-cron-secret`; verify due-task/session pushes at 16:00 local and evening summary at 18:00 local
 - [ ] Purchase monthly through RevenueCat sandbox → becomes Pro (webhook updates `profile.plan`)
 - [ ] Verify an expired RevenueCat subscription reverts to free
 - [ ] Sign in on a second device → data syncs
