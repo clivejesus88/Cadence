@@ -70,7 +70,7 @@ Or paste each file into the Supabase SQL editor in order.
 ```bash
 supabase functions deploy revenuecat-webhook --no-verify-jwt
 supabase functions deploy send-push
-supabase functions deploy dispatch-reminders
+supabase functions deploy dispatch-reminders --no-verify-jwt
 ```
 
 Set secrets first (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`,

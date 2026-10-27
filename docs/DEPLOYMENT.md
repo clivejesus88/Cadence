@@ -92,14 +92,14 @@ Deploy:
 ```bash
 supabase functions deploy revenuecat-webhook --no-verify-jwt
 supabase functions deploy send-push
-supabase functions deploy dispatch-reminders
+supabase functions deploy dispatch-reminders --no-verify-jwt
 ```
 
-RevenueCat authenticates with the configured Authorization header, not a
-Supabase JWT, so the webhook function must be deployed with JWT verification
-disabled. The function validates the shared secret itself. Set the RevenueCat
-webhook Authorization header to the exact same value as
-`REVENUECAT_WEBHOOK_AUTHORIZATION`.
+RevenueCat authenticates with the configured Authorization header, and the
+reminder dispatcher authenticates with `x-cron-secret`; neither uses a Supabase
+JWT. Deploy both with JWT verification disabled. Each function validates its
+own shared secret. Set the RevenueCat webhook Authorization header to the exact
+same value as `REVENUECAT_WEBHOOK_AUTHORIZATION`.
 
 Schedule the dispatcher with the same `CRON_SECRET` (see `008_reminder_cron.sql`).
 
