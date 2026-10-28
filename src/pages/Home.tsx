@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { FlameIcon, ArrowRightIcon, ChevronRightIcon, LightbulbIcon } from 'lucide-react';
+import { FlameIcon, ArrowRightIcon, ChevronRightIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes, getGreeting } from '../utils/time';
@@ -10,6 +10,7 @@ import { focusTips } from '../data/insightsTips';
 import { notifySessionReminder, notifyDailySummary, notifyTaskReminders } from '../utils/notify';
 import { markNudgeSeen, isNudgeSeen } from '../db/repo';
 import { WeeklyPreview } from '../components/home/WeeklyPreview';
+import { InsightTipCarousel } from '../components/home/InsightTipCarousel';
 import { TaskPreviewList } from '../components/home/TaskPreviewList';
 import { Avatar } from '../components/profile/Avatar';
 import { LevelBadge } from '../components/gamified/LevelBadge';
@@ -136,14 +137,7 @@ export function Home() {
         <TaskPreviewList tasks={todaysTasks} />
       </section>
 
-      <section className="glass mt-6 mb-8 flex items-start gap-3 rounded-2xl p-4 lg:col-span-2 lg:mt-0 lg:mb-0 lg:p-5">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
-          <LightbulbIcon className="w-4 h-4 text-neutral-300" />
-        </div>
-        <div>
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1">Insight Tip</p>
-          <p className="text-sm text-neutral-300">{focusTips[0]}</p>        </div>
-      </section>
+      <InsightTipCarousel tips={focusTips} />
     </div>);
 
 }
