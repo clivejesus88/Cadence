@@ -19,10 +19,11 @@ export function WeeklyPreview({ data }: WeeklyPreviewProps) {
       <div className="flex items-end justify-between gap-2 h-20 mt-4">
         {data.map((d, i) => {
           const isToday = i === data.length - 1;
+          const hasFocus = d.minutes > 0;
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
               <div
-                className={`w-full rounded-full ${isToday ? 'bg-ember-400' : 'bg-white/10'}`}
+                className={`w-full rounded-full ${hasFocus || isToday ? 'bg-ember-400' : 'bg-white/10'}`}
                 style={{ height: `${Math.max(d.minutes / max * 100, 4)}%` }} />
               
               <span className={`text-[10px] ${isToday ? 'text-ember-400 font-semibold' : 'text-neutral-500'}`}>

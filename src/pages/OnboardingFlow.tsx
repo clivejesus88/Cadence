@@ -66,7 +66,7 @@ export function OnboardingFlow() {
 
   if (step === 0) {
     return (
-      <div className="relative w-full min-h-[100dvh] flex flex-col justify-end bg-ink-950 overflow-hidden">
+      <div className="relative flex min-h-[100dvh] w-full flex-col justify-end overflow-hidden bg-ink-950">
         <motion.img
           initial={{ scale: 1.02, opacity: 0.9 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -76,23 +76,23 @@ export function OnboardingFlow() {
           aria-hidden="true"
           decoding="async"
           fetchPriority="high"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-[center_45%] md:object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/15" />
-        <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[320px] -translate-x-1/2 rounded-full bg-ember-500/20 blur-[120px]" />
-        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col items-center px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] text-center sm:px-6">
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/15 md:bg-gradient-to-r md:from-ink-950/90 md:via-ink-950/55 md:to-ink-950/10" />
+        <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[320px] -translate-x-1/2 rounded-full bg-ember-500/20 blur-[120px] md:bottom-[-8rem] md:left-[20%] md:h-[30rem] md:w-[30rem]" />
+        <div className="relative z-10 mx-auto flex w-full max-w-md flex-col items-center px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:px-6 md:mx-0 md:min-h-[100dvh] md:max-w-7xl md:items-start md:justify-center md:px-12 md:py-16 md:text-left lg:px-20">
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5, ease: 'easeOut' }}
-            className="font-display italic text-4xl text-white tracking-tight sm:text-5xl">
+            className="font-display italic text-4xl text-white tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
             Cadence
           </motion.p>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5, ease: 'easeOut' }}
-            className="mt-2 text-sm text-neutral-300">
+            className="mt-2 text-sm text-neutral-300 sm:text-base md:mt-4 md:text-lg">
             Your rhythm. Your focus.
           </motion.p>
           <motion.button
@@ -100,7 +100,7 @@ export function OnboardingFlow() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5, ease: 'easeOut' }}
             onClick={next}
-            className="mt-8 w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.995]">
+            className="mt-8 w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.995] sm:mt-10 md:w-auto md:min-w-64 md:px-12">
             Get Started
           </motion.button>
         </div>
