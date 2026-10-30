@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
-import { BarChart3Icon, ClockIcon, FlameIcon, ListChecksIcon, TrendingUpIcon } from 'lucide-react';
+import { BarChart3Icon, ClockIcon, CrownIcon, FlameIcon, ListChecksIcon, LoaderCircleIcon, TrendingUpIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { formatMinutes } from '../utils/time';
 import { rangeFocusMinutes, monthlyFocusMinutes, longestFocusStreak } from '../utils/streak';
 import { StatCard } from '../components/insights/StatCard';
 import { StreakHeatmap } from '../components/insights/StreakHeatmap';
+import { getLeaderboardProfile, getWeeklyLeaderboard, LeaderboardEntry, validateLeaderboardAlias, saveLeaderboardProfile } from '../utils/leaderboard';
 
 const rangeOptions = [
   { label: '7d', days: 7 },
@@ -14,7 +16,82 @@ const rangeOptions = [
 
 export function Insights() {
   const { weeklyData, currentStreak, totalSessionsCompleted, sessions, tasks } = useAppData();
+  const { user, isGuest, isConfigured } = useAuth();
   const [rangeDays, setRangeDays] = useState(7);
+  const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardAlias, setLeaderboardAlias] = useState('');
+  const [leaderboardOptedIn, setLeaderboardOptedIn] = useState(false);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState('');
+  const [leaderboardSaving, setLeaderboardSaving] = useState(false);
+  const [leaderboardSaved, setLeaderboardSaved] = useState(false);
+
+  useEffect(() => {
+    if (!user || isGuest || !isConfigured) {
+      setLeaderboardEntries([]);
+      setLeaderboardAlias('');
+      setLeaderboardOptedIn(false);
+      setLeaderboardLoading(false);
+      return;
+    }
+
+    let active = true;
+    setLeaderboardLoading(true);
+    setLeaderboardError('');
+    Promise.all([getLeaderboardProfile(), getWeeklyLeaderboard()])
+      .then(([profile, board]) => {
+        if (!active) return;
+        setLeaderboardAlias(profile?.alias ?? '');
+        setLeaderboardOptedIn(profile?.optedIn ?? false);
+        setLeaderboardEntries(board);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setLeaderboardError(error instanceof Error ? error.message : 'Could not load the leaderboard.');
+        }
+      })
+      .finally(() => {
+        if (active) setLeaderboardLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user, isGuest, isConfigured]);
+
+  const handleLeaderboardSave = async () => {
+    if (!user) return;
+    const alias = leaderboardAlias.trim();
+    try {
+      setLeaderboardError('');
+      setLeaderboardSaving(true);
+      const safeAlias = validateLeaderboardAlias(alias || 'FocusFox');
+      await saveLeaderboardProfile(user.id, safeAlias, true);
+      setLeaderboardAlias(safeAlias);
+      setLeaderboardOptedIn(true);
+      setLeaderboardSaved(true);
+      setLeaderboardEntries(await getWeeklyLeaderboard());
+    } catch (error) {
+      setLeaderboardError(error instanceof Error ? error.message : 'Could not save the leaderboard alias.');
+    } finally {
+      setLeaderboardSaving(false);
+    }
+  };
+
+  const handleLeaderboardLeave = async () => {
+    if (!user) return;
+    try {
+      setLeaderboardError('');
+      setLeaderboardSaving(true);
+      await saveLeaderboardProfile(user.id, leaderboardAlias || 'FocusFox', false);
+      setLeaderboardOptedIn(false);
+      setLeaderboardSaved(false);
+      setLeaderboardEntries(await getWeeklyLeaderboard());
+    } catch (error) {
+      setLeaderboardError(error instanceof Error ? error.message : 'Could not leave the leaderboard.');
+    } finally {
+      setLeaderboardSaving(false);
+    }
+  };
 
   const weekTotal = weeklyData.reduce((sum, d) => sum + d.minutes, 0);
   const focusSessions = sessions.filter((s) => s.type === 'focus' && s.completed);
@@ -154,7 +231,15 @@ export function Insights() {
       </section>
 
       <section className="mt-6 lg:mt-0 lg:col-span-2">
-        <p className="text-white font-semibold text-sm mb-3">Focus summary</p>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-white font-semibold text-sm">Focus summary</p>
+          <button
+            type="button"
+            onClick={() => setLeaderboardEntries((prev) => prev.slice(0, 5))}
+            className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            Top ranks
+          </button>
+        </div>
         <div className="glass rounded-2xl divide-y divide-white/5">
           {totalSessionsCompleted === 0 ?
           <p className="px-4 py-3 text-sm text-neutral-500">Complete a focus session and your summary will build up here.</p> :
@@ -175,6 +260,90 @@ export function Insights() {
             </>
           }
         </div>
+      </section>
+
+      <section className="mt-6 lg:mt-0 lg:col-span-2">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-white font-semibold text-sm">Leaderboard</p>
+          {!isGuest && isConfigured && (
+            <button
+              type="button"
+              onClick={() => setLeaderboardEntries((prev) => prev.slice(0, 5))}
+              className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+              Refresh
+            </button>
+          )}
+        </div>
+
+        {!isGuest && isConfigured ? (
+          <div className="glass rounded-2xl p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <label className="flex-1">
+                <span className="mb-1.5 block text-xs font-medium text-neutral-300">Leaderboard alias</span>
+                <input
+                  value={leaderboardAlias}
+                  onChange={(event) => setLeaderboardAlias(event.target.value)}
+                  maxLength={24}
+                  placeholder="FocusFox"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-sm text-white outline-none transition focus:border-ember-400 placeholder:text-neutral-600"
+                />
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleLeaderboardSave()}
+                  disabled={leaderboardSaving}
+                  className="rounded-full bg-ember-500 px-4 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-50">
+                  {leaderboardSaving ? 'Saving…' : leaderboardOptedIn ? 'Update' : 'Opt in'}
+                </button>
+                {leaderboardOptedIn && (
+                  <button
+                    type="button"
+                    onClick={() => void handleLeaderboardLeave()}
+                    disabled={leaderboardSaving}
+                    className="rounded-full border border-white/10 px-4 py-2.5 text-sm text-neutral-300 disabled:opacity-50">
+                    Leave
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {leaderboardError && (
+              <p className="mt-3 rounded-xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs text-red-200">{leaderboardError}</p>
+            )}
+
+            {leaderboardSaved && !leaderboardError && (
+              <p className="mt-3 text-xs text-emerald-300">You’re on the leaderboard.</p>
+            )}
+
+            <div className="mt-4 space-y-2">
+              {leaderboardLoading ? (
+                <div className="flex items-center justify-center gap-2 px-2 py-6 text-sm text-neutral-400">
+                  <LoaderCircleIcon className="h-4 w-4 animate-spin" />
+                  Loading leaderboard…
+                </div>
+              ) : leaderboardEntries.length === 0 ? (
+                <p className="px-2 py-6 text-center text-sm text-neutral-400">No one has joined this week yet. Opt in to be first.</p>
+              ) : (
+                leaderboardEntries.slice(0, 5).map((entry) => (
+                  <div key={`${entry.rank}-${entry.alias}`} className="flex items-center justify-between rounded-xl bg-white/[0.04] px-3 py-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${entry.rank <= 3 ? 'bg-ember-500/15 text-ember-300' : 'bg-white/5 text-neutral-400'}`}>
+                        {entry.rank <= 3 ? <CrownIcon className="h-3.5 w-3.5" /> : entry.rank}
+                      </span>
+                      <span className="truncate text-sm text-white">{entry.alias}{entry.isCurrentUser ? ' (you)' : ''}</span>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-neutral-200">{entry.focusMinutes} min</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="glass rounded-2xl p-4 text-sm text-neutral-400">
+            {isGuest ? 'Sign in to join the global ranking.' : 'Leaderboard data is unavailable until cloud sync is configured.'}
+          </div>
+        )}
       </section>
     </div>);
 

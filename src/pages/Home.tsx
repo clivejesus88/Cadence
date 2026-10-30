@@ -1,9 +1,10 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { FlameIcon, ArrowRightIcon, ChevronRightIcon } from 'lucide-react';
+import { FlameIcon, ArrowRightIcon, ChevronRightIcon, CrownIcon, LoaderCircleIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes, getGreeting } from '../utils/time';
 import { focusTips } from '../data/insightsTips';
@@ -16,9 +17,11 @@ import { Avatar } from '../components/profile/Avatar';
 import { LevelBadge } from '../components/gamified/LevelBadge';
 import { DailyGoalRing } from '../components/gamified/DailyGoalRing';
 import { XpBar } from '../components/gamified/XpBar';
+import { getWeeklyLeaderboard, LeaderboardEntry } from '../utils/leaderboard';
 
 export function Home() {
   const navigate = useNavigate();
+  const { user, isGuest, isConfigured } = useAuth();
   const {
     currentStreak,
     todayMinutes,
@@ -29,6 +32,29 @@ export function Home() {
     dailyGoalMinutes
   } = useAppData();
   const { profile, preferences } = useSettings();
+  const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user || isGuest || !isConfigured) {
+      setLeaderboardEntries([]);
+      return;
+    }
+
+    let active = true;
+    setLeaderboardLoading(true);
+    getWeeklyLeaderboard()
+      .then((entries) => {
+        if (active) setLeaderboardEntries(entries.slice(0, 3));
+      })
+      .finally(() => {
+        if (active) setLeaderboardLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user, isGuest, isConfigured]);
   const todaysTasks = tasks
     .filter((t) => !t.completed)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
@@ -135,6 +161,41 @@ export function Home() {
           </button>
         </div>
         <TaskPreviewList tasks={todaysTasks} />
+      </section>
+
+      <section className="mt-6 lg:col-span-2 lg:mt-0">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-white font-semibold">Top ranks</p>
+          <button
+            onClick={() => navigate('/app/insights')}
+            className="hit-slop text-xs text-neutral-500 flex items-center gap-0.5 hover:text-neutral-300 transition-colors active:text-white">
+            View insights <ChevronRightIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="glass rounded-2xl p-4">
+          {leaderboardLoading ? (
+            <div className="flex items-center justify-center gap-2 py-6 text-sm text-neutral-400">
+              <LoaderCircleIcon className="h-4 w-4 animate-spin" />
+              Loading…
+            </div>
+          ) : !user || isGuest || !isConfigured || leaderboardEntries.length === 0 ? (
+            <p className="py-6 text-center text-sm text-neutral-400">Sign in and opt in to see this week’s top focus ranks.</p>
+          ) : (
+            <div className="space-y-2">
+              {leaderboardEntries.map((entry) => (
+                <div key={`${entry.rank}-${entry.alias}`} className="flex items-center justify-between rounded-xl bg-white/[0.04] px-3 py-2.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${entry.rank <= 3 ? 'bg-ember-500/15 text-ember-300' : 'bg-white/5 text-neutral-400'}`}>
+                      {entry.rank <= 3 ? <CrownIcon className="h-3.5 w-3.5" /> : entry.rank}
+                    </span>
+                    <span className="truncate text-sm text-white">{entry.alias}{entry.isCurrentUser ? ' (you)' : ''}</span>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-neutral-200">{entry.focusMinutes} min</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       <InsightTipCarousel tips={focusTips} />
