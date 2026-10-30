@@ -94,7 +94,7 @@ export function Profile() {
 
       <section className="glass-strong mt-6 rounded-3xl p-5 lg:col-span-2 lg:mt-0 lg:p-7">
         <div className="flex items-start gap-4">
-          <Avatar value={profile.avatarUrl} className="h-16 w-16 flex-shrink-0 ring-2 ring-white/20" alt={profile.name} />
+          <Avatar value={profile.avatarUrl} className="h-16 w-16 flex-shrink-0" alt={profile.name} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <p className="truncate text-lg font-semibold text-white">{profile.name}</p>

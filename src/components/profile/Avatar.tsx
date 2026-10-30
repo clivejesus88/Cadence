@@ -1,4 +1,6 @@
 import BoringAvatar from 'boring-avatars';
+import { createAvatar } from '@dicebear/core';
+import * as adventurer from '@dicebear/adventurer';
 import { findAvatar, resolveAvatar } from '../../data/avatars';
 
 interface AvatarProps {
@@ -14,7 +16,22 @@ export function Avatar({ value, className = 'h-11 w-11', alt = 'Avatar' }: Avata
     return <img src={src} alt={alt} className={`rounded-full object-cover ${className}`} />;
   }
 
-  const p = preset ?? findAvatar('beam-ember');
+  const p = preset ?? findAvatar('adventurer-ember');
+
+  if (p.style === 'adventurer') {
+    const avatar = createAvatar(adventurer, {
+      seed: p.seed,
+      size: 128
+    });
+    return (
+      <img
+        src={avatar.toDataUri()}
+        alt={alt}
+        className={`object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] ${className}`}
+      />
+    );
+  }
+
   return (
     <span
       className={`avatar-fill relative inline-block overflow-hidden rounded-full ${className}`}
@@ -24,8 +41,8 @@ export function Avatar({ value, className = 'h-11 w-11', alt = 'Avatar' }: Avata
         size={128}
         square
         name={p.seed}
-        variant={p.variant}
-        colors={p.colors}
+        variant={p.variant ?? 'beam'}
+        colors={p.colors ?? ['#e5e7eb', '#334155', '#fb923c', '#0b0d10']}
       />
     </span>
   );

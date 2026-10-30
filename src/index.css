@@ -66,6 +66,9 @@ a,
 .font-display {
   font-family: 'Fraunces', serif;
 }
+.font-script {
+  font-family: 'Allura', cursive;
+}
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

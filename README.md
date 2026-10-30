@@ -140,3 +140,11 @@ deploy.
   and is adopted into the account on first sign-in.
 - **Distraction plan**: Cadence cannot close other apps from the browser; the
   feature is an honest reminder/plan, not a system-level blocker.
+
+## Avatar artwork attribution
+
+Character avatar designs use **Adventurer** by Lisa Wischofsky, provided by
+[DiceBear](https://www.dicebear.com/styles/adventurer/), under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The avatars are
+generated locally as SVGs with DiceBear; the profile picker selects curated
+seeds. The original source is the [Adventurer Figma community file](https://www.figma.com/community/file/1184595184137881796).

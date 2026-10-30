@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { FlameIcon, ArrowRightIcon, ChevronRightIcon, CrownIcon, LoaderCircleIcon } from 'lucide-react';
+import { FlameIcon, ChevronRightIcon, CrownIcon, LoaderCircleIcon, PlayIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -14,9 +14,6 @@ import { WeeklyPreview } from '../components/home/WeeklyPreview';
 import { InsightTipCarousel } from '../components/home/InsightTipCarousel';
 import { TaskPreviewList } from '../components/home/TaskPreviewList';
 import { Avatar } from '../components/profile/Avatar';
-import { LevelBadge } from '../components/gamified/LevelBadge';
-import { DailyGoalRing } from '../components/gamified/DailyGoalRing';
-import { XpBar } from '../components/gamified/XpBar';
 import { getWeeklyLeaderboard, LeaderboardEntry } from '../utils/leaderboard';
 
 export function Home() {
@@ -93,47 +90,71 @@ export function Home() {
   }, [preferences.taskReminders, preferences.sessionReminders, preferences.dailySummary, todayMinutes, totalSessionsCompleted, overdueCount, todayDueCount, firstReminderTask]);
 
   return (
-    <div className="px-5 pt-8 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-10">
-      <header className="flex items-center justify-between lg:col-span-2">
-        <div className="flex items-center gap-3">
+    <div className="px-5 pt-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-8">
+      <header className="flex items-center justify-between gap-4 lg:col-span-2">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => navigate('/app/profile')}
             aria-label="Open profile and settings"
-            className="rounded-full ring-2 ring-white/15 transition-transform active:scale-95">
-            
-            <Avatar value={profile.avatarUrl} className="h-11 w-11" alt={profile.name} />
+            className="flex h-[4.5rem] w-[4.25rem] flex-shrink-0 items-center justify-center rounded-2xl transition-transform active:scale-95">
+            <Avatar value={profile.avatarUrl} className="h-16 w-16" alt={profile.name} />
           </button>
-          <div className="min-w-0">
-            <p className="text-neutral-400 text-sm">{getGreeting()}</p>
-            <p className="font-display truncate text-2xl text-white">{firstName}</p>
+          <div className="min-w-0 py-1">
+            <p className="text-xs font-medium text-neutral-500">{getGreeting()}</p>
+            <h1 className="font-script truncate text-[2.6rem] leading-[0.95] text-white">{firstName}</h1>
+            <p className="mt-1 truncate text-[11px] tracking-wide text-neutral-500">
+              Level {level.level}<span className="px-1.5 text-neutral-700">·</span>{level.title}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="glass-pill flex items-center gap-1.5 rounded-full px-3 py-1.5">
-            <FlameIcon className="w-4 h-4 text-ember-400" />
-            <span className="text-sm font-semibold text-white">{currentStreak}</span>
+        <div className="flex flex-shrink-0 items-center border-l border-white/[0.08] pl-3.5">
+          <div className="text-right">
+            <div className="flex items-center justify-end gap-1.5">
+              <FlameIcon className="h-4 w-4 text-ember-400" />
+              <span className="font-numeric text-xl font-semibold leading-none tabular-nums text-white">{currentStreak}</span>
+            </div>
+            <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-500">day streak</p>
           </div>
-          <LevelBadge level={level} />
         </div>
       </header>
 
       <button
         onClick={() => navigate('/app/focus')}
-        className="glass-strong mt-6 w-full text-left rounded-3xl p-5 relative overflow-hidden active:scale-[0.99] transition-transform lg:col-span-2 lg:mt-0 lg:p-7">
-        
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wide">Quick Start</p>
-            <p className="font-display text-xl text-white mt-1">Start a focus session</p>
-            <p className="text-neutral-400 text-sm mt-2">
-              {formatMinutes(todayMinutes)} focused · {level.xpIntoLevel}/{level.xpForLevel} XP to Lv {level.level + 1}
+        aria-label={`Start a ${preferences.defaultDuration}-minute focus session`}
+        className="group relative mt-6 w-full overflow-hidden rounded-[28px] border border-white/[0.08] bg-[linear-gradient(145deg,rgba(20,24,27,0.96),rgba(15,17,20,0.96))] p-5 text-left shadow-[0_18px_45px_-30px_rgba(0,0,0,0.9)] transition-all hover:border-white/[0.14] hover:bg-[linear-gradient(145deg,rgba(24,28,32,0.98),rgba(15,17,20,0.96))] active:scale-[0.99] lg:col-span-2 lg:mt-0 lg:p-7">
+        <div className="relative flex items-center justify-between gap-5">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Focus session</p>
+            <p className="mt-2 font-display text-[1.7rem] leading-[1.1] text-white">Deep work, reset.</p>
+            <p className="mt-1.5 text-sm text-neutral-400">
+              {formatMinutes(preferences.defaultDuration)} · built for one clear task
             </p>
-            <XpBar progress={level.progress} className="mt-3 max-w-[9rem]" />
           </div>
-          <DailyGoalRing minutes={todayMinutes} goal={dailyGoalMinutes} size={96} stroke={8} />
+          <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white shadow-[0_10px_25px_-12px_rgba(255,255,255,0.35)] transition-transform group-hover:scale-105">
+            <PlayIcon className="ml-0.5 h-4 w-4 fill-current" />
+          </span>
         </div>
-        <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white text-ink-950 font-semibold text-sm px-4 py-2">
-          Begin now <ArrowRightIcon className="w-4 h-4" />
+
+        <div className="relative mt-6 flex items-center gap-3">
+          <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500">
+            <span className="inline-flex h-2 w-2 rounded-full border border-white/20 bg-white/10" />
+            Goal
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Daily focus goal progress"
+            aria-valuemin={0}
+            aria-valuemax={dailyGoalMinutes}
+            aria-valuenow={Math.min(todayMinutes, dailyGoalMinutes)}
+            className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+            <span
+              className="block h-full rounded-full bg-white/80 transition-[width]"
+              style={{ width: `${Math.min(100, (todayMinutes / Math.max(1, dailyGoalMinutes)) * 100)}%` }}
+            />
+          </div>
+          <p className="flex-shrink-0 text-[10px] font-medium tabular-nums text-neutral-400">
+            {formatMinutes(todayMinutes)} <span className="text-neutral-700">/</span> {formatMinutes(dailyGoalMinutes)}
+          </p>
         </div>
       </button>
 

@@ -29,7 +29,7 @@ export const defaultProfile: UserProfile = {
   name: '',
   email: '',
   school: '',
-  avatarUrl: 'preset:beam-ember',
+  avatarUrl: 'preset:adventurer-ember',
   plan: 'free',
   memberSince: '',
   timezone: ''

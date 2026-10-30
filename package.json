@@ -10,6 +10,8 @@
     "preview": "npx vite preview"
   },
   "dependencies": {
+    "@dicebear/adventurer": "^9.4.2",
+    "@dicebear/core": "^9.4.3",
     "@emotion/react": "^11.13.3",
     "@revenuecat/purchases-js": "^1.73.1",
     "@sentry/react": "^11.8.0",

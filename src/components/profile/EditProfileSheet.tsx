@@ -67,7 +67,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
       name: cleanName,
       school: sanitizeText(school, 80),
       email: sanitizeEmail(email),
-      avatarUrl: sanitizeAvatarUrl(avatarUrl) || presetAvatarValue('beam-ember')
+      avatarUrl: sanitizeAvatarUrl(avatarUrl) || presetAvatarValue('adventurer-ember')
     });
     onClose();
   };
@@ -84,7 +84,7 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
 
         <div className="flex flex-col items-center">
           <div className="relative">
-            <Avatar value={avatarUrl} className="h-24 w-24 ring-2 ring-white/20" alt="Avatar preview" />
+            <Avatar value={avatarUrl} className="h-28 w-28" alt="Avatar preview" />
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
@@ -116,10 +116,10 @@ export function EditProfileSheet({ profile, onClose }: EditProfileSheetProps) {
                   aria-label={a.name}
                   aria-pressed={selected}
                   onClick={() => setAvatarUrl(presetAvatarValue(a.id))}
-                  className={`relative aspect-square rounded-full transition-transform active:scale-90 ${
-                    selected ? 'ring-2 ring-ember-400 ring-offset-2 ring-offset-[#20252c]' : 'ring-1 ring-white/10'
+                  className={`relative aspect-square rounded-2xl transition-transform active:scale-95 ${
+                    selected ? 'bg-white/[0.06] ring-1 ring-ember-400' : 'hover:bg-white/[0.03]'
                   }`}>
-                  <Avatar value={presetAvatarValue(a.id)} className="h-full w-full" alt={a.name} />
+                  <Avatar value={presetAvatarValue(a.id)} className="h-full w-full p-1" alt={a.name} />
                   {selected && (
                     <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-ember-500 text-ink-950 ring-2 ring-[#20252c]">
                       <CheckIcon className="h-2.5 w-2.5" strokeWidth={3} />
