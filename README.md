@@ -64,6 +64,12 @@ Or paste each file into the Supabase SQL editor in order.
 | `009_rate_limits` | server-side rate limiting for Edge Functions |
 | `010_revenuecat` | RevenueCat subscription metadata and webhook event tracking |
 | `011_revenuecat_atomic_events` | atomically orders and applies RevenueCat webhook events |
+| `012_weekly_leaderboard` | opt-in aliases and private weekly aggregate rankings |
+
+The weekly leaderboard is opt-in and shows a chosen alias with capped weekly
+focus minutes only. Rankings reset Monday 00:00 UTC, with at most 120 minutes
+counted per UTC day. Users can leave at any time; friend groups are not part of
+the initial release.
 
 ## Edge functions
 

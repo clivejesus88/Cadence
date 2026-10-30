@@ -17,6 +17,7 @@ const Focus = lazy(() => import('./pages/Focus').then((m) => ({ default: m.Focus
 const Planner = lazy(() => import('./pages/Planner').then((m) => ({ default: m.Planner })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const Insights = lazy(() => import('./pages/Insights').then((m) => ({ default: m.Insights })));
+const Leaderboard = lazy(() => import('./pages/Leaderboard').then((m) => ({ default: m.Leaderboard })));
 const BlockingRules = lazy(() => import('./pages/BlockingRules').then((m) => ({ default: m.BlockingRules })));
 const PrivacyPolicy = lazy(() => import('./pages/Legal').then((m) => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import('./pages/Legal').then((m) => ({ default: m.TermsOfService })));
@@ -167,6 +168,14 @@ export function App() {
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <Insights />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="leaderboard"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <Leaderboard />
                       </Suspense>
                     }
                   />

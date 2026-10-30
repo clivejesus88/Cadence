@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HomeIcon, TimerIcon, BarChart3Icon, ListChecksIcon, SettingsIcon } from 'lucide-react';
+import { HomeIcon, TimerIcon, BarChart3Icon, ListChecksIcon, SettingsIcon, TrophyIcon } from 'lucide-react';
 
 const navItems = [
   { to: '/app/home', label: 'Home', icon: HomeIcon },
   { to: '/app/focus', label: 'Focus', icon: TimerIcon },
   { to: '/app/insights', label: 'Insights', icon: BarChart3Icon },
+  { to: '/app/leaderboard', label: 'Ranks', icon: TrophyIcon },
   { to: '/app/planner', label: 'Planner', icon: ListChecksIcon },
   { to: '/app/profile', label: 'Settings', icon: SettingsIcon }
 ];

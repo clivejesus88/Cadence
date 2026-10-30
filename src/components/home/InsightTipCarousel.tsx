@@ -5,10 +5,31 @@ interface InsightTipCarouselProps {
   tips: string[];
 }
 
+function getLocalDayNumber(date = new Date()) {
+  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000);
+}
+
+function getDailyTipIndex(tipCount: number, dayNumber: number) {
+  return tipCount > 1 ? dayNumber % tipCount : 0;
+}
+
 export function InsightTipCarousel({ tips }: InsightTipCarouselProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [currentDay, setCurrentDay] = useState(() => getLocalDayNumber());
+  const [activeIndex, setActiveIndex] = useState(() => getDailyTipIndex(tips.length, getLocalDayNumber()));
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timer = window.setTimeout(() => setCurrentDay(getLocalDayNumber()), nextMidnight.getTime() - now.getTime());
+
+    return () => window.clearTimeout(timer);
+  }, [currentDay]);
+
+  useEffect(() => {
+    setActiveIndex(getDailyTipIndex(tips.length, currentDay));
+  }, [currentDay, tips.length]);
 
   useEffect(() => {
     if (isPaused || tips.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
