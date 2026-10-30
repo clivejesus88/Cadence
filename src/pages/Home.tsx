@@ -121,36 +121,39 @@ export function Home() {
       <button
         onClick={() => navigate('/app/focus')}
         aria-label={`Start a ${preferences.defaultDuration}-minute focus session`}
-        className="group relative mt-6 w-full overflow-hidden rounded-[28px] border border-white/[0.08] bg-[linear-gradient(145deg,rgba(20,24,27,0.96),rgba(15,17,20,0.96))] p-5 text-left shadow-[0_18px_45px_-30px_rgba(0,0,0,0.9)] transition-all hover:border-white/[0.14] hover:bg-[linear-gradient(145deg,rgba(24,28,32,0.98),rgba(15,17,20,0.96))] active:scale-[0.99] lg:col-span-2 lg:mt-0 lg:p-7">
-        <div className="relative flex items-center justify-between gap-5">
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Focus session</p>
-            <p className="mt-2 font-display text-[1.7rem] leading-[1.1] text-white">Deep work, reset.</p>
-            <p className="mt-1.5 text-sm text-neutral-400">
-              {formatMinutes(preferences.defaultDuration)} · built for one clear task
-            </p>
+        className="group relative mt-6 w-full overflow-hidden rounded-[28px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,31,0.92),rgba(13,15,18,0.96))] p-5 text-left shadow-[0_18px_42px_-28px_rgba(0,0,0,0.95)] transition-all hover:border-white/[0.12] active:scale-[0.99] lg:col-span-2 lg:mt-0 lg:p-6">
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3.5">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <PlayIcon className="ml-0.5 h-4 w-4 fill-current" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Focus session</p>
+              <p className="mt-1 truncate text-[1.05rem] font-medium leading-none text-white">Deep work, {formatMinutes(preferences.defaultDuration)}</p>
+            </div>
           </div>
-          <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white shadow-[0_10px_25px_-12px_rgba(255,255,255,0.35)] transition-transform group-hover:scale-105">
-            <PlayIcon className="ml-0.5 h-4 w-4 fill-current" />
-          </span>
+
+          <div className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-300">
+            <span className="inline-flex h-1.5 w-1.5 rounded-full bg-white/50" />
+            {formatMinutes(preferences.defaultDuration)}
+          </div>
         </div>
 
-        <div className="relative mt-6 flex items-center gap-3">
-          <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500">
-            <span className="inline-flex h-2 w-2 rounded-full border border-white/20 bg-white/10" />
-            Goal
-          </div>
-          <div
-            role="progressbar"
-            aria-label="Daily focus goal progress"
-            aria-valuemin={0}
-            aria-valuemax={dailyGoalMinutes}
-            aria-valuenow={Math.min(todayMinutes, dailyGoalMinutes)}
-            className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
-            <span
-              className="block h-full rounded-full bg-white/80 transition-[width]"
-              style={{ width: `${Math.min(100, (todayMinutes / Math.max(1, dailyGoalMinutes)) * 100)}%` }}
-            />
+        <div className="relative mt-5 flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-neutral-400">Today’s goal</p>
+            <div
+              role="progressbar"
+              aria-label="Daily focus goal progress"
+              aria-valuemin={0}
+              aria-valuemax={dailyGoalMinutes}
+              aria-valuenow={Math.min(todayMinutes, dailyGoalMinutes)}
+              className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+              <span
+                className="block h-full rounded-full bg-white/80 transition-[width]"
+                style={{ width: `${Math.min(100, (todayMinutes / Math.max(1, dailyGoalMinutes)) * 100)}%` }}
+              />
+            </div>
           </div>
           <p className="flex-shrink-0 text-[10px] font-medium tabular-nums text-neutral-400">
             {formatMinutes(todayMinutes)} <span className="text-neutral-700">/</span> {formatMinutes(dailyGoalMinutes)}
