@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { sanitizeAvatarUrl } from './sanitize';
 
 export interface LeaderboardProfile {
   alias: string;
@@ -10,6 +11,7 @@ export interface LeaderboardEntry {
   alias: string;
   focusMinutes: number;
   isCurrentUser: boolean;
+  avatarUrl: string;
 }
 
 function requireSupabase() {
@@ -79,11 +81,14 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       throw new Error('The leaderboard response contained an invalid entry.');
     }
 
+    const avatarUrl = typeof row.avatar_url === 'string' ? sanitizeAvatarUrl(row.avatar_url) : '';
+
     return {
       rank: row.rank_position,
       alias: row.display_alias,
       focusMinutes: row.focus_minutes,
-      isCurrentUser: row.is_current_user
+      isCurrentUser: row.is_current_user,
+      avatarUrl: avatarUrl || 'preset:adventurer-ember'
     };
   });
 }

@@ -13,7 +13,7 @@ export function Avatar({ value, className = 'h-11 w-11', alt = 'Avatar' }: Avata
   const { preset, src } = resolveAvatar(value);
 
   if (src) {
-    return <img src={src} alt={alt} className={`rounded-full object-cover ${className}`} />;
+    return <img src={src} alt={alt} className={`rounded-[18px] object-cover shadow-[0_10px_20px_rgba(0,0,0,0.28)] ${className}`} />;
   }
 
   const p = preset ?? findAvatar('adventurer-ember');
@@ -27,14 +27,14 @@ export function Avatar({ value, className = 'h-11 w-11', alt = 'Avatar' }: Avata
       <img
         src={avatar.toDataUri()}
         alt={alt}
-        className={`object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] ${className}`}
+        className={`rounded-[18px] object-contain shadow-[0_10px_20px_rgba(0,0,0,0.28)] ${className}`}
       />
     );
   }
 
   return (
     <span
-      className={`avatar-fill relative inline-block overflow-hidden rounded-full ${className}`}
+      className={`avatar-fill relative inline-block overflow-hidden rounded-[18px] shadow-[0_10px_20px_rgba(0,0,0,0.28)] ${className}`}
       role="img"
       aria-label={alt}>
       <BoringAvatar

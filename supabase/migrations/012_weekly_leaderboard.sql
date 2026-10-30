@@ -36,12 +36,15 @@ create policy "own leaderboard profile only"
 
 grant select, insert, update, delete on public.leaderboard_profiles to authenticated;
 
-create or replace function public.get_weekly_leaderboard()
+drop function if exists public.get_weekly_leaderboard();
+
+create function public.get_weekly_leaderboard()
 returns table (
   rank_position bigint,
   display_alias text,
   focus_minutes integer,
-  is_current_user boolean
+  is_current_user boolean,
+  avatar_url text
 )
 language sql
 stable
@@ -71,25 +74,29 @@ as $$
     select
       lp.user_id,
       lp.alias,
-      coalesce(sum(dt.minutes), 0)::integer as minutes
+      coalesce(sum(dt.minutes), 0)::integer as minutes,
+      p.avatar_url
     from public.leaderboard_profiles lp
     left join daily_totals dt on dt.user_id = lp.user_id
+    left join public.profile p on p.user_id = lp.user_id
     where lp.opted_in = true
-    group by lp.user_id, lp.alias
+    group by lp.user_id, lp.alias, p.avatar_url
   ),
   ranked as (
     select
       row_number() over (order by wt.minutes desc, lower(wt.alias), wt.user_id) as position,
       wt.user_id,
       wt.alias,
-      wt.minutes
+      wt.minutes,
+      wt.avatar_url
     from weekly_totals wt
   )
   select
     ranked.position,
     ranked.alias,
     ranked.minutes,
-    ranked.user_id = auth.uid()
+    ranked.user_id = auth.uid(),
+    coalesce(ranked.avatar_url, '') as avatar_url
   from ranked
   where ranked.position <= 50
      or ranked.user_id = auth.uid()

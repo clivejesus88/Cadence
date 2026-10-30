@@ -212,6 +212,9 @@ export function Home() {
                     <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${entry.rank <= 3 ? 'bg-ember-500/15 text-ember-300' : 'bg-white/5 text-neutral-400'}`}>
                       {entry.rank <= 3 ? <CrownIcon className="h-3.5 w-3.5" /> : entry.rank}
                     </span>
+                    <div className="h-8 w-8 overflow-visible bg-transparent shadow-[0_8px_18px_rgba(0,0,0,0.24)]">
+                      <Avatar value={entry.avatarUrl} className="h-full w-full" alt={entry.alias} />
+                    </div>
                     <span className="truncate text-sm text-white">{entry.alias}{entry.isCurrentUser ? ' (you)' : ''}</span>
                   </div>
                   <span className="shrink-0 text-sm font-semibold tabular-nums text-neutral-200">{entry.focusMinutes} min</span>
