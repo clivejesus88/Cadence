@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDownIcon, PlayIcon, PlusIcon } from 'lucide-react';
-import { isToday, isTomorrow, isPast, parseISO } from 'date-fns';
+import { ChevronDownIcon, PlusIcon } from 'lucide-react';
+import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes } from '../utils/time';
@@ -55,48 +55,41 @@ export function Planner() {
   };
 
   const todayProgress = totalToday > 0 ? completedToday / totalToday : 0;
+  const todayTasks = groups.find((group) => group.label === 'Today')?.items ?? [];
+  const upcomingGroups = groups.filter((group) => group.label !== 'Today');
 
   return (
     <div className="px-5 pt-8 pb-8 lg:px-8 lg:pt-10">
-      <div className="flex items-center justify-between">
+      <header className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl text-white">Planner</h1>
-          <p className="mt-1 text-sm text-neutral-400">A clear plan for your next focus session.</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+            {format(new Date(), 'EEEE · MMM d')}
+          </p>
+          <h1 className="mt-1 font-display text-3xl text-white">Planner</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate('/app/focus')}
-            aria-label="Start a focus session"
-            className="glass-inset flex h-11 w-11 items-center justify-center rounded-full text-ember-300 transition-transform active:scale-95">
-            <PlayIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowAdd(true)}
-            aria-label="Add task"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-ember-500 text-ink-950 transition-transform active:scale-95">
-            <PlusIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+        <button
+          onClick={() => setShowAdd(true)}
+          aria-label="Add task"
+          className="glass-inset flex h-11 w-11 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 active:scale-95">
+          <PlusIcon className="h-5 w-5" />
+        </button>
+      </header>
 
-      <section className="glass-strong mt-6 rounded-3xl p-5">
+      <section className="mt-7">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ember-400">Today</p>
-            <p className="mt-1 font-display text-xl text-white">
-              {completedToday} of {totalToday} tasks done
-            </p>
+            <h2 className="font-display text-xl text-white">Today</h2>
             <p className="mt-1 text-sm text-neutral-400">
               {remainingFocusMinutes > 0
-                ? `${formatMinutes(remainingFocusMinutes)} estimated focus remaining`
+                ? `About ${formatMinutes(remainingFocusMinutes)} of focus left`
                 : totalToday > 0
-                  ? 'You’ve cleared today’s plan.'
-                  : 'Add a task or start a focus session when you’re ready.'}
+                  ? 'Today’s plan is complete.'
+                  : 'A little focus goes a long way.'}
             </p>
           </div>
-          <span className="rounded-full bg-white/[0.07] px-3 py-1.5 text-xs font-semibold tabular-nums text-neutral-300">
-            {Math.round(todayProgress * 100)}%
-          </span>
+          <p className="pt-1 text-xs tabular-nums text-neutral-500">
+            <span className="font-medium text-neutral-300">{completedToday}</span> / {totalToday}
+          </p>
         </div>
         <div
           role="progressbar"
@@ -104,36 +97,19 @@ export function Planner() {
           aria-valuemin={0}
           aria-valuemax={totalToday || 1}
           aria-valuenow={completedToday}
-          className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
+          className="mt-4 h-1 overflow-hidden rounded-full bg-white/[0.08]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-ember-400 to-ember-600 transition-[width]"
+            className="h-full rounded-full bg-ember-400 transition-[width]"
             style={{ width: `${todayProgress * 100}%` }}
           />
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink-950 transition-transform active:scale-[0.98]">
-            <PlusIcon className="h-4 w-4" />
-            Add task
-          </button>
-          <button
-            onClick={() => navigate('/app/focus')}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-neutral-200 transition-colors hover:bg-white/[0.06]">
-            <PlayIcon className="h-3.5 w-3.5" />
-            Quick focus
-          </button>
-        </div>
       </section>
 
-      <div className="mt-7 space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
-        {groups.map((group) =>
-          <section key={group.label}>
-            <h2 className={`mb-2.5 text-xs font-semibold uppercase tracking-wide ${group.label === 'Overdue' ? 'text-ember-300' : 'text-neutral-500'}`}>
-              {group.label}<span className="ml-1.5 font-normal text-neutral-600">{group.items.length}</span>
-            </h2>
+      <div className="mt-7">
+        {todayTasks.length > 0 ? (
+          <section>
             <div className="space-y-2">
-              {group.items.map((task) =>
+              {todayTasks.map((task) =>
                 <TaskRow
                   key={task.id}
                   task={task}
@@ -143,35 +119,43 @@ export function Planner() {
               )}
             </div>
           </section>
-        )}
-        {groups.length === 0 && (
-          <div className="glass rounded-2xl px-5 py-7 text-center lg:col-span-2">
-            <p className="text-sm font-medium text-white">
-              {completedTasks.length > 0 ? 'Your active plan is clear.' : 'Start with one small task.'}
-            </p>
-            <p className="mt-1 text-sm text-neutral-400">
-              {completedTasks.length > 0
-                ? 'Add another task or take a focus session at your own pace.'
-                : 'Add a task to give your next focus session a direction.'}
-            </p>
-            <button
-              onClick={() => setShowAdd(true)}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-ember-500 px-4 py-2 text-sm font-semibold text-ink-950 active:scale-[0.98]">
-              <PlusIcon className="h-4 w-4" />
-              Add your first task
-            </button>
-          </div>
+        ) : (
+          <p className="rounded-2xl border border-dashed border-white/10 px-4 py-5 text-sm text-neutral-500">
+            {totalToday > 0 ? 'You’ve completed today’s planned tasks.' : 'Nothing scheduled for today.'}
+          </p>
         )}
       </div>
 
+      {upcomingGroups.length > 0 && (
+        <div className="mt-8 border-t border-white/[0.07] pt-6 lg:grid lg:grid-cols-2 lg:gap-x-6">
+          {upcomingGroups.map((group) =>
+            <section key={group.label} className="mb-6 last:mb-0">
+              <h2 className={`mb-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] ${group.label === 'Overdue' ? 'text-ember-300' : 'text-neutral-500'}`}>
+                {group.label}<span className="ml-1.5 font-normal text-neutral-600">{group.items.length}</span>
+              </h2>
+              <div className="space-y-2">
+                {group.items.map((task) =>
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    onToggle={() => toggleTask(task.id)}
+                    onStartFocus={() => startFocusOn(task.id)}
+                  />
+                )}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+
       {completedTasks.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-7 border-t border-white/[0.07] pt-4">
           <button
             type="button"
             onClick={() => setShowCompleted((shown) => !shown)}
             aria-expanded={showCompleted}
-            className="flex w-full items-center justify-between rounded-xl py-2 text-left">
-            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            className="flex w-full items-center justify-between py-2 text-left">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
               Completed <span className="ml-1 text-neutral-600">{completedTasks.length}</span>
             </span>
             <ChevronDownIcon className={`h-4 w-4 text-neutral-500 transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
