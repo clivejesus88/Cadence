@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { ChevronLeftIcon, FlameIcon, ClockIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon, TargetIcon } from "lucide-react";
+import { ChevronLeftIcon, FlameIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon, TargetIcon } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -12,7 +12,6 @@ import { SettingRow } from "../components/profile/SettingRow";
 import { ToggleSwitch } from "../components/profile/ToggleSwitch";
 import { EditProfileSheet } from "../components/profile/EditProfileSheet";
 import { Avatar } from "../components/profile/Avatar";
-import { DailyGoalRing } from "../components/gamified/DailyGoalRing";
 import { XpBar } from "../components/gamified/XpBar";
 import { BadgeGrid } from "../components/gamified/BadgeGrid";
 import { useState } from "react";
@@ -84,77 +83,84 @@ export function Profile() {
     await signOut();
     navigate('/', { replace: true });
   };
-  return <div className="px-5 pt-8 pb-8 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-10">
-      <header className="flex items-center gap-3 lg:col-span-2">
-        <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
+  return <div className="px-5 pb-10 pt-6 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-7 lg:px-8 lg:pt-8">
+      <header className="mb-6 flex items-center gap-3 lg:col-span-2 lg:mb-0">
+        <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="hit-slop flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/[0.05] hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-2xl text-white">Profile</h1>
+        <h1 className="font-display text-xl text-white">Profile</h1>
       </header>
 
-      <section className="glass-strong mt-6 rounded-3xl p-5 lg:col-span-2 lg:mt-0 lg:p-7">
-        <div className="flex items-start gap-4">
-          <Avatar value={profile.avatarUrl} className="h-16 w-16 flex-shrink-0" alt={profile.name} />
+      <section className="lg:col-span-2">
+        <div className="flex items-center gap-3.5">
+          <Avatar value={profile.avatarUrl} className="h-[4.25rem] w-[4rem] flex-shrink-0" alt={profile.name} />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="truncate text-lg font-semibold text-white">{profile.name}</p>
-              {profile.plan === 'pro' && <span className="rounded-full bg-ember-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ember-400">
-                  Pro
-                </span>}
-            </div>
-            <p className="truncate text-xs text-neutral-400">{profile.school}</p>
-            <p className="truncate text-xs text-neutral-500">{profile.email || (isGuest ? 'Browsing as guest' : '')}</p>
+            <p className="truncate font-script text-[2.25rem] leading-none text-white">{profile.name || 'Your name'}</p>
+            <p className="mt-1 truncate text-xs text-neutral-500">
+              {profile.school || profile.email || (isGuest ? 'Guest account' : 'Cadence member')}
+              {profile.plan === 'pro' ? ' · Pro' : ''}
+            </p>
           </div>
           <button
             onClick={() => setEditing(true)}
             aria-label="Edit profile"
-            className="hit-slop glass-inset flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
-            
+            className="hit-slop flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/[0.05] hover:text-white active:scale-95">
             <UserRoundIcon className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          <div className="glass-inset rounded-2xl px-3 py-3 text-center">
-            <FlameIcon className="mx-auto h-4 w-4 text-ember-400" />
-            <p className="mt-1.5 text-sm font-semibold text-white">{currentStreak}</p>
-            <p className="text-[11px] text-neutral-500">Day streak</p>
-          </div>
-          <div className="glass-inset rounded-2xl px-3 py-3 text-center">
-            <ClockIcon className="mx-auto h-4 w-4 text-neutral-300" />
-            <p className="mt-1.5 text-sm font-semibold text-white">{formatMinutes(totalMinutes)}</p>
-            <p className="text-[11px] text-neutral-500">Focused</p>
-          </div>
-          <div className="glass-inset rounded-2xl px-3 py-3 text-center">
-            <ListChecksIcon className="mx-auto h-4 w-4 text-neutral-300" />
-            <p className="mt-1.5 text-sm font-semibold text-white">{totalSessionsCompleted}</p>
-            <p className="text-[11px] text-neutral-500">Sessions</p>
-          </div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-neutral-500">
+          <FlameIcon className="h-3.5 w-3.5 text-ember-400" />
+          <span>{currentStreak} day streak</span>
+          <span className="text-neutral-700">·</span>
+          <span>{formatMinutes(totalMinutes)} focused</span>
+          <span className="text-neutral-700">·</span>
+          <span>{totalSessionsCompleted} sessions</span>
         </div>
       </section>
 
-      <section className="mt-7 lg:col-span-2 lg:mt-0">
-        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Progress</h2>
-        <div className="glass-strong rounded-3xl p-5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ember-400">Level {level.level}</p>
-              <p className="font-display text-2xl text-white">{level.title}</p>
-              <p className="mt-1 text-xs text-neutral-400 tabular-nums">
-                {level.xpIntoLevel} / {level.xpForLevel} XP · {badges.filter((b) => b.earned).length} badges earned
-              </p>
-              <XpBar progress={level.progress} className="mt-3" />
+      <section className="mt-6 lg:col-span-2 lg:mt-0">
+        <div className="glass rounded-[22px] p-4">
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="flex min-w-0 items-baseline gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember-300">Level {level.level}</span>
+              <span className="truncate font-display text-lg text-white">{level.title}</span>
             </div>
-            <DailyGoalRing minutes={todayMinutes} goal={dailyGoalMinutes} size={92} stroke={8} />
+            <span className="flex-shrink-0 text-[11px] tabular-nums text-neutral-500">{level.xpIntoLevel}/{level.xpForLevel} XP</span>
+          </div>
+          <XpBar progress={level.progress} className="mt-2.5" />
+
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <span className="text-xs text-neutral-400">Today’s focus goal</span>
+            <span className="text-xs font-medium tabular-nums text-neutral-300">{formatMinutes(todayMinutes)} / {formatMinutes(dailyGoalMinutes)}</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Daily focus goal progress"
+            aria-valuemin={0}
+            aria-valuemax={dailyGoalMinutes}
+            aria-valuenow={Math.min(todayMinutes, dailyGoalMinutes)}
+            className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.08]">
+            <span
+              className="block h-full rounded-full bg-white/70 transition-[width]"
+              style={{ width: `${Math.min(100, (todayMinutes / Math.max(1, dailyGoalMinutes)) * 100)}%` }}
+            />
           </div>
 
-          <BadgeGrid badges={badges} className="mt-5" />
+          <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
+            <span className="text-[11px] text-neutral-500">Badges</span>
+            <span className="text-[11px] tabular-nums text-neutral-500">{badges.filter((b) => b.earned).length} earned</span>
+          </div>
+          <BadgeGrid badges={badges} className="mt-2" />
         </div>
       </section>
 
       <section className="mt-7 lg:mt-0">
-        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus preferences</h2>
-        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+        <div className="mb-3 px-1">
+          <h2 className="text-sm font-semibold text-white">Focus preferences</h2>
+          <p className="mt-0.5 text-xs text-neutral-500">Shape your sessions around you</p>
+        </div>
+        <div className="glass divide-y divide-white/[0.06] overflow-hidden rounded-[24px]">
           <div className="px-4 py-3.5">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white/[0.07]">
@@ -202,8 +208,11 @@ export function Profile() {
       </section>
 
       <section className="mt-7 lg:mt-0">
-        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Notifications</h2>
-        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+        <div className="mb-3 px-1">
+          <h2 className="text-sm font-semibold text-white">Notifications</h2>
+          <p className="mt-0.5 text-xs text-neutral-500">Only the nudges you want</p>
+        </div>
+        <div className="glass divide-y divide-white/[0.06] overflow-hidden rounded-[24px]">
           <SettingRow icon={BellIcon} title="Session reminders" description="At 4 PM local time if you haven't focused today." control={<ToggleSwitch label="Session reminders" checked={preferences.sessionReminders} onChange={(v) => handleReminderToggle('sessionReminders', v)} />} />
           <SettingRow icon={ListChecksIcon} title="Task reminders" description="At 4 PM local time for overdue or due-today tasks." control={<ToggleSwitch label="Task reminders" checked={preferences.taskReminders} onChange={(v) => handleReminderToggle('taskReminders', v)} />} />
           <SettingRow icon={MailIcon} title="Daily summary" description="At 6 PM local time when you have focus sessions today." control={<ToggleSwitch label="Daily summary" checked={preferences.dailySummary} onChange={(v) => handleReminderToggle('dailySummary', v)} />} />
@@ -225,8 +234,11 @@ export function Profile() {
       </section>
 
       <section className="mt-7 lg:mt-0">
-        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Focus shield</h2>
-        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+        <div className="mb-3 px-1">
+          <h2 className="text-sm font-semibold text-white">Focus shield</h2>
+          <p className="mt-0.5 text-xs text-neutral-500">Keep distractions out of the way</p>
+        </div>
+        <div className="glass divide-y divide-white/[0.06] overflow-hidden rounded-[24px]">
           <SettingRow icon={ShieldCheckIcon} title="Stay off distractions" description="Nudge me if I switch away during a session." control={<ToggleSwitch label="Stay off distractions" checked={preferences.blockDuringFocus} onChange={(v) => updatePreference('blockDuringFocus', v)} />} />
           <SettingRow icon={CalendarClockIcon} title="Distraction plan" description={profile.plan === 'pro' ? 'Plan by schedule, per-app, per-website' : 'Plan what to avoid during focus'} onClick={() => navigate('/app/blocking')} />
           <SettingRow icon={LockIcon} title="Strict mode" description="Sessions can't be ended early." control={<ToggleSwitch label="Strict mode" checked={preferences.strictMode} onChange={(v) => updatePreference('strictMode', v)} />} />
@@ -234,8 +246,11 @@ export function Profile() {
       </section>
 
       <section className="mt-7 lg:mt-0">
-        <h2 className="mb-2.5 px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">Account</h2>
-        <div className="glass divide-y divide-white/5 overflow-hidden rounded-2xl">
+        <div className="mb-3 px-1">
+          <h2 className="text-sm font-semibold text-white">Account</h2>
+          <p className="mt-0.5 text-xs text-neutral-500">Your details and Cadence membership</p>
+        </div>
+        <div className="glass divide-y divide-white/[0.06] overflow-hidden rounded-[24px]">
           <SettingRow icon={UserRoundIcon} title="Edit profile" description="Update your name, school, email and photo." onClick={() => setEditing(true)} />
           <SettingRow icon={CreditCardIcon} title="Manage subscription" description={profile.plan === 'pro' ? `Cadence Pro · member since ${profile.memberSince}` : 'Unlock Cadence Pro for soundscapes and distraction planning'} onClick={() => navigate('/?paywall=1')} />
           <SettingRow icon={BoxIcon} title="Help & support" onClick={notifySupport} />
