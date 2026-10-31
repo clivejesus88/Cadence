@@ -14,6 +14,7 @@ import { avatarPresets, presetAvatarValue } from '../data/avatars';
 import { updateProfile as persistProfile } from '../db/repo';
 import { scheduleSync } from '../db/sync';
 import { hasChosenAvatar, markAvatarChosen } from '../utils/onboarding';
+import { sanitizeText } from '../utils/sanitize';
 
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 const HERO_BLUR_URL = "/hero-blur.jpg";
@@ -51,6 +52,7 @@ export function OnboardingFlow() {
     if (searchParams.get('paywall')) return 6;
     return 0;
   }); // 0 splash, 1-4 features, 5 auth, 6 paywall, 7 avatar selection
+  const [displayName, setDisplayName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarError, setAvatarError] = useState('');
@@ -62,6 +64,7 @@ export function OnboardingFlow() {
       if (hasChosenAvatar(user.id)) {
         navigate('/app/home', { replace: true });
       } else {
+        setDisplayName((current) => current || user.name);
         setStep(7);
       }
     }
@@ -79,12 +82,13 @@ export function OnboardingFlow() {
   };
 
   const finishAvatarChoice = async () => {
-    if (!selectedAvatar || avatarSaving) return;
+    const name = sanitizeText(displayName, 60);
+    if (!selectedAvatar || !name || avatarSaving) return;
     setAvatarSaving(true);
     setAvatarError('');
     try {
       if (!user) continueAsGuest();
-      await persistProfile({ avatarUrl: selectedAvatar });
+      await persistProfile({ name, avatarUrl: selectedAvatar });
       scheduleSync();
       const userId = user?.id ?? 'guest';
       markAvatarChosen(userId);
@@ -221,9 +225,25 @@ export function OnboardingFlow() {
         <div className="w-full max-w-md">
           <div className="mb-7 text-center">
             <p className="font-display text-3xl tracking-tight text-white">Make it yours</p>
-            <p className="mt-2 text-sm text-neutral-400">Choose your avatar to get started. You can change it anytime.</p>
+            <p className="mt-2 text-sm text-neutral-400">Add your name and choose an avatar to get started.</p>
           </div>
           <div className="glass rounded-3xl p-4 sm:p-5">
+            <label htmlFor="onboarding-name" className="mb-2 block text-xs font-medium text-neutral-300">
+              Your name
+            </label>
+            <input
+              id="onboarding-name"
+              type="text"
+              autoComplete="name"
+              maxLength={60}
+              value={displayName}
+              onChange={(event) => {
+                setDisplayName(event.target.value);
+                setAvatarError('');
+              }}
+              placeholder="What should we call you?"
+              className="mb-5 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-white outline-none transition placeholder:text-neutral-600 focus:border-white/30"
+            />
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
               {avatarPresets.map((avatar) => {
                 const value = presetAvatarValue(avatar.id);
@@ -250,7 +270,7 @@ export function OnboardingFlow() {
             <button
               type="button"
               onClick={() => void finishAvatarChoice()}
-              disabled={!selectedAvatar || avatarSaving}
+              disabled={!sanitizeText(displayName, 60) || !selectedAvatar || avatarSaving}
               className="mt-6 w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-40">
               {avatarSaving ? 'Saving…' : 'Continue'}
             </button>
