@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
-import { BarChart3Icon, ClockIcon, CrownIcon, FlameIcon, ListChecksIcon, LoaderCircleIcon, TrendingUpIcon } from 'lucide-react';
+import { BarChart3Icon, ClockIcon, FlameIcon, ListChecksIcon, LoaderCircleIcon, TrendingUpIcon } from 'lucide-react';
 import { useAppData } from '../contexts/AppDataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { formatMinutes } from '../utils/time';
@@ -8,6 +8,7 @@ import { rangeFocusMinutes, monthlyFocusMinutes, longestFocusStreak } from '../u
 import { StatCard } from '../components/insights/StatCard';
 import { StreakHeatmap } from '../components/insights/StreakHeatmap';
 import { Avatar } from '../components/profile/Avatar';
+import { RankCrown } from '../components/leaderboard/RankCrown';
 import { getLeaderboardProfile, getWeeklyLeaderboard, LeaderboardEntry, validateLeaderboardAlias, saveLeaderboardProfile } from '../utils/leaderboard';
 
 const rangeOptions = [
@@ -329,8 +330,8 @@ export function Insights() {
                 leaderboardEntries.slice(0, 5).map((entry) => (
                   <div key={`${entry.rank}-${entry.alias}`} className="flex items-center justify-between rounded-xl bg-white/[0.04] px-3 py-2.5">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${entry.rank <= 3 ? 'bg-ember-500/15 text-ember-300' : 'bg-white/5 text-neutral-400'}`}>
-                        {entry.rank <= 3 ? <CrownIcon className="h-3.5 w-3.5" /> : entry.rank}
+                      <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${entry.rank === 1 ? 'bg-amber-300/15 text-amber-200' : entry.rank <= 3 ? 'bg-ember-500/15 text-ember-300' : 'bg-white/5 text-neutral-400'}`}>
+                        {entry.rank <= 3 ? <RankCrown rank={entry.rank} className="h-3.5 w-3.5" /> : entry.rank}
                       </span>
                       <div className="h-8 w-8 overflow-visible bg-transparent shadow-[0_8px_18px_rgba(0,0,0,0.24)]">
                         <Avatar value={entry.avatarUrl} className="h-full w-full" alt={entry.alias} />

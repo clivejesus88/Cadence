@@ -13,10 +13,10 @@ import { Avatar } from '../components/profile/Avatar';
 import { avatarPresets, presetAvatarValue } from '../data/avatars';
 import { updateProfile as persistProfile } from '../db/repo';
 import { scheduleSync } from '../db/sync';
+import { hasChosenAvatar, markAvatarChosen } from '../utils/onboarding';
 
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 const HERO_BLUR_URL = "/hero-blur.jpg";
-const AVATAR_CHOICE_KEY_PREFIX = 'cadence:avatar-selected:';
 
 const features = [
   {
@@ -45,22 +45,12 @@ const features = [
   }
 ];
 
-function hasChosenAvatar(userId: string | null | undefined): boolean {
-  if (!userId) return false;
-  try {
-    return localStorage.getItem(`${AVATAR_CHOICE_KEY_PREFIX}${userId}`) === '1';
-  } catch {
-    return false;
-  }
-}
-
-
 export function OnboardingFlow() {
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(() => {
     if (searchParams.get('paywall')) return 6;
     return 0;
-  }); // 0 splash, 1-4 features, 5 auth, 6 paywall
+  }); // 0 splash, 1-4 features, 5 auth, 6 paywall, 7 avatar selection
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarError, setAvatarError] = useState('');
@@ -97,7 +87,7 @@ export function OnboardingFlow() {
       await persistProfile({ avatarUrl: selectedAvatar });
       scheduleSync();
       const userId = user?.id ?? 'guest';
-      localStorage.setItem(`${AVATAR_CHOICE_KEY_PREFIX}${userId}`, '1');
+      markAvatarChosen(userId);
       navigate('/app/home', { replace: true });
     } catch (error) {
       console.error('[onboarding] failed to save avatar choice:', error);
@@ -122,7 +112,6 @@ export function OnboardingFlow() {
           className="absolute inset-0 h-full w-full object-cover object-[center_45%] md:object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/15 md:bg-gradient-to-r md:from-ink-950/90 md:via-ink-950/55 md:to-ink-950/10" />
-        <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[320px] -translate-x-1/2 rounded-full bg-ember-500/20 blur-[120px] md:bottom-[-8rem] md:left-[20%] md:h-[30rem] md:w-[30rem]" />
         <div className="relative z-10 mx-auto flex w-full max-w-md flex-col items-center px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:px-6 md:mx-0 md:min-h-[100dvh] md:max-w-7xl md:items-start md:justify-center md:px-12 md:py-16 md:text-left lg:px-20">
           <motion.p
             initial={{ opacity: 0, y: 12 }}

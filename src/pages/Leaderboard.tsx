@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, CrownIcon, LoaderCircleIcon, TrophyIcon } from 'lucide-react';
+import { ArrowLeftIcon, LoaderCircleIcon, TrophyIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { RankCrown } from '../components/leaderboard/RankCrown';
 import {
   getLeaderboardProfile,
   getWeeklyLeaderboard,
@@ -233,8 +234,8 @@ export function Leaderboard() {
                     <li
                       key={`${entry.rank}-${entry.alias}`}
                       className={`flex items-center gap-3 px-4 py-3 ${entry.isCurrentUser ? 'bg-ember-500/[0.08]' : ''}`}>
-                      <span className={`w-8 text-center text-sm font-bold tabular-nums ${entry.rank <= 3 ? 'text-ember-300' : 'text-neutral-500'}`}>
-                        {entry.rank <= 3 ? <CrownIcon className="mx-auto h-4 w-4" /> : entry.rank}
+                      <span className={`w-8 text-center text-sm font-bold tabular-nums ${entry.rank === 1 ? 'text-amber-200' : entry.rank <= 3 ? 'text-ember-300' : 'text-neutral-500'}`}>
+                        {entry.rank <= 3 ? <RankCrown rank={entry.rank} className="mx-auto h-4 w-4" /> : entry.rank}
                       </span>
                       <span className={`min-w-0 flex-1 truncate text-sm ${entry.isCurrentUser ? 'font-semibold text-white' : 'text-neutral-300'}`}>
                         {entry.alias}{entry.isCurrentUser ? ' (you)' : ''}

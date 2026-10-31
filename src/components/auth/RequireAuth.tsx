@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { hasChosenAvatar } from '../../utils/onboarding';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -14,6 +15,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   }
 
   if (!user) return <Navigate to="/" replace />;
+  if (!hasChosenAvatar(user.id)) return <Navigate to="/" replace />;
 
   return <>{children}</>;
 }
