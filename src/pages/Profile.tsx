@@ -13,6 +13,7 @@ import { ToggleSwitch } from "../components/profile/ToggleSwitch";
 import { EditProfileSheet } from "../components/profile/EditProfileSheet";
 import { Avatar } from "../components/profile/Avatar";
 import { BadgeGrid } from "../components/gamified/BadgeGrid";
+import { levelFromXp } from "../utils/gamification";
 import { useState } from "react";
 const durationOptions = [15, 25, 50, 90];
 const breakOptions = [5, 10, 15];
@@ -71,6 +72,9 @@ export function Profile() {
   const allRemindersOff =
     !preferences.sessionReminders && !preferences.taskReminders && !preferences.dailySummary;
   const totalMinutes = sessions.filter((s) => s.type === 'focus' && s.completed).reduce((sum, s) => sum + s.durationMinutes, 0);
+  const earnedBadges = badges.filter((badge) => badge.earned).length;
+  const xpToNextLevel = Math.max(0, level.xpForLevel - level.xpIntoLevel);
+  const nextLevel = level.level < 99 ? levelFromXp(level.xp + xpToNextLevel) : null;
 
   const handleSignOut = async () => {
     try {
@@ -119,37 +123,48 @@ export function Profile() {
       </section>
 
       <section className="mt-6 lg:col-span-2 lg:mt-0">
-        <div className="overflow-hidden rounded-[24px] border border-white/[0.08] bg-[linear-gradient(145deg,rgba(23,28,32,0.92),rgba(13,15,18,0.96))] p-5 shadow-[0_18px_42px_-30px_rgba(0,0,0,0.9)]">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3.5">
-              <span className="font-display text-5xl leading-none tracking-tight text-white">{String(level.level).padStart(2, '0')}</span>
-              <div className="min-w-0">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Current level</p>
-                <p className="mt-0.5 truncate font-display text-xl leading-tight text-white">{level.title}</p>
+        <div className="overflow-hidden rounded-[26px] border border-white/[0.08] bg-[linear-gradient(145deg,rgba(24,28,32,0.94),rgba(13,15,18,0.97))] shadow-[0_18px_42px_-30px_rgba(0,0,0,0.9)]">
+          <div className="p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-neutral-500">Focus level</p>
+                <div className="mt-2 flex items-baseline gap-2.5">
+                  <span className="font-display text-[2.75rem] leading-none tracking-tight text-white">{String(level.level).padStart(2, '0')}</span>
+                  <span className="truncate font-display text-xl leading-none text-neutral-300">{level.title}</span>
+                </div>
+              </div>
+              <div className="mt-1 max-w-[42%] text-right">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-600">
+                  {nextLevel ? `Next · ${String(level.level + 1).padStart(2, '0')}` : 'Highest level'}
+                </p>
+                {nextLevel && <p className="mt-1 truncate font-display text-sm text-neutral-300">{nextLevel.title}</p>}
               </div>
             </div>
-            <div className="flex-shrink-0 text-right">
-              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-600">Next</p>
-              <p className="mt-0.5 text-sm font-medium tabular-nums text-neutral-300">
-                {level.level >= 99 ? 'Max' : String(level.level + 1).padStart(2, '0')}
-              </p>
-            </div>
-          </div>
 
-          <div className="mt-5">
-            <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+            <div className="mt-5">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-ember-400 to-amber-200 transition-[width]"
-                style={{ width: `${level.progress * 100}%` }}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <span className="text-[11px] tabular-nums text-neutral-400">
-                {level.xpIntoLevel} <span className="text-neutral-600">/</span> {level.xpForLevel} XP
-              </span>
-              <span className="text-[10px] text-neutral-500">
-                {level.level >= 99 ? 'You’ve reached the highest level' : `${Math.max(0, level.xpForLevel - level.xpIntoLevel)} XP to go`}
-              </span>
+                role="progressbar"
+                aria-label={`Progress within level ${level.level}`}
+                aria-valuemin={0}
+                aria-valuemax={level.xpForLevel}
+                aria-valuenow={level.xpIntoLevel}
+                className="relative h-2 overflow-hidden rounded-full bg-white/[0.07]">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-ember-400 via-amber-300 to-amber-100 transition-[width]"
+                  style={{ width: `${level.progress * 100}%` }}
+                />
+                <div aria-hidden="true" className="absolute inset-y-0 left-1/4 w-px bg-[#15191d]/60" />
+                <div aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px bg-[#15191d]/60" />
+                <div aria-hidden="true" className="absolute inset-y-0 left-3/4 w-px bg-[#15191d]/60" />
+              </div>
+              <div className="mt-2.5 flex items-center justify-between gap-3">
+                <span className="text-[11px] font-medium tabular-nums text-neutral-300">
+                  {level.xpIntoLevel} <span className="text-neutral-600">/</span> {level.xpForLevel} XP
+                </span>
+                <span className="text-[10px] tabular-nums text-neutral-500">
+                  {nextLevel ? `${xpToNextLevel} XP to next level` : 'All levels complete'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -157,13 +172,13 @@ export function Profile() {
             type="button"
             aria-expanded={badgesExpanded}
             onClick={() => setBadgesExpanded((expanded) => !expanded)}
-            className="mt-4 flex w-full items-center justify-between border-t border-white/[0.07] pt-3 text-left">
+            className="flex w-full items-center justify-between border-t border-white/[0.07] px-5 py-3 text-left transition-colors hover:bg-white/[0.02]">
             <span className="text-[11px] text-neutral-400">
-              Badges <span className="ml-1 text-neutral-600">{badges.filter((badge) => badge.earned).length} / {badges.length} earned</span>
+              Badges <span className="ml-1 text-neutral-600">{earnedBadges} / {badges.length} earned</span>
             </span>
             <ChevronDownIcon className={`h-4 w-4 text-neutral-500 transition-transform ${badgesExpanded ? 'rotate-180' : ''}`} />
           </button>
-          {badgesExpanded && <BadgeGrid badges={badges} className="mt-3" />}
+          {badgesExpanded && <BadgeGrid badges={badges} className="border-t border-white/[0.06] px-4 py-3" />}
         </div>
       </section>
 
