@@ -119,7 +119,6 @@ export function OnboardingFlow() {
           alt=""
           aria-hidden="true"
           decoding="async"
-          fetchpriority="high"
           className="absolute inset-0 h-full w-full object-cover object-[center_45%] md:object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/15 md:bg-gradient-to-r md:from-ink-950/90 md:via-ink-950/55 md:to-ink-950/10" />

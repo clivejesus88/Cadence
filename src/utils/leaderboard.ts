@@ -81,7 +81,9 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       throw new Error('The leaderboard response contained an invalid entry.');
     }
 
-    const avatarUrl = typeof row.avatar_url === 'string' ? sanitizeAvatarUrl(row.avatar_url) : '';
+    const avatarUrl = 'avatar_url' in row && typeof row.avatar_url === 'string'
+      ? sanitizeAvatarUrl(row.avatar_url)
+      : '';
 
     return {
       rank: row.rank_position,
