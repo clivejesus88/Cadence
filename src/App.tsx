@@ -104,7 +104,7 @@ export function App() {
           <SettingsProvider>
             <AppDataProvider>
               <div className="h-[100dvh] w-full overflow-hidden bg-ink-950">
-                <BrowserRouter>
+                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <SentryRoutes>
                 <Route
                   path="/"

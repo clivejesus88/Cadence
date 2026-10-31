@@ -9,9 +9,14 @@ import { BlockVisual } from '../components/onboarding/BlockVisual';
 import { InsightsVisual } from '../components/onboarding/InsightsVisual';
 import { PlannerVisual } from '../components/onboarding/PlannerVisual';
 import { Paywall } from '../components/onboarding/Paywall';
+import { Avatar } from '../components/profile/Avatar';
+import { avatarPresets, presetAvatarValue } from '../data/avatars';
+import { updateProfile as persistProfile } from '../db/repo';
+import { scheduleSync } from '../db/sync';
 
 const HERO_IMAGE_URL = "/2db10ed4-907b-405f-a887-1dfb58489242.jpg";
 const HERO_BLUR_URL = "/hero-blur.jpg";
+const AVATAR_CHOICE_KEY_PREFIX = 'cadence:avatar-selected:';
 
 const features = [
   {
@@ -40,6 +45,15 @@ const features = [
   }
 ];
 
+function hasChosenAvatar(userId: string | null | undefined): boolean {
+  if (!userId) return false;
+  try {
+    return localStorage.getItem(`${AVATAR_CHOICE_KEY_PREFIX}${userId}`) === '1';
+  } catch {
+    return false;
+  }
+}
+
 
 export function OnboardingFlow() {
   const [searchParams] = useSearchParams();
@@ -47,20 +61,50 @@ export function OnboardingFlow() {
     if (searchParams.get('paywall')) return 6;
     return 0;
   }); // 0 splash, 1-4 features, 5 auth, 6 paywall
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
   const navigate = useNavigate();
   const { user, isConfigured, continueAsGuest } = useAuth();
 
   useEffect(() => {
     if (user && !searchParams.get('paywall')) {
-      navigate('/app/home', { replace: true });
+      if (hasChosenAvatar(user.id)) {
+        navigate('/app/home', { replace: true });
+      } else {
+        setStep(7);
+      }
     }
   }, [user, navigate, searchParams]);
 
-  // Leaving the paywall (or skipping auth) drops you into the app as a guest
-  // when there's no real session — never back to the onboarding start.
+  // The avatar choice is required before entering the app for the first time.
   const enterApp = () => {
-    if (!user) continueAsGuest();
-    navigate('/app/home', { replace: true });
+    const userId = user?.id ?? 'guest';
+    if (hasChosenAvatar(userId)) {
+      if (!user) continueAsGuest();
+      navigate('/app/home', { replace: true });
+      return;
+    }
+    setStep(7);
+  };
+
+  const finishAvatarChoice = async () => {
+    if (!selectedAvatar || avatarSaving) return;
+    setAvatarSaving(true);
+    setAvatarError('');
+    try {
+      if (!user) continueAsGuest();
+      await persistProfile({ avatarUrl: selectedAvatar });
+      scheduleSync();
+      const userId = user?.id ?? 'guest';
+      localStorage.setItem(`${AVATAR_CHOICE_KEY_PREFIX}${userId}`, '1');
+      navigate('/app/home', { replace: true });
+    } catch (error) {
+      console.error('[onboarding] failed to save avatar choice:', error);
+      setAvatarError('Could not save your avatar. Please try again.');
+    } finally {
+      setAvatarSaving(false);
+    }
   };
   const next = () => setStep((s) => Math.min(s + 1, 6));
 
@@ -75,7 +119,7 @@ export function OnboardingFlow() {
           alt=""
           aria-hidden="true"
           decoding="async"
-          fetchPriority="high"
+          fetchpriority="high"
           className="absolute inset-0 h-full w-full object-cover object-[center_45%] md:object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/15 md:bg-gradient-to-r md:from-ink-950/90 md:via-ink-950/55 md:to-ink-950/10" />
@@ -180,6 +224,51 @@ export function OnboardingFlow() {
         onBack={() => setStep(4)}
         onGuest={enterApp}
       />
+    );
+  }
+
+  if (step === 7) {
+    return (
+      <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center bg-ink-950 px-5 py-8">
+        <div className="w-full max-w-md">
+          <div className="mb-7 text-center">
+            <p className="font-display text-3xl tracking-tight text-white">Make it yours</p>
+            <p className="mt-2 text-sm text-neutral-400">Choose your avatar to get started. You can change it anytime.</p>
+          </div>
+          <div className="glass rounded-3xl p-4 sm:p-5">
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+              {avatarPresets.map((avatar) => {
+                const value = presetAvatarValue(avatar.id);
+                const selected = selectedAvatar === value;
+                return (
+                  <button
+                    key={avatar.id}
+                    type="button"
+                    aria-label={`Choose ${avatar.name} avatar`}
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setSelectedAvatar(value);
+                      setAvatarError('');
+                    }}
+                    className={`aspect-square rounded-2xl p-1 transition-all active:scale-95 ${
+                      selected ? 'bg-white/[0.08] ring-1 ring-white/60' : 'bg-white/[0.02] hover:bg-white/[0.05]'
+                    }`}>
+                    <Avatar value={value} className="h-full w-full" alt={avatar.name} />
+                  </button>
+                );
+              })}
+            </div>
+            {avatarError && <p role="alert" className="mt-4 text-center text-sm text-red-300">{avatarError}</p>}
+            <button
+              type="button"
+              onClick={() => void finishAvatarChoice()}
+              disabled={!selectedAvatar || avatarSaving}
+              className="mt-6 w-full rounded-full bg-white py-4 text-[15px] font-semibold text-ink-950 transition-transform active:scale-[0.995] disabled:cursor-not-allowed disabled:opacity-40">
+              {avatarSaving ? 'Saving…' : 'Continue'}
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
