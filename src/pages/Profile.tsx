@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { ChevronLeftIcon, FlameIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon, TargetIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronLeftIcon, FlameIcon, ListChecksIcon, TimerIcon, CoffeeIcon, PlayIcon, BellIcon, MailIcon, ShieldCheckIcon, CalendarClockIcon, LockIcon, CreditCardIcon, UserRoundIcon, LogOutIcon, BoxIcon, TargetIcon } from "lucide-react";
 import { useAppData } from "../contexts/AppDataContext";
 import { useSettings } from "../contexts/SettingsContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -12,7 +12,6 @@ import { SettingRow } from "../components/profile/SettingRow";
 import { ToggleSwitch } from "../components/profile/ToggleSwitch";
 import { EditProfileSheet } from "../components/profile/EditProfileSheet";
 import { Avatar } from "../components/profile/Avatar";
-import { XpBar } from "../components/gamified/XpBar";
 import { BadgeGrid } from "../components/gamified/BadgeGrid";
 import { useState } from "react";
 const durationOptions = [15, 25, 50, 90];
@@ -27,8 +26,7 @@ export function Profile() {
     sessions,
     level,
     badges,
-    dailyGoalMinutes,
-    todayMinutes
+    dailyGoalMinutes
   } = useAppData();
   const {
     profile,
@@ -36,6 +34,7 @@ export function Profile() {
     updatePreference
   } = useSettings();
   const [editing, setEditing] = useState(false);
+  const [badgesExpanded, setBadgesExpanded] = useState(false);
 
   const reminderKeys = ['sessionReminders', 'taskReminders', 'dailySummary'] as const;
   const handleReminderToggle = async (key: typeof reminderKeys[number], value: boolean) => {
@@ -120,38 +119,51 @@ export function Profile() {
       </section>
 
       <section className="mt-6 lg:col-span-2 lg:mt-0">
-        <div className="glass rounded-[22px] p-4">
-          <div className="flex items-baseline justify-between gap-3">
-            <div className="flex min-w-0 items-baseline gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ember-300">Level {level.level}</span>
-              <span className="truncate font-display text-lg text-white">{level.title}</span>
+        <div className="overflow-hidden rounded-[24px] border border-white/[0.08] bg-[linear-gradient(145deg,rgba(23,28,32,0.92),rgba(13,15,18,0.96))] p-5 shadow-[0_18px_42px_-30px_rgba(0,0,0,0.9)]">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3.5">
+              <span className="font-display text-5xl leading-none tracking-tight text-white">{String(level.level).padStart(2, '0')}</span>
+              <div className="min-w-0">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Current level</p>
+                <p className="mt-0.5 truncate font-display text-xl leading-tight text-white">{level.title}</p>
+              </div>
             </div>
-            <span className="flex-shrink-0 text-[11px] tabular-nums text-neutral-500">{level.xpIntoLevel}/{level.xpForLevel} XP</span>
-          </div>
-          <XpBar progress={level.progress} className="mt-2.5" />
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <span className="text-xs text-neutral-400">Today’s focus goal</span>
-            <span className="text-xs font-medium tabular-nums text-neutral-300">{formatMinutes(todayMinutes)} / {formatMinutes(dailyGoalMinutes)}</span>
-          </div>
-          <div
-            role="progressbar"
-            aria-label="Daily focus goal progress"
-            aria-valuemin={0}
-            aria-valuemax={dailyGoalMinutes}
-            aria-valuenow={Math.min(todayMinutes, dailyGoalMinutes)}
-            className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.08]">
-            <span
-              className="block h-full rounded-full bg-white/70 transition-[width]"
-              style={{ width: `${Math.min(100, (todayMinutes / Math.max(1, dailyGoalMinutes)) * 100)}%` }}
-            />
+            <div className="flex-shrink-0 text-right">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-600">Next</p>
+              <p className="mt-0.5 text-sm font-medium tabular-nums text-neutral-300">
+                {level.level >= 99 ? 'Max' : String(level.level + 1).padStart(2, '0')}
+              </p>
+            </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
-            <span className="text-[11px] text-neutral-500">Badges</span>
-            <span className="text-[11px] tabular-nums text-neutral-500">{badges.filter((b) => b.earned).length} earned</span>
+          <div className="mt-5">
+            <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-ember-400 to-amber-200 transition-[width]"
+                style={{ width: `${level.progress * 100}%` }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-[11px] tabular-nums text-neutral-400">
+                {level.xpIntoLevel} <span className="text-neutral-600">/</span> {level.xpForLevel} XP
+              </span>
+              <span className="text-[10px] text-neutral-500">
+                {level.level >= 99 ? 'You’ve reached the highest level' : `${Math.max(0, level.xpForLevel - level.xpIntoLevel)} XP to go`}
+              </span>
+            </div>
           </div>
-          <BadgeGrid badges={badges} className="mt-2" />
+
+          <button
+            type="button"
+            aria-expanded={badgesExpanded}
+            onClick={() => setBadgesExpanded((expanded) => !expanded)}
+            className="mt-4 flex w-full items-center justify-between border-t border-white/[0.07] pt-3 text-left">
+            <span className="text-[11px] text-neutral-400">
+              Badges <span className="ml-1 text-neutral-600">{badges.filter((badge) => badge.earned).length} / {badges.length} earned</span>
+            </span>
+            <ChevronDownIcon className={`h-4 w-4 text-neutral-500 transition-transform ${badgesExpanded ? 'rotate-180' : ''}`} />
+          </button>
+          {badgesExpanded && <BadgeGrid badges={badges} className="mt-3" />}
         </div>
       </section>
 
