@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheckIcon, PlayIcon, SquareIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Modal } from '../ui/Modal';
 
 const FOCUS_REMINDERS = [
@@ -26,37 +26,36 @@ export function FocusShield({ visible, taskTitle, onContinue, onEndSession }: Fo
   }, [visible]);
 
   return (
-    <Modal open={visible} onClose={onEndSession} dismissOnBackdrop={false} contentClassName="text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-ember-500/15 ring-1 ring-ember-400/30">
-        <ShieldCheckIcon className="h-8 w-8 text-ember-400" />
-      </div>
+    <Modal open={visible} onClose={onEndSession} dismissOnBackdrop={false} contentClassName="text-center !px-7 !pb-7 !pt-8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.32, ease: 'easeOut' }}>
+        <div className="mx-auto mb-6 h-px w-12 bg-gradient-to-r from-transparent via-ember-300/80 to-transparent" />
+        <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-ember-300/80">A moment to return</p>
+        <blockquote className="mx-auto mt-5 max-w-[300px] font-display text-lg italic leading-7 text-neutral-200">
+          {reminder}
+        </blockquote>
+        <p className="mx-auto mt-4 max-w-[300px] text-[13px] leading-6 text-neutral-400">
+          Your session is still running
+          {taskTitle ? <> for <span className="font-medium text-neutral-200">{taskTitle}</span></> : null}. Come back when you’re ready to keep going.
+        </p>
 
-      <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.2em] text-ember-300">Cadence</p>
-      <h2 className="font-display mt-1.5 text-2xl text-white">Your focus is still here.</h2>
-      <blockquote className="mx-auto mt-3 max-w-[300px] text-sm font-medium italic leading-6 text-ember-200">
-        {reminder}
-      </blockquote>
-      <p className="mx-auto mt-2.5 max-w-[300px] text-sm leading-6 text-neutral-400">
-        Your session is still running
-        {taskTitle ? <> for <span className="text-white">{taskTitle}</span></> : null}. Come back when you’re ready to keep going.
-      </p>
-
-      <div className="modal-divider mx-auto mt-6 h-px w-full" />
-
-      <div className="mt-6 space-y-3">
-        <button
-          onClick={onContinue}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-ember-400 to-ember-600 py-4 text-[15px] font-bold text-ink-950 transition-transform active:scale-[0.98]">
-          <PlayIcon className="h-5 w-5" />
-          Keep this session
-        </button>
-        <button
-          onClick={onEndSession}
-          className="glass flex w-full items-center justify-center gap-2 rounded-full py-4 text-[15px] font-semibold text-white transition-transform active:scale-[0.98]">
-          <SquareIcon className="h-4 w-4" />
-          End session
-        </button>
-      </div>
+        <div className="mt-7 flex items-center justify-center gap-3">
+          <button
+            onClick={onContinue}
+            className="group relative min-w-32 overflow-hidden rounded-full bg-gradient-to-b from-ember-200 via-ember-400 to-ember-600 p-px shadow-[0_8px_24px_-12px_rgba(251,146,60,0.8)] transition-transform active:scale-[0.97]">
+            <span className="flex items-center justify-center rounded-full bg-gradient-to-b from-ember-300 to-ember-500 px-6 py-2.5 text-xs font-bold tracking-wide text-ink-950 transition-colors group-hover:from-amber-200 group-hover:to-ember-400">
+              Resume
+            </span>
+          </button>
+          <button
+            onClick={onEndSession}
+            className="min-w-20 rounded-full border border-white/[0.1] bg-white/[0.025] px-5 py-2.5 text-xs font-medium tracking-wide text-neutral-400 transition-colors hover:border-white/[0.18] hover:bg-white/[0.07] hover:text-white active:scale-[0.97]">
+            End
+          </button>
+        </div>
+      </motion.div>
     </Modal>
   );
 }

@@ -14,21 +14,21 @@ export function notifySessionStarted(minutes: number, blockingEnabled: boolean) 
       description={`${formatMinutes(minutes)} · ${blockingEnabled ? 'Stay off distractions' : 'Distraction plan off'}`} />,
 
 
-    { duration: 3000 }
+    { duration: 4000 }
   );
 }
 
 export function notifySessionPaused() {
   toast.custom(
     (id) => <SessionToast id={id} icon={PauseIcon} title="Session paused" description="Resume whenever you're ready." tone="warning" />,
-    { duration: 2500 }
+    { duration: 3500 }
   );
 }
 
 export function notifySessionResumed() {
   toast.custom(
     (id) => <SessionToast id={id} icon={PlayIcon} title="Back to focus" description="Your timer is running again." />,
-    { duration: 2000 }
+    { duration: 3500 }
   );
 }
 
@@ -43,14 +43,14 @@ export function notifyOvertime() {
       tone="success" />,
 
 
-    { duration: 3500 }
+    { duration: 5000 }
   );
 }
 
 export function notifyBreakStarted(minutes: number) {
   toast.custom(
     (id) => <SessionToast id={id} icon={CoffeeIcon} title="Break started" description={`${minutes} minutes to recharge.`} tone="info" />,
-    { duration: 2500 }
+    { duration: 3500 }
   );
 }
 
@@ -86,7 +86,7 @@ export function notifyDailySummary(totalMinutes: number, sessionCount: number) {
 export function notifyBreakEnded() {
   toast.custom(
     (id) => <SessionToast id={id} icon={TimerIcon} title="Break's over" description="Ready to refocus?" />,
-    { duration: 2500 }
+    { duration: 3500 }
   );
 }
 
@@ -98,10 +98,11 @@ export function notifyDailyCapReached() {
       icon={AlertTriangleIcon}
       title="24-hour limit reached"
       description="We ended your session automatically. Time for real rest."
-      tone="warning" />,
+      tone="warning"
+      assertive />,
 
 
-    { duration: 4500 }
+    { duration: 5500 }
   );
 }
 
@@ -136,7 +137,7 @@ export function notifySupport() {
       tone="info" />,
 
 
-    { duration: 4500 }
+    { duration: 5500 }
   );
 }
 
@@ -194,10 +195,11 @@ export function notifyError(title: string, description?: string) {
       icon={AlertTriangleIcon}
       title={title}
       description={description}
-      tone="warning" />,
+      tone="warning"
+      assertive />,
 
 
-    { duration: 4500 }
+    { duration: 5500 }
   );
 }
 

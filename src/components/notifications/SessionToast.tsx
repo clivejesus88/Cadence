@@ -9,6 +9,7 @@ interface SessionToastProps {
   title: string;
   description?: string;
   tone?: ToastTone;
+  assertive?: boolean;
   id?: string | number;
   action?: { label: string; onClick: () => void };
 }
@@ -25,35 +26,50 @@ export function SessionToast({
   title,
   description,
   tone = 'ember',
+  assertive = false,
   id,
   action
 }: SessionToastProps) {
   const dismiss = () => {
     if (id !== undefined) toast.dismiss(id);
   };
-  return <div className="toast-card mx-auto flex w-full max-w-sm items-start gap-3 rounded-[22px] px-4 py-3.5">
-      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${toneStyles[tone]}`}>
-        <Icon className="h-[18px] w-[18px]" />
+  return (
+    <div
+      role={assertive ? 'alert' : 'status'}
+      aria-live={assertive ? 'assertive' : 'polite'}
+      aria-atomic="true"
+      data-tone={tone}
+      className="toast-card mx-auto flex w-full max-w-[340px] items-center gap-2.5 rounded-[17px] px-2.5 py-2">
+      <div
+        aria-hidden="true"
+        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[11px] ${toneStyles[tone]}`}>
+        <Icon className="h-4 w-4" />
       </div>
-      <div className="min-w-0 flex-1 pt-0.5">
-        <p className="text-sm font-semibold text-white">{title}</p>
-        {description && <p className="mt-0.5 text-xs leading-4 text-neutral-400">{description}</p>}
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold leading-4 text-white">{title}</p>
+        {description && <p className="toast-description mt-0.5 break-words text-[11px] leading-4 text-neutral-300/75">{description}</p>}
         {action && (
           <button
+            type="button"
             onClick={() => {
-              action.onClick();
-              dismiss();
+              try {
+                action.onClick();
+              } finally {
+                dismiss();
+              }
             }}
-            className="mt-2 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-ink-950 transition-transform active:scale-95">
+            className="mt-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-semibold text-white transition-colors hover:bg-white/[0.14] active:scale-95">
             {action.label}
           </button>
         )}
       </div>
       <button
+        type="button"
         onClick={dismiss}
-        aria-label="Dismiss notification"
-        className="hit-slop flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/10 hover:text-white active:scale-90">
-        <XIcon className="h-4 w-4" />
+        aria-label={`Dismiss notification: ${title}`}
+        className="hit-slop -mr-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/[0.08] hover:text-white active:scale-90">
+        <XIcon aria-hidden="true" className="h-3.5 w-3.5" />
       </button>
-    </div>;
+    </div>
+  );
 }

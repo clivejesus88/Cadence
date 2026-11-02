@@ -209,10 +209,10 @@ export function App() {
             </BrowserRouter>
             <Toaster
               position="top-center"
-              gap={12}
-              offset={{ top: 'max(1rem, env(safe-area-inset-top))' }}
-              mobileOffset={{ top: 'max(0.75rem, env(safe-area-inset-top))' }}
-              toastOptions={{ unstyled: true, className: 'w-full flex justify-center px-4' }}
+              gap={8}
+              offset={{ top: 'max(1.25rem, env(safe-area-inset-top))' }}
+              mobileOffset={{ top: 'max(0.875rem, env(safe-area-inset-top))' }}
+              toastOptions={{ unstyled: true, className: 'w-full flex justify-center px-3 sm:px-4' }}
               icons={{ close: null }}
             />
               </div>
