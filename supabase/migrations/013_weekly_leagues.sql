@@ -82,6 +82,8 @@ begin
   update public.weekly_league_state state
   set
     tier = case
+      when positions.league_size < 3 and positions.tier < 5
+        then positions.tier + 1
       when positions.league_size >= 5
         and positions.league_rank <= ceil(positions.league_size::numeric * 0.2)
         then least(5, positions.tier + 1)
@@ -91,9 +93,14 @@ begin
       else positions.tier
     end,
     week_start = current_week_start,
-    promoted = positions.league_size >= 5
-      and positions.tier < 5
-      and positions.league_rank <= ceil(positions.league_size::numeric * 0.2)
+    promoted = positions.tier < 5
+      and (
+        positions.league_size < 3
+        or (
+          positions.league_size >= 5
+          and positions.league_rank <= ceil(positions.league_size::numeric * 0.2)
+        )
+      )
   from previous_league_positions positions
   where state.user_id = positions.user_id;
 

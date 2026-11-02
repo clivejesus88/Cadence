@@ -155,7 +155,9 @@ export function Leaderboard() {
 
   const currentUserEntry = entries.find((entry) => entry.isCurrentUser);
   const promotionCutoff = currentUserEntry
-    ? Math.max(1, Math.ceil(currentUserEntry.leagueSize * 0.2))
+    ? currentUserEntry.leagueSize < 3
+      ? currentUserEntry.leagueSize
+      : Math.max(1, Math.ceil(currentUserEntry.leagueSize * 0.2))
     : 0;
   const relegationCutoff = promotionCutoff;
   const leagueStyle = currentUserEntry
@@ -163,10 +165,15 @@ export function Leaderboard() {
     : LEAGUE_STYLES[0];
   const leagueMessage = currentUserEntry?.promoted
     ? `Promoted to ${LEAGUE_NAMES[currentUserEntry.leagueTier - 1]} this week. Keep it up!`
-    : !currentUserEntry || currentUserEntry.leagueSize < 5
+    : !currentUserEntry
+      ? 'Join a league to compete for weekly promotion.'
+      : currentUserEntry.leagueSize < 3 && currentUserEntry.leagueTier < LEAGUE_NAMES.length
+        ? 'Small league this week — everyone advances on Monday.'
+        : currentUserEntry.leagueSize < 5 && currentUserEntry.leagueTier === LEAGUE_NAMES.length
+          ? 'You’ve reached the top league. Keep your Diamond spot shining.'
+          : currentUserEntry.leagueSize < 5
       ? 'At least 5 people are needed for weekly promotions.'
-      : currentUserEntry.leagueTier === LEAGUE_NAMES.length &&
-          currentUserEntry.leagueRank <= promotionCutoff
+      : currentUserEntry.leagueTier === LEAGUE_NAMES.length && currentUserEntry.leagueRank <= promotionCutoff
         ? 'You’ve reached the top league. Keep your Diamond spot shining.'
         : currentUserEntry.leagueRank <= promotionCutoff
         ? `You’re in a promotion spot — the top ${promotionCutoff} advance on Monday.`
@@ -213,8 +220,8 @@ export function Leaderboard() {
           </div>
         </div>
         <p className="mt-4 text-xs leading-relaxed text-neutral-400">
-          Rise with the top 20% each Monday. Five leagues bring a fresh challenge every week, while all your focus time
-          still counts toward your personal stats.
+          Rise with the top 20% each Monday; when a league has fewer than three members, everyone advances. Five
+          leagues bring a fresh challenge every week, while all your focus time still counts toward your personal stats.
         </p>
         <div className="mt-5 grid grid-cols-5 gap-1.5" aria-label="Five weekly league tiers">
           {LEAGUE_NAMES.map((name, index) => (
@@ -358,13 +365,15 @@ export function Leaderboard() {
                 <div className="mt-5">
                   <div className="mb-2 flex items-center justify-between text-[10px] font-medium text-neutral-500">
                     <span>Weekly standing</span>
-                    {currentUserEntry.leagueSize >= 5 && (
+                    {currentUserEntry.leagueSize < 3 && currentUserEntry.leagueTier < LEAGUE_NAMES.length ? (
+                      <span>Everyone advances</span>
+                    ) : currentUserEntry.leagueSize >= 5 ? (
                       <span>
                         {currentUserEntry.leagueTier < LEAGUE_NAMES.length
                           ? `Top ${promotionCutoff} advance`
                           : 'Diamond · highest league'}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                   <div
                     role="progressbar"
