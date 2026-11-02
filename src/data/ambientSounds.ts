@@ -4,7 +4,6 @@ import {
   TreePineIcon,
   WavesIcon,
   CoffeeIcon,
-  MoonStarIcon,
   WindIcon,
   CloudLightningIcon,
   FlameIcon,
@@ -20,7 +19,7 @@ import { AmbientSound } from '../types/sound';
 
 export const ambientSounds: AmbientSound[] = [
 // Focus — utility soundscapes
-{ id: 'silence', name: 'Deep Silence', description: 'No sound, pure focus', icon: MoonStarIcon, premium: false, category: 'focus', accent: '#94a3b8' },
+{ id: 'silence', name: 'Deep Silence', description: 'No sound, pure focus', icon: MoonIcon, premium: false, category: 'focus', accent: '#94a3b8' },
 { id: 'white', name: 'White Noise', description: 'Even coverage to mask distraction', icon: AudioLinesIcon, premium: false, category: 'focus', accent: '#e2e8f0', tag: 'Broadband · masks speech' },
 { id: 'brown', name: 'Brown Noise', description: 'Warm low-end hum', icon: RadioIcon, premium: true, category: 'focus', accent: '#b45309', tag: 'Low frequency · deep focus' },
 
