@@ -27,7 +27,8 @@ export function Home() {
     tasks,
     weeklyData,
     level,
-    dailyGoalMinutes
+    dailyGoalMinutes,
+    setActiveTaskId
   } = useAppData();
   const { profile, preferences } = useSettings();
   const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
@@ -78,6 +79,10 @@ export function Home() {
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 3);
   const firstName = profile.name.trim().split(' ')[0] || 'there';
+  const startFocusOnTask = (taskId: string) => {
+    setActiveTaskId(taskId);
+    navigate('/app/focus');
+  };
 
   const outstandingTasks = tasks
     .filter((t) => !t.completed && t.dueDate)
@@ -205,7 +210,7 @@ export function Home() {
             All tasks <ChevronRightIcon className="w-3.5 h-3.5" />
           </button>
         </div>
-        <TaskPreviewList tasks={todaysTasks} />
+        <TaskPreviewList tasks={todaysTasks} onStartFocus={startFocusOnTask} />
       </section>
 
       <section className="mt-6 lg:col-span-2 lg:mt-0">
