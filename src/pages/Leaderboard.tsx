@@ -196,8 +196,7 @@ export function Leaderboard() {
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div>
-          <p className="text-xs font-medium text-neutral-500">Your weekly challenge</p>
-          <h1 className="mt-0.5 font-numeric text-[1.7rem] font-semibold leading-none tracking-[-0.045em] text-white">
+          <h1 className="font-sans text-[1.7rem] font-bold leading-none tracking-[-0.04em] text-white">
             Weekly leagues
           </h1>
         </div>
@@ -248,7 +247,7 @@ export function Leaderboard() {
       ) : (
         <>
           <section className="relative mt-5 overflow-hidden rounded-[28px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,31,0.92),rgba(13,15,18,0.96))] p-5 shadow-[0_18px_42px_-28px_rgba(0,0,0,0.95)] transition-all hover:border-white/[0.12]">
-            <h2 className="text-sm font-semibold text-white">
+            <h2 className="font-sans text-sm font-semibold text-white">
               {optedIn ? 'You’re on the board' : 'Join the global board'}
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-neutral-400">
@@ -322,7 +321,7 @@ export function Leaderboard() {
                     <CrownIcon className={`h-7 w-7 ${leagueStyle.color}`} />
                   </motion.div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="font-display text-2xl leading-tight text-white">
+                    <h2 className="font-sans text-2xl font-semibold leading-tight tracking-tight text-white">
                       {LEAGUE_NAMES[currentUserEntry.leagueTier - 1]}
                     </h2>
                     <p className="mt-1 text-xs text-neutral-400">
@@ -410,7 +409,7 @@ export function Leaderboard() {
 
           <section className="mt-7">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">This week</h2>
+              <h2 className="font-sans text-xs font-semibold uppercase tracking-wide text-neutral-500">This week</h2>
               <span className="text-xs text-neutral-500">Minutes · UTC</span>
             </div>
             <div className="overflow-hidden rounded-[24px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,31,0.92),rgba(13,15,18,0.96))] shadow-[0_18px_42px_-28px_rgba(0,0,0,0.95)]">
