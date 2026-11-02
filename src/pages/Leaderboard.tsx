@@ -16,11 +16,11 @@ import {
 
 const LEAGUE_NAMES = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond'];
 const LEAGUE_STYLES = [
-  { color: 'text-orange-200', marker: 'bg-orange-300/75', accent: '#fdba74', tile: 'border-orange-200/25 bg-orange-300/[0.1]', icon: 'bg-orange-200/15' },
-  { color: 'text-slate-200', marker: 'bg-slate-200/75', accent: '#cbd5e1', tile: 'border-slate-200/25 bg-slate-200/[0.1]', icon: 'bg-slate-200/15' },
-  { color: 'text-amber-200', marker: 'bg-amber-300/75', accent: '#fcd34d', tile: 'border-amber-200/25 bg-amber-300/[0.1]', icon: 'bg-amber-200/15' },
-  { color: 'text-cyan-200', marker: 'bg-cyan-300/75', accent: '#67e8f9', tile: 'border-cyan-200/25 bg-cyan-300/[0.1]', icon: 'bg-cyan-200/15' },
-  { color: 'text-violet-200', marker: 'bg-violet-300/75', accent: '#c4b5fd', tile: 'border-violet-200/25 bg-violet-300/[0.1]', icon: 'bg-violet-200/15' }
+  { color: 'text-orange-200', marker: 'bg-orange-300/75', tile: 'border-orange-300/35 bg-orange-300/[0.08]', icon: 'bg-orange-300/10' },
+  { color: 'text-slate-200', marker: 'bg-slate-200/75', tile: 'border-slate-300/35 bg-slate-200/[0.08]', icon: 'bg-slate-200/10' },
+  { color: 'text-amber-200', marker: 'bg-amber-300/75', tile: 'border-amber-300/35 bg-amber-300/[0.08]', icon: 'bg-amber-300/10' },
+  { color: 'text-cyan-200', marker: 'bg-cyan-300/75', tile: 'border-cyan-300/35 bg-cyan-300/[0.08]', icon: 'bg-cyan-300/10' },
+  { color: 'text-violet-200', marker: 'bg-violet-300/75', tile: 'border-violet-300/35 bg-violet-300/[0.08]', icon: 'bg-violet-300/10' }
 ];
 
 function describeError(error: unknown): string {
@@ -307,9 +307,7 @@ export function Leaderboard() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: 'easeOut' }}
-              className="relative mt-6 overflow-hidden rounded-[28px] border border-white/[0.1] bg-[linear-gradient(155deg,rgba(26,30,34,0.96),rgba(13,15,18,0.98)_62%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_54px_-28px_rgba(0,0,0,0.95)] transition-all hover:border-white/[0.14] sm:p-5"
-              style={{ backgroundImage: `radial-gradient(ellipse at 8% 0%, ${leagueStyle.accent}18, transparent 58%), linear-gradient(155deg, rgba(26,30,34,0.96), rgba(13,15,18,0.98) 62%)` }}>
-              <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full opacity-[0.08] blur-3xl" style={{ backgroundColor: leagueStyle.accent }} />
+              className="relative mt-6 overflow-hidden rounded-[24px] border border-white/[0.1] bg-[#111518] p-4 transition-colors hover:border-white/[0.16] sm:p-5">
               <div className="relative">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Weekly league</p>
@@ -324,7 +322,7 @@ export function Leaderboard() {
                     initial={{ scale: 0.75, rotate: -12 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.12 }}
-                    className={`flex h-[3.75rem] w-[3.75rem] flex-shrink-0 items-center justify-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ${leagueStyle.tile}`}>
+                    className={`flex h-[3.5rem] w-[3.5rem] flex-shrink-0 items-center justify-center rounded-2xl border ${leagueStyle.tile}`}>
                     <CrownIcon className={`h-7 w-7 ${leagueStyle.color}`} strokeWidth={1.8} />
                   </motion.div>
                   <div className="min-w-0 flex-1">
@@ -335,7 +333,7 @@ export function Leaderboard() {
                       Division {String(currentUserEntry.leagueTier).padStart(2, '0')} <span className="px-1 text-neutral-600">/</span> {String(LEAGUE_NAMES.length).padStart(2, '0')}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/[0.08] bg-black/20 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-right">
                     <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Rank</p>
                     <p className="mt-0.5 font-numeric text-xl font-semibold leading-none tabular-nums text-white">
                       <span className={leagueStyle.color}>#</span>{currentUserEntry.leagueRank}
@@ -362,9 +360,9 @@ export function Leaderboard() {
                           key={name}
                           aria-current={active ? 'step' : undefined}
                           aria-label={`${name} league${completed ? ', reached' : active ? ', current league' : ', upcoming'}`}
-                          className={`flex min-w-0 flex-col items-center gap-1.5 rounded-xl border px-0.5 py-2 transition-colors sm:rounded-2xl sm:py-2.5 ${
+                          className={`flex min-w-0 flex-col items-center gap-1.5 rounded-xl border px-0.5 py-2 transition-colors sm:py-2.5 ${
                             active
-                              ? `${tierStyle.tile} shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_24px_-16px_rgba(255,255,255,0.3)]`
+                              ? tierStyle.tile
                               : completed
                                 ? 'border-white/[0.08] bg-white/[0.045] text-neutral-200'
                                 : 'border-white/[0.055] bg-black/15 text-neutral-600'
@@ -395,7 +393,7 @@ export function Leaderboard() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-white/[0.07] bg-black/15 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
+                <div className="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-3.5">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-500">This week</p>
@@ -434,7 +432,7 @@ export function Leaderboard() {
                           initial={{ width: 0 }}
                           animate={{ width: `${leagueProgress}%` }}
                           transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
-                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-ember-400 via-amber-300 to-yellow-200"
+                          className="absolute inset-y-0 left-0 rounded-full bg-ember-400"
                         />
                       </div>
                       <div className="mt-1.5 flex justify-between text-[9px] text-neutral-600">
