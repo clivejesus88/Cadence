@@ -16,11 +16,11 @@ import {
 
 const LEAGUE_NAMES = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond'];
 const LEAGUE_STYLES = [
-  { color: 'text-orange-200', marker: 'bg-orange-300/75' },
-  { color: 'text-slate-200', marker: 'bg-slate-200/75' },
-  { color: 'text-amber-200', marker: 'bg-amber-300/75' },
-  { color: 'text-cyan-200', marker: 'bg-cyan-300/75' },
-  { color: 'text-violet-200', marker: 'bg-violet-300/75' }
+  { color: 'text-orange-200', marker: 'bg-orange-300/75', accent: '#fdba74', tile: 'border-orange-200/25 bg-orange-300/[0.1]', icon: 'bg-orange-200/15' },
+  { color: 'text-slate-200', marker: 'bg-slate-200/75', accent: '#cbd5e1', tile: 'border-slate-200/25 bg-slate-200/[0.1]', icon: 'bg-slate-200/15' },
+  { color: 'text-amber-200', marker: 'bg-amber-300/75', accent: '#fcd34d', tile: 'border-amber-200/25 bg-amber-300/[0.1]', icon: 'bg-amber-200/15' },
+  { color: 'text-cyan-200', marker: 'bg-cyan-300/75', accent: '#67e8f9', tile: 'border-cyan-200/25 bg-cyan-300/[0.1]', icon: 'bg-cyan-200/15' },
+  { color: 'text-violet-200', marker: 'bg-violet-300/75', accent: '#c4b5fd', tile: 'border-violet-200/25 bg-violet-300/[0.1]', icon: 'bg-violet-200/15' }
 ];
 
 function describeError(error: unknown): string {
@@ -169,12 +169,10 @@ export function Leaderboard() {
       ? 'Join a league to compete for weekly promotion.'
       : currentUserEntry.leagueSize < 3 && currentUserEntry.leagueTier < LEAGUE_NAMES.length
         ? 'Small league this week — everyone advances on Monday.'
-        : currentUserEntry.leagueSize < 5 && currentUserEntry.leagueTier === LEAGUE_NAMES.length
+        : currentUserEntry.leagueTier === LEAGUE_NAMES.length
           ? 'You’ve reached the top league. Keep your Diamond spot shining.'
           : currentUserEntry.leagueSize < 5
-      ? 'At least 5 people are needed for weekly promotions.'
-      : currentUserEntry.leagueTier === LEAGUE_NAMES.length && currentUserEntry.leagueRank <= promotionCutoff
-        ? 'You’ve reached the top league. Keep your Diamond spot shining.'
+      ? `${5 - currentUserEntry.leagueSize} more ${5 - currentUserEntry.leagueSize === 1 ? 'member' : 'members'} needed to unlock weekly promotions.`
         : currentUserEntry.leagueRank <= promotionCutoff
         ? `You’re in a promotion spot — the top ${promotionCutoff} advance on Monday.`
         : currentUserEntry.leagueTier > 1 &&
@@ -309,10 +307,12 @@ export function Leaderboard() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: 'easeOut' }}
-              className="relative mt-6 overflow-hidden rounded-[28px] border border-white/[0.08] bg-[linear-gradient(180deg,rgba(22,27,31,0.92),rgba(13,15,18,0.96))] p-5 shadow-[0_18px_42px_-28px_rgba(0,0,0,0.95)] transition-all hover:border-white/[0.12]">
+              className="relative mt-6 overflow-hidden rounded-[28px] border border-white/[0.1] bg-[linear-gradient(155deg,rgba(26,30,34,0.96),rgba(13,15,18,0.98)_62%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_22px_54px_-28px_rgba(0,0,0,0.95)] transition-all hover:border-white/[0.14] sm:p-5"
+              style={{ backgroundImage: `radial-gradient(ellipse at 8% 0%, ${leagueStyle.accent}18, transparent 58%), linear-gradient(155deg, rgba(26,30,34,0.96), rgba(13,15,18,0.98) 62%)` }}>
+              <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full opacity-[0.08] blur-3xl" style={{ backgroundColor: leagueStyle.accent }} />
               <div className="relative">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Your weekly league</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Weekly league</p>
                   {currentUserEntry.promoted && (
                     <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-200">
                       <ChevronUpIcon className="h-3 w-3" /> Promoted
@@ -324,62 +324,69 @@ export function Leaderboard() {
                     initial={{ scale: 0.75, rotate: -12 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.12 }}
-                    className="flex h-[3.75rem] w-[3.75rem] flex-shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.02]">
-                    <CrownIcon className={`h-7 w-7 ${leagueStyle.color}`} />
+                    className={`flex h-[3.75rem] w-[3.75rem] flex-shrink-0 items-center justify-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ${leagueStyle.tile}`}>
+                    <CrownIcon className={`h-7 w-7 ${leagueStyle.color}`} strokeWidth={1.8} />
                   </motion.div>
                   <div className="min-w-0 flex-1">
-                    <h2 className="font-sans text-2xl font-semibold leading-tight tracking-tight text-white">
+                    <h2 className={`font-display text-[1.7rem] leading-tight tracking-[-0.04em] ${leagueStyle.color}`}>
                       {LEAGUE_NAMES[currentUserEntry.leagueTier - 1]}
                     </h2>
-                    <p className="mt-1 text-xs text-neutral-400">
-                      League {currentUserEntry.leagueTier} <span className="px-1 text-neutral-600">/</span> 5
+                    <p className="mt-1 text-[11px] text-neutral-400">
+                      Division {String(currentUserEntry.leagueTier).padStart(2, '0')} <span className="px-1 text-neutral-600">/</span> {String(LEAGUE_NAMES.length).padStart(2, '0')}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-numeric text-2xl font-semibold tabular-nums ${leagueStyle.color}`}>
-                      #{currentUserEntry.leagueRank}
+                  <div className="rounded-2xl border border-white/[0.08] bg-black/20 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-500">Rank</p>
+                    <p className="mt-0.5 font-numeric text-xl font-semibold leading-none tabular-nums text-white">
+                      <span className={leagueStyle.color}>#</span>{currentUserEntry.leagueRank}
+                      <span className="ml-1 text-xs font-medium text-neutral-500">/ {currentUserEntry.leagueSize}</span>
                     </p>
-                    <p className="text-[10px] text-neutral-500">of {currentUserEntry.leagueSize}</p>
                   </div>
                 </div>
 
                 <div className="mt-5">
-                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-                    League path <span className="ml-1 text-neutral-400">{currentUserEntry.leagueTier} of {LEAGUE_NAMES.length}</span>
-                  </p>
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">League path</p>
+                    <p className="font-numeric text-[10px] font-medium tabular-nums text-neutral-500">
+                      {String(currentUserEntry.leagueTier).padStart(2, '0')} <span className="text-neutral-700">/</span> {String(LEAGUE_NAMES.length).padStart(2, '0')}
+                    </p>
+                  </div>
                   <div className="grid grid-cols-5 gap-1.5" aria-label="Weekly league progression">
                     {LEAGUE_NAMES.map((name, index) => {
                       const tier = index + 1;
                       const completed = tier < currentUserEntry.leagueTier;
                       const active = tier === currentUserEntry.leagueTier;
+                      const tierStyle = LEAGUE_STYLES[index];
                       return (
                         <div
                           key={name}
                           aria-current={active ? 'step' : undefined}
                           aria-label={`${name} league${completed ? ', reached' : active ? ', current league' : ', upcoming'}`}
-                          className={`flex min-w-0 flex-col items-center gap-1.5 rounded-xl border px-1 py-2 ${
+                          className={`flex min-w-0 flex-col items-center gap-1.5 rounded-xl border px-0.5 py-2 transition-colors sm:rounded-2xl sm:py-2.5 ${
                             active
-                              ? `border-white/15 bg-white/[0.07] ${leagueStyle.color}`
+                              ? `${tierStyle.tile} shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_24px_-16px_rgba(255,255,255,0.3)]`
                               : completed
-                                ? 'border-white/[0.08] bg-white/[0.035] text-neutral-300'
-                                : 'border-white/[0.05] bg-black/10 text-neutral-600'
+                                ? 'border-white/[0.08] bg-white/[0.045] text-neutral-200'
+                                : 'border-white/[0.055] bg-black/15 text-neutral-600'
                           }`}>
-                          <span className={`flex h-7 w-7 items-center justify-center rounded-full ${
+                          <span className={`flex h-8 w-8 items-center justify-center rounded-full ${
                             active
-                              ? 'bg-white/10'
+                              ? `${tierStyle.icon} ${tierStyle.color}`
                               : completed
-                                ? 'bg-white/[0.08]'
-                                : 'bg-white/[0.04]'
+                                ? 'bg-white/[0.09] text-neutral-200'
+                                : 'bg-white/[0.04] text-neutral-600'
                           }`}>
                             {completed ? (
-                              <CheckIcon aria-hidden="true" className="h-3.5 w-3.5" />
+                              <CheckIcon aria-hidden="true" className="h-4 w-4" strokeWidth={2.2} />
                             ) : active ? (
-                              <CrownIcon aria-hidden="true" className="h-3.5 w-3.5" />
+                              <CrownIcon aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
                             ) : (
-                              <LockIcon aria-hidden="true" className="h-3 w-3" />
+                              <LockIcon aria-hidden="true" className="h-3.5 w-3.5" />
                             )}
                           </span>
-                          <span className="w-full truncate text-center text-[9px] font-semibold leading-tight">
+                          <span className={`w-full truncate text-center text-[9px] font-semibold leading-tight ${
+                            active ? tierStyle.color : completed ? 'text-neutral-300' : 'text-neutral-600'
+                          }`}>
                             {name}
                           </span>
                         </div>
@@ -388,52 +395,57 @@ export function Leaderboard() {
                   </div>
                 </div>
 
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between text-[10px] font-medium text-neutral-500">
-                    <span>Weekly standing</span>
-                    {currentUserEntry.leagueSize < 3 && currentUserEntry.leagueTier < LEAGUE_NAMES.length ? (
-                      <span>Everyone advances</span>
-                    ) : currentUserEntry.leagueSize >= 5 ? (
-                      <span>
-                        {currentUserEntry.leagueTier < LEAGUE_NAMES.length
-                          ? `Top ${promotionCutoff} advance`
-                          : 'Diamond · highest league'}
+                <div className="mt-4 rounded-2xl border border-white/[0.07] bg-black/15 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-500">This week</p>
+                      <p className={`mt-1 text-xs font-medium leading-5 ${
+                        currentUserEntry.promoted ? 'text-emerald-200' : 'text-neutral-300'
+                      }`}>{leagueMessage}</p>
+                    </div>
+                    {currentUserEntry.leagueSize < 3 && currentUserEntry.leagueTier < LEAGUE_NAMES.length && !currentUserEntry.promoted ? (
+                      <span className="flex-shrink-0 rounded-full border border-emerald-300/20 bg-emerald-300/[0.08] px-2.5 py-1 text-[9px] font-semibold text-emerald-200">
+                        Everyone advances
+                      </span>
+                    ) : currentUserEntry.leagueSize >= 5 && currentUserEntry.leagueTier < LEAGUE_NAMES.length ? (
+                      <span className={`flex-shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-semibold ${
+                        currentUserEntry.leagueRank <= promotionCutoff
+                          ? 'border-emerald-300/20 bg-emerald-300/[0.08] text-emerald-200'
+                          : 'border-white/[0.08] bg-white/[0.04] text-neutral-400'
+                      }`}>
+                        {currentUserEntry.leagueRank <= promotionCutoff ? 'Promotion spot' : `${promotionCutoff} advance`}
                       </span>
                     ) : null}
                   </div>
-                  <div
-                    role="progressbar"
-                    aria-label="Weekly league standing"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={Math.round(leagueProgress)}
-                    className="relative h-2 overflow-hidden rounded-full bg-white/[0.08]">
-                    {currentUserEntry.leagueSize >= 5 && (
-                      <>
-                        <span className="absolute inset-y-0 right-0 w-[20%] bg-emerald-300/15" />
+                  {currentUserEntry.leagueSize >= 5 && currentUserEntry.leagueTier < LEAGUE_NAMES.length && (
+                    <div className="mt-3">
+                      <div
+                        role="progressbar"
+                        aria-label="Weekly league standing"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(leagueProgress)}
+                        className="relative h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+                        <span className="absolute inset-y-0 right-0 w-[20%] rounded-r-full bg-emerald-300/20" />
                         {currentUserEntry.leagueTier > 1 && (
                           <span className="absolute inset-y-0 left-0 w-[20%] bg-rose-300/10" />
                         )}
-                      </>
-                    )}
-                    <motion.span
-                      initial={{ width: 0 }}
-                      animate={{ width: `${leagueProgress}%` }}
-                      transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
-                      className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${
-                        currentUserEntry.leagueTier === LEAGUE_NAMES.length
-                          ? 'from-violet-300 to-fuchsia-300'
-                          : 'from-ember-400 via-amber-300 to-yellow-200'
-                      }`}>
-                      <span className="absolute right-0 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-white/80 bg-white shadow-[0_0_10px_rgba(255,255,255,0.7)]" />
-                    </motion.span>
-                  </div>
-                </div>
-
-                <div className={`mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3 ${
-                  currentUserEntry.promoted ? 'text-emerald-100' : 'text-neutral-300'
-                }`}>
-                  <p className="text-xs leading-relaxed">{leagueMessage}</p>
+                        <motion.span
+                          initial={{ width: 0 }}
+                          animate={{ width: `${leagueProgress}%` }}
+                          transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
+                          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-ember-400 via-amber-300 to-yellow-200"
+                        />
+                      </div>
+                      <div className="mt-1.5 flex justify-between text-[9px] text-neutral-600">
+                        {currentUserEntry.leagueTier > 1 && <span>Relegation</span>}
+                        <span className="ml-auto">Promotion</span>
+                      </div>
+                    </div>
+                  )}
+                  {currentUserEntry.leagueSize < 3 && currentUserEntry.leagueTier === LEAGUE_NAMES.length && (
+                    <p className="mt-2 text-[10px] text-neutral-500">Diamond is the highest league.</p>
+                  )}
                 </div>
                 <p className="mt-3 text-center text-[10px] text-neutral-500">
                   Minutes refresh after each focus session <span className="px-1 text-neutral-700">·</span> New standings every Monday
