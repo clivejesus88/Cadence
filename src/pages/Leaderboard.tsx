@@ -197,7 +197,9 @@ export function Leaderboard() {
         </button>
         <div>
           <p className="text-xs font-medium text-neutral-500">Your weekly challenge</p>
-          <h1 className="mt-0.5 font-display text-2xl text-white">Weekly leagues</h1>
+          <h1 className="mt-0.5 font-numeric text-[1.7rem] font-semibold leading-none tracking-[-0.045em] text-white">
+            Weekly leagues
+          </h1>
         </div>
       </header>
 
