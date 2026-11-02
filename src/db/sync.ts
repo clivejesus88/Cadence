@@ -266,6 +266,7 @@ export async function runSync(): Promise<void> {
   try {
     await pushOutbox();
     await pullChanges();
+    window.dispatchEvent(new Event('cadence:sync-complete'));
   } catch (err) {
     console.error('[sync] run failed:', err);
   }

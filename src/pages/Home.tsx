@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { format, isPast, isToday, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { FlameIcon, ChevronRightIcon, LoaderCircleIcon, PlayIcon } from 'lucide-react';
@@ -32,27 +32,47 @@ export function Home() {
   const { profile, preferences } = useSettings();
   const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState(false);
 
-  useEffect(() => {
+  const refreshLeaderboard = useCallback(async (showLoading = false) => {
     if (!user || isGuest || !isConfigured) {
       setLeaderboardEntries([]);
+      setLeaderboardLoading(false);
       return;
     }
+    if (!navigator.onLine) return;
 
-    let active = true;
-    setLeaderboardLoading(true);
-    getWeeklyLeaderboard()
-      .then((entries) => {
-        if (active) setLeaderboardEntries(entries.slice(0, 3));
-      })
-      .finally(() => {
-        if (active) setLeaderboardLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
+    if (showLoading) setLeaderboardLoading(true);
+    setLeaderboardError(false);
+    try {
+      const entries = await getWeeklyLeaderboard();
+      setLeaderboardEntries(entries.slice(0, 3));
+    } catch {
+      setLeaderboardError(true);
+    } finally {
+      setLeaderboardLoading(false);
+    }
   }, [user, isGuest, isConfigured]);
+
+  useEffect(() => {
+    void refreshLeaderboard(true);
+    const refresh = () => {
+      if (document.visibilityState === 'visible') void refreshLeaderboard();
+    };
+    const handleOnline = () => void refreshLeaderboard();
+    const interval = window.setInterval(refresh, 15000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('cadence:sync-complete', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('cadence:sync-complete', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [refreshLeaderboard]);
   const todaysTasks = tasks
     .filter((t) => !t.completed)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
@@ -192,9 +212,9 @@ export function Home() {
         <div className="mb-3 flex items-center justify-between">
           <p className="text-white font-semibold">Top ranks</p>
           <button
-            onClick={() => navigate('/app/insights')}
+            onClick={() => navigate('/app/leaderboard')}
             className="hit-slop text-xs text-neutral-500 flex items-center gap-0.5 hover:text-neutral-300 transition-colors active:text-white">
-            View insights <ChevronRightIcon className="w-3.5 h-3.5" />
+            View leagues <ChevronRightIcon className="w-3.5 h-3.5" />
           </button>
         </div>
         <div className="glass rounded-2xl p-4">
@@ -204,7 +224,18 @@ export function Home() {
               Loading…
             </div>
           ) : !user || isGuest || !isConfigured || leaderboardEntries.length === 0 ? (
-            <p className="py-6 text-center text-sm text-neutral-400">Sign in and opt in to see this week’s top focus ranks.</p>
+            <div className="py-6 text-center">
+              <p className="text-sm text-neutral-400">
+                {leaderboardError
+                  ? 'Couldn’t refresh the leaderboard. Try again in a moment.'
+                  : 'Sign in and opt in to see this week’s top focus ranks.'}
+              </p>
+              <button
+                onClick={() => navigate('/app/leaderboard')}
+                className="mt-3 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold text-neutral-200 transition hover:bg-white/[0.08]">
+                Explore weekly leagues
+              </button>
+            </div>
           ) : (
             <div className="space-y-2">
               {leaderboardEntries.map((entry) => (

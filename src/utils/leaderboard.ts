@@ -12,6 +12,11 @@ export interface LeaderboardEntry {
   focusMinutes: number;
   isCurrentUser: boolean;
   avatarUrl: string;
+  leagueTier: number;
+  leagueRank: number;
+  leagueSize: number;
+  promoted: boolean;
+  weekStart: string;
 }
 
 function requireSupabase() {
@@ -71,12 +76,25 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       !('display_alias' in row) ||
       !('focus_minutes' in row) ||
       !('is_current_user' in row) ||
+      !('league_tier' in row) ||
+      !('league_rank' in row) ||
+      !('league_size' in row) ||
+      !('promoted' in row) ||
+      !('week_start' in row) ||
       typeof row.rank_position !== 'number' ||
       typeof row.display_alias !== 'string' ||
       typeof row.focus_minutes !== 'number' ||
       typeof row.is_current_user !== 'boolean' ||
+      typeof row.league_tier !== 'number' ||
+      typeof row.league_rank !== 'number' ||
+      typeof row.league_size !== 'number' ||
+      typeof row.promoted !== 'boolean' ||
+      typeof row.week_start !== 'string' ||
       !Number.isInteger(row.rank_position) ||
-      !Number.isInteger(row.focus_minutes)
+      !Number.isInteger(row.focus_minutes) ||
+      !Number.isInteger(row.league_tier) ||
+      !Number.isInteger(row.league_rank) ||
+      !Number.isInteger(row.league_size)
     ) {
       throw new Error('The leaderboard response contained an invalid entry.');
     }
@@ -90,7 +108,12 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       alias: row.display_alias,
       focusMinutes: row.focus_minutes,
       isCurrentUser: row.is_current_user,
-      avatarUrl: avatarUrl || 'preset:adventurer-ember'
+      avatarUrl: avatarUrl || 'preset:adventurer-ember',
+      leagueTier: row.league_tier,
+      leagueRank: row.league_rank,
+      leagueSize: row.league_size,
+      promoted: row.promoted,
+      weekStart: row.week_start
     };
   });
 }

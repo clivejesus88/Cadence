@@ -4,6 +4,7 @@ import { Task } from '../types/task';
 import { FocusSession } from '../types/session';
 import { UserProfile, Preferences, defaultPreferences, defaultProfile } from '../types/user';
 import { sanitizeText, sanitizeEmail, sanitizeAvatarUrl, sanitizeBlockingRules } from '../utils/sanitize';
+import { celebrate } from '../utils/celebration';
 
 const seedIds = new Set<string>();
 
@@ -57,12 +58,19 @@ export async function toggleTask(id: string): Promise<void> {
   const next = { ...existing, completed: !existing.completed, updatedAt: Date.now() };
   await db.tasks.put(next);
   enqueueOutbox('tasks', id, 'upsert', next);
+  if (next.completed) celebrate();
 }
 
 async function incrementCompletedPomodoros(taskId: string, delta: number): Promise<void> {
   const existing = await db.tasks.get(taskId);
   if (!existing) return;
-  const next = { ...existing, completedPomodoros: existing.completedPomodoros + delta, updatedAt: Date.now() };
+  const completedPomodoros = existing.completedPomodoros + delta;
+  const next = {
+    ...existing,
+    completedPomodoros,
+    completed: existing.completed || completedPomodoros >= existing.estimatedPomodoros,
+    updatedAt: Date.now()
+  };
   await db.tasks.put(next);
   enqueueOutbox('tasks', taskId, 'upsert', next);
 }
@@ -81,6 +89,7 @@ export async function logSession(durationMinutes: number, taskId?: string): Prom
   await db.focusSessions.put(row);
   enqueueOutbox('focusSessions', row.id, 'upsert', row);
   if (taskId) await incrementCompletedPomodoros(taskId, 1);
+  celebrate();
   return row;
 }
 
