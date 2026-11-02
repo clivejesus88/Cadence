@@ -1,7 +1,7 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeftIcon, CheckIcon, ChevronUpIcon, CrownIcon, LoaderCircleIcon, TrophyIcon } from 'lucide-react';
+import { ArrowLeftIcon, CheckIcon, ChevronUpIcon, CrownIcon, LoaderCircleIcon, LockIcon, TrophyIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { RankCrown } from '../components/leaderboard/RankCrown';
 import { Avatar } from '../components/profile/Avatar';
@@ -343,23 +343,49 @@ export function Leaderboard() {
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between gap-2">
-                  {LEAGUE_NAMES.map((name, index) => (
-                    <div key={name} className="flex min-w-0 flex-1 items-center">
-                      <div className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${
-                        index < currentUserEntry.leagueTier
-                          ? 'border-white/10 bg-white/10 text-white'
-                          : 'border-white/[0.08] bg-black/10 text-neutral-600'
-                      } ${index === currentUserEntry.leagueTier - 1 ? `${leagueStyle.color} ring-2 ring-white/10 ring-offset-2 ring-offset-ink-950` : ''}`}>
-                        {index < currentUserEntry.leagueTier - 1
-                          ? <CheckIcon className="h-3 w-3" />
-                          : index + 1}
-                      </div>
-                      {index < LEAGUE_NAMES.length - 1 && (
-                        <span className={`mx-1 h-px flex-1 ${index < currentUserEntry.leagueTier - 1 ? 'bg-white/30' : 'bg-white/[0.08]'}`} />
-                      )}
-                    </div>
-                  ))}
+                <div className="mt-5">
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                    League path <span className="ml-1 text-neutral-400">{currentUserEntry.leagueTier} of {LEAGUE_NAMES.length}</span>
+                  </p>
+                  <div className="grid grid-cols-5 gap-1.5" aria-label="Weekly league progression">
+                    {LEAGUE_NAMES.map((name, index) => {
+                      const tier = index + 1;
+                      const completed = tier < currentUserEntry.leagueTier;
+                      const active = tier === currentUserEntry.leagueTier;
+                      return (
+                        <div
+                          key={name}
+                          aria-current={active ? 'step' : undefined}
+                          aria-label={`${name} league${completed ? ', reached' : active ? ', current league' : ', upcoming'}`}
+                          className={`flex min-w-0 flex-col items-center gap-1.5 rounded-xl border px-1 py-2 ${
+                            active
+                              ? `border-white/15 bg-white/[0.07] ${leagueStyle.color}`
+                              : completed
+                                ? 'border-white/[0.08] bg-white/[0.035] text-neutral-300'
+                                : 'border-white/[0.05] bg-black/10 text-neutral-600'
+                          }`}>
+                          <span className={`flex h-7 w-7 items-center justify-center rounded-full ${
+                            active
+                              ? 'bg-white/10'
+                              : completed
+                                ? 'bg-white/[0.08]'
+                                : 'bg-white/[0.04]'
+                          }`}>
+                            {completed ? (
+                              <CheckIcon aria-hidden="true" className="h-3.5 w-3.5" />
+                            ) : active ? (
+                              <CrownIcon aria-hidden="true" className="h-3.5 w-3.5" />
+                            ) : (
+                              <LockIcon aria-hidden="true" className="h-3 w-3" />
+                            )}
+                          </span>
+                          <span className="w-full truncate text-center text-[9px] font-semibold leading-tight">
+                            {name}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="mt-5">
