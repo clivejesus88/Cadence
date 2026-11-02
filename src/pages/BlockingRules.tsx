@@ -66,7 +66,7 @@ export function BlockingRules() {
         <button onClick={() => navigate('/app/profile')} aria-label="Back to profile" className="hit-slop glass-inset flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-2xl text-white">Distraction plan</h1>
+        <h1 className="page-title text-white">Distraction plan</h1>
       </header>
 
       {pro ?

@@ -65,7 +65,7 @@ export function Planner() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
             {format(new Date(), 'EEEE · MMM d')}
           </p>
-          <h1 className="mt-1 font-display text-3xl text-white">Planner</h1>
+          <h1 className="page-title mt-1 text-white">Planner</h1>
         </div>
         <button
           onClick={() => setShowAdd(true)}

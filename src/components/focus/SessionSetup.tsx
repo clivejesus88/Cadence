@@ -47,7 +47,7 @@ export function SessionSetup({
   const selectedSoundLocked = selectedSound.premium && !pro;
   return (
     <div className="mx-auto w-full max-w-4xl px-5 pt-8 pb-4 lg:px-8 lg:pt-10">
-      <h1 className="font-display text-2xl text-white">Focus Session</h1>
+      <h1 className="page-title text-white">Focus Session</h1>
       <p className="text-neutral-400 text-sm mt-1">Set up your session, then dive in.</p>
 
       {activeTask &&

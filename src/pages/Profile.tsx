@@ -91,7 +91,7 @@ export function Profile() {
         <button onClick={() => navigate('/app/home')} aria-label="Back to dashboard" className="hit-slop flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-white/[0.05] hover:text-white active:scale-95">
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-xl text-white">Profile</h1>
+        <h1 className="page-title text-white">Profile</h1>
       </header>
 
       <section className="lg:col-span-2">

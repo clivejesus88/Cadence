@@ -123,7 +123,7 @@ export function Insights() {
   return (
     <div className="px-5 pt-8 pb-8 lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8 lg:pt-10">
       <header className="lg:col-span-2">
-        <h1 className="font-display text-2xl text-white">Insights</h1>
+        <h1 className="page-title text-white">Insights</h1>
         <p className="text-neutral-400 text-sm mt-1">Your focus patterns, at a glance.</p>
       </header>
 

@@ -196,7 +196,7 @@ export function Leaderboard() {
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="font-sans text-[1.7rem] font-bold leading-none tracking-[-0.04em] text-white">
+          <h1 className="page-title text-white">
             Weekly leagues
           </h1>
         </div>

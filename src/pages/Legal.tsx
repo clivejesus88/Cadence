@@ -17,7 +17,7 @@ function LegalShell({ title, children }: { title: string; children: ReactNode })
             className="hit-slop glass-inset flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-neutral-300 transition-colors hover:text-white active:scale-95">
             <ChevronLeftIcon className="h-5 w-5" />
           </button>
-          <h1 className="font-display text-2xl text-white sm:text-3xl">{title}</h1>
+          <h1 className="page-title text-white">{title}</h1>
         </header>
         <p className="mt-2 px-1 text-xs text-neutral-500">Last updated {EFFECTIVE_DATE}</p>
         <div className="legal mt-6 space-y-5 text-sm leading-6 text-neutral-300">{children}</div>
