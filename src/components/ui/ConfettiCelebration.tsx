@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { CELEBRATION_EVENT } from '../../utils/celebration';
 
-const COLORS = ['#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#c084fc', '#f472b6', '#f8fafc'];
+const COLORS = ['#fdba74', '#fb923c', '#f59e0b', '#ea580c', '#fff7ed'];
 
 export function ConfettiCelebration() {
   useEffect(() => {
