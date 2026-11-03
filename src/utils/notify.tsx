@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon, ShieldCheckIcon, CrownIcon, AwardIcon, TargetIcon, RefreshCwIcon, DownloadCloudIcon } from 'lucide-react';
+import { TimerIcon, PauseIcon, PlayIcon, CoffeeIcon, TrophyIcon, AlertTriangleIcon, BellIcon, SunIcon, LifeBuoyIcon, ListChecksIcon, ShieldCheckIcon, CrownIcon, AwardIcon, TargetIcon, RefreshCwIcon, DownloadCloudIcon, CheckCircle2Icon } from 'lucide-react';
 import { SessionToast } from '../components/notifications/SessionToast';
 import { formatMinutes } from './time';
 
@@ -200,6 +200,19 @@ export function notifyError(title: string, description?: string) {
 
 
     { duration: 5500 }
+  );
+}
+
+export function notifySuccess(title: string, description?: string) {
+  toast.custom(
+    (id) =>
+    <SessionToast
+      id={id}
+      icon={CheckCircle2Icon}
+      title={title}
+      description={description}
+      tone="success" />,
+    { duration: 4000 }
   );
 }
 

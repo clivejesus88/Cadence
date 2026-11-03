@@ -191,7 +191,7 @@ export function Planner() {
               onClick={() => setConfirmClear(true)}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/[0.05] hover:text-rose-300">
               <Trash2Icon className="h-3.5 w-3.5" />
-              Clear
+              Clear completed
             </button>
           </div>
           {showCompleted && (
