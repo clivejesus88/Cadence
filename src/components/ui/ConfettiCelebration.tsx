@@ -4,22 +4,23 @@ import { createPortal } from 'react-dom';
 import { CELEBRATION_EVENT } from '../../utils/celebration';
 
 const COLORS = ['#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#c084fc', '#f472b6', '#f8fafc'];
-const PARTICLE_COUNT = 72;
+const PARTICLE_COUNT = 112;
 
 interface ConfettiParticle {
   id: number;
-  startX: number;
+  originX: number;
+  originY: number;
   driftX: number;
-  startY: number;
-  fall: number;
+  peakY: number;
+  finishY: number;
   rotation: number;
-  flip: number;
+  wobble: number;
   delay: number;
   duration: number;
   color: string;
   width: number;
   height: number;
-  circle: boolean;
+  shape: 'circle' | 'paper' | 'streamer';
 }
 
 interface ConfettiBurst {
@@ -32,25 +33,34 @@ function randomBetween(min: number, max: number): number {
 }
 
 function createParticles(): ConfettiParticle[] {
-  const width = Math.min(window.innerWidth, 1000);
+  const width = window.innerWidth;
   const height = window.innerHeight;
-  const wind = randomBetween(-width * 0.1, width * 0.1);
-  return Array.from({ length: PARTICLE_COUNT }, (_, id) => {
-    const direction = Math.random() < 0.5 ? -1 : 1;
+  const count = width < 480 ? Math.round(PARTICLE_COUNT * 0.65) : PARTICLE_COUNT;
+
+  return Array.from({ length: count }, (_, id) => {
+    const fromLeft = id % 2 === 0;
+    const direction = fromLeft ? 1 : -1;
+    const originX = width * (fromLeft ? randomBetween(0.02, 0.13) : randomBetween(0.87, 0.98));
+    const originY = height * randomBetween(0.58, 0.82);
+    const shape = id % 9 === 0 ? 'streamer' : id % 4 === 0 ? 'circle' : 'paper';
+    const driftX = direction * randomBetween(width * 0.12, width * 0.58) +
+      randomBetween(-width * 0.08, width * 0.08);
+    const peakY = height * randomBetween(0.28, 0.72);
     return {
       id,
-      startX: randomBetween(-width * 0.5, width * 0.5),
-      driftX: wind + direction * randomBetween(12, width * 0.12),
-      startY: randomBetween(-height * 0.35, -16),
-      fall: height * randomBetween(1.15, 1.65),
-      rotation: randomBetween(-720, 720),
-      flip: randomBetween(180, 720),
-      delay: randomBetween(0, 0.75),
-      duration: randomBetween(3.2, 5),
+      originX,
+      originY,
+      driftX,
+      peakY,
+      finishY: height * randomBetween(0.3, 0.75),
+      rotation: randomBetween(-540, 540),
+      wobble: randomBetween(-width * 0.04, width * 0.04),
+      delay: randomBetween(0, 0.35),
+      duration: randomBetween(2.4, 4.1),
       color: COLORS[id % COLORS.length],
-      width: randomBetween(5, 9),
-      height: randomBetween(7, 15),
-      circle: id % 6 === 0
+      width: shape === 'streamer' ? randomBetween(3, 5) : randomBetween(5, 10),
+      height: shape === 'streamer' ? randomBetween(16, 28) : randomBetween(7, 16),
+      shape
     };
   });
 }
@@ -69,7 +79,8 @@ export function ConfettiCelebration() {
 
   useEffect(() => {
     if (!burst) return;
-    const timeout = window.setTimeout(() => setBurst(null), 6000);
+    const duration = Math.max(...burst.particles.map((particle) => particle.duration + particle.delay));
+    const timeout = window.setTimeout(() => setBurst(null), duration * 1000 + 300);
     return () => window.clearTimeout(timeout);
   }, [burst]);
 
@@ -80,35 +91,50 @@ export function ConfettiCelebration() {
       {burst.particles.map((particle) => (
         <motion.span
           key={particle.id}
-          className="absolute left-1/2 top-0"
+          className="absolute left-0 top-0"
           style={{
-            width: particle.circle ? particle.width : particle.width * 0.62,
-            height: particle.circle ? particle.width : particle.height,
-            borderRadius: particle.circle ? '50%' : '1px',
+            width: particle.width,
+            height: particle.height,
+            borderRadius: particle.shape === 'circle' ? '50%' : particle.shape === 'streamer' ? '999px' : '1px',
             backgroundColor: particle.color,
             transformOrigin: 'center',
             perspective: 400,
-            backfaceVisibility: 'hidden'
+            backfaceVisibility: 'hidden',
+            willChange: 'transform, opacity'
           }}
           initial={{
-            opacity: 1,
-            x: particle.startX,
-            y: particle.startY,
+            opacity: 0,
+            x: particle.originX,
+            y: particle.originY,
             rotate: 0,
-            rotateY: 0
+            rotateX: 0,
+            rotateY: 0,
+            scale: 0.4
           }}
           animate={{
             opacity: [0, 1, 1, 0],
-            x: [particle.startX, particle.startX + particle.driftX * 0.35, particle.startX + particle.driftX],
-            y: [particle.startY, particle.startY + particle.fall * 0.12, particle.startY + particle.fall],
-            rotate: [0, particle.rotation * 0.3, particle.rotation],
-            rotateY: [0, particle.flip * 0.45, particle.flip]
+            x: [
+              particle.originX,
+              particle.originX + particle.driftX * 0.32,
+              particle.originX + particle.driftX * 0.72 + particle.wobble,
+              particle.originX + particle.driftX
+            ],
+            y: [
+              particle.originY,
+              particle.originY - particle.peakY,
+              particle.originY - particle.peakY * 0.45,
+              particle.originY + particle.finishY
+            ],
+            rotate: [0, particle.rotation * 0.35, particle.rotation * 0.7, particle.rotation],
+            rotateX: [0, particle.rotation * 0.2, particle.rotation * 0.65, particle.rotation],
+            rotateY: [0, particle.rotation * 0.3, particle.rotation * 0.8, particle.rotation],
+            scale: [0.4, 1, 0.9, 0.5]
           }}
           transition={{
             duration: particle.duration,
             delay: particle.delay,
-            times: [0, 0.12, 0.82, 1],
-            ease: ['easeIn', 'linear', 'easeIn']
+            times: [0, 0.24, 0.68, 1],
+            ease: ['easeOut', 'easeInOut', 'easeIn']
           }}
         />
       ))}
