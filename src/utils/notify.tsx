@@ -90,22 +90,6 @@ export function notifyBreakEnded() {
   );
 }
 
-export function notifyDailyCapReached() {
-  toast.custom(
-    (id) =>
-    <SessionToast
-      id={id}
-      icon={AlertTriangleIcon}
-      title="24-hour limit reached"
-      description="We ended your session automatically. Time for real rest."
-      tone="warning"
-      assertive />,
-
-
-    { duration: 5500 }
-  );
-}
-
 export function notifyTaskReminders(overdueCount: number, todayCount: number, firstTitle: string) {
   const parts: string[] = [];
   if (overdueCount > 0) parts.push(`${overdueCount} overdue`);

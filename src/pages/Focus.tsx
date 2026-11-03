@@ -15,14 +15,12 @@ import {
   notifySessionResumed,
   notifyOvertime,
   notifyBreakStarted,
-  notifyBreakEnded,
-  notifyDailyCapReached } from
+  notifyBreakEnded } from
   '../utils/notify';
 
 type Phase = 'setup' | 'running' | 'complete';
 type SessionKind = 'focus' | 'break';
 
-const MAX_SESSION_SECONDS = 24 * 60 * 60; // a focus session can run for hours, but never past a full day
 const MIN_LOGGABLE_SECONDS = 60; // ending almost instantly shouldn't count as a session
 
 export function Focus() {
@@ -106,7 +104,7 @@ export function Focus() {
     return () => clearInterval(id);
   }, [phase, isPaused, computeElapsed]);
 
-  // Break auto-end, overtime nudge, and the 24h hard cap.
+  // Break auto-end and overtime nudge.
   useEffect(() => {
     if (phase !== 'running') return;
 
@@ -126,25 +124,13 @@ export function Focus() {
       notifyOvertime();
     }
 
-    if (elapsedSeconds >= MAX_SESSION_SECONDS) {
-      const durationSeconds = Math.min(computeElapsed(), MAX_SESSION_SECONDS);
-      const minutes = Math.max(1, Math.round(durationSeconds / 60));
-      notifyDailyCapReached();
-      stopSound();
-      setSoundPlaying(false);
-      logSessionRef.current(durationSeconds, activeTaskIdRef.current ?? undefined);
-      setCompletedMinutes(minutes);
-      setElapsedSeconds(0);
-      startedAtRef.current = null;
-      setPhase('complete');
-    }
-  }, [elapsedSeconds, phase, sessionType, targetSeconds, computeElapsed]);
+  }, [elapsedSeconds, phase, sessionType, targetSeconds]);
 
   const startSession = (minutes: number) => {
     overtimeNotifiedRef.current = false;
     setDurationMinutes(minutes);
-    setTargetSeconds(Math.min(minutes * 60, MAX_SESSION_SECONDS));
-    const resume = resumeSeconds > 0 ? Math.min(Math.floor(resumeSeconds), MAX_SESSION_SECONDS) : 0;
+    setTargetSeconds(minutes * 60);
+    const resume = resumeSeconds > 0 ? Math.floor(resumeSeconds) : 0;
     if (resume >= minutes * 60) overtimeNotifiedRef.current = true;
     setElapsedSeconds(resume);
     startedAtRef.current = Date.now() - resume * 1000;
@@ -231,7 +217,7 @@ export function Focus() {
         setPhase('setup');
         return;
       }
-      const durationSeconds = Math.min(focusedSeconds, MAX_SESSION_SECONDS);
+      const durationSeconds = focusedSeconds;
       const minutes = Math.max(1, Math.round(durationSeconds / 60));
       logSession(durationSeconds, activeTaskId ?? undefined);
       setCompletedMinutes(minutes);

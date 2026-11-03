@@ -3,6 +3,10 @@ export function formatCountdown(totalSeconds: number): string {
   const h = Math.floor(safeSeconds / 3600);
   const m = Math.floor(safeSeconds % 3600 / 60);
   const s = safeSeconds % 60;
+  const days = Math.floor(h / 24);
+  if (days > 0) {
+    return `${days}d ${String(h % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
   if (h > 0) {
     return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
