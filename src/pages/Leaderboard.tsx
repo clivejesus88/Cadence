@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeftIcon, CheckIcon, ChevronUpIcon, CrownIcon, LoaderCircleIcon, LockIcon, TrophyIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { RankCrown } from '../components/leaderboard/RankCrown';
+import { formatFocusTime } from '../utils/time';
 import { Avatar } from '../components/profile/Avatar';
 import { celebrate } from '../utils/celebration';
 import {
@@ -499,7 +500,7 @@ export function Leaderboard() {
                       <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${
                         entry.isCurrentUser ? 'text-amber-100' : 'text-neutral-300'
                       }`}>
-                        {entry.focusMinutes}<span className="ml-1 text-[10px] font-medium text-neutral-500">min</span>
+                        {formatFocusTime(entry.focusSeconds)}
                       </span>
                     </motion.li>
                   ))}

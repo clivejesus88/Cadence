@@ -1,11 +1,11 @@
 import { createContext, useContext, useMemo, useState, ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { addTask, toggleTask, logSession } from '../db/repo';
+import { addTask, updateTask, toggleTask, logSession } from '../db/repo';
 import { scheduleSync } from '../db/sync';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
-import { Task } from '../types/task';
+import { Task, TaskEditInput } from '../types/task';
 import { FocusSession } from '../types/session';
 import { calculateCurrentStreak, todayFocusMinutes, weeklyFocusMinutes } from '../utils/streak';
 import { buildStats, GamificationStats, LevelInfo, BadgeStatus, todayGoalMinutes, goalMet } from '../utils/gamification';
@@ -13,9 +13,10 @@ import { buildStats, GamificationStats, LevelInfo, BadgeStatus, todayGoalMinutes
 interface AppDataContextValue {
   tasks: Task[];
   addTask: (task: Omit<Task, 'id' | 'completedPomodoros' | 'completed'>) => void;
+  updateTask: (id: string, task: TaskEditInput) => void;
   toggleTask: (id: string) => void;
   sessions: FocusSession[];
-  logSession: (durationMinutes: number, taskId?: string) => void;
+  logSession: (durationSeconds: number, taskId?: string) => void;
   activeTaskId: string | null;
   setActiveTaskId: (id: string | null) => void;
   currentStreak: number;
@@ -62,12 +63,16 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
     void addTask(task).then(() => scheduleSync());
   };
 
+  const handleUpdateTask = (id: string, task: TaskEditInput) => {
+    void updateTask(id, task).then(() => scheduleSync());
+  };
+
   const handleToggleTask = (id: string) => {
     void toggleTask(id).then(() => scheduleSync());
   };
 
-  const handleLogSession = (durationMinutes: number, taskId?: string) => {
-    void logSession(durationMinutes, taskId).then(() => scheduleSync());
+  const handleLogSession = (durationSeconds: number, taskId?: string) => {
+    void logSession(durationSeconds, taskId).then(() => scheduleSync());
   };
 
   const currentStreak = useMemo(() => calculateCurrentStreak(sessions), [sessions]);
@@ -92,6 +97,7 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
   const value: AppDataContextValue = {
     tasks,
     addTask: handleAddTask,
+    updateTask: handleUpdateTask,
     toggleTask: handleToggleTask,
     sessions,
     logSession: handleLogSession,

@@ -7,3 +7,5 @@ export interface Task {
   dueDate: string; // ISO date, yyyy-MM-dd
   completed: boolean;
 }
+
+export type TaskEditInput = Pick<Task, 'title' | 'subject' | 'estimatedPomodoros' | 'dueDate'>;

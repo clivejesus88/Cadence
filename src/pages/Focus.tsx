@@ -127,17 +127,18 @@ export function Focus() {
     }
 
     if (elapsedSeconds >= MAX_SESSION_SECONDS) {
-      const minutes = Math.round(MAX_SESSION_SECONDS / 60);
+      const durationSeconds = Math.min(computeElapsed(), MAX_SESSION_SECONDS);
+      const minutes = Math.max(1, Math.round(durationSeconds / 60));
       notifyDailyCapReached();
       stopSound();
       setSoundPlaying(false);
-      logSessionRef.current(minutes, activeTaskIdRef.current ?? undefined);
+      logSessionRef.current(durationSeconds, activeTaskIdRef.current ?? undefined);
       setCompletedMinutes(minutes);
       setElapsedSeconds(0);
       startedAtRef.current = null;
       setPhase('complete');
     }
-  }, [elapsedSeconds, phase, sessionType, targetSeconds]);
+  }, [elapsedSeconds, phase, sessionType, targetSeconds, computeElapsed]);
 
   const startSession = (minutes: number) => {
     overtimeNotifiedRef.current = false;
@@ -218,19 +219,21 @@ export function Focus() {
 
     stopSound();
     setSoundPlaying(false);
-    if (elapsedSeconds >= MIN_LOGGABLE_SECONDS) {
-      if (elapsedSeconds < targetSeconds) {
+    const focusedSeconds = computeElapsed();
+    if (focusedSeconds >= MIN_LOGGABLE_SECONDS) {
+      if (focusedSeconds < targetSeconds) {
         // Stopped partway — keep the progress so the next session can resume here.
-        saveResume(elapsedSeconds);
+        saveResume(focusedSeconds);
         startedAtRef.current = null;
         pausedTotalRef.current = 0;
         pauseStartedAtRef.current = null;
-        setElapsedSeconds(elapsedSeconds);
+        setElapsedSeconds(focusedSeconds);
         setPhase('setup');
         return;
       }
-      const minutes = Math.max(1, Math.round(elapsedSeconds / 60));
-      logSession(minutes, activeTaskId ?? undefined);
+      const durationSeconds = Math.min(focusedSeconds, MAX_SESSION_SECONDS);
+      const minutes = Math.max(1, Math.round(durationSeconds / 60));
+      logSession(durationSeconds, activeTaskId ?? undefined);
       setCompletedMinutes(minutes);
       startedAtRef.current = null;
       saveResume(0);

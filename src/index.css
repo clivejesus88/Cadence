@@ -289,3 +289,12 @@ a,
   background: linear-gradient(to top, rgba(13, 16, 20, 0.98) 55%, rgba(13, 16, 20, 0));
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
+@media (max-width: 380px) {
+  .modal-footer {
+    gap: 0.5rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    margin-right: -1rem;
+    margin-left: -1rem;
+  }
+}

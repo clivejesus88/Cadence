@@ -9,6 +9,7 @@ import { StatCard } from '../components/insights/StatCard';
 import { StreakHeatmap } from '../components/insights/StreakHeatmap';
 import { Avatar } from '../components/profile/Avatar';
 import { RankCrown } from '../components/leaderboard/RankCrown';
+import { formatFocusTime } from '../utils/time';
 import { getLeaderboardProfile, getWeeklyLeaderboard, LeaderboardEntry, validateLeaderboardAlias, saveLeaderboardProfile } from '../utils/leaderboard';
 
 const rangeOptions = [
@@ -338,7 +339,7 @@ export function Insights() {
                       </div>
                       <span className="truncate text-sm text-white">{entry.alias}{entry.isCurrentUser ? ' (you)' : ''}</span>
                     </div>
-                    <span className="shrink-0 text-sm font-semibold text-neutral-200">{entry.focusMinutes} min</span>
+                    <span className="shrink-0 text-sm font-semibold text-neutral-200">{formatFocusTime(entry.focusSeconds)}</span>
                   </div>
                 ))
               )}

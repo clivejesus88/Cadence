@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { db, SyncTableName, SyncQueueRow } from './db';
-import { Task } from '../types/task';
+import { Task, TaskEditInput } from '../types/task';
 import { FocusSession } from '../types/session';
 import { UserProfile, Preferences, defaultPreferences, defaultProfile } from '../types/user';
 import { sanitizeText, sanitizeEmail, sanitizeAvatarUrl, sanitizeBlockingRules } from '../utils/sanitize';
@@ -52,6 +52,25 @@ export async function addTask(input: Omit<Task, 'id' | 'completedPomodoros' | 'c
   return row;
 }
 
+export async function updateTask(id: string, input: TaskEditInput): Promise<void> {
+  const existing = await db.tasks.get(id);
+  if (!existing || existing.deleted) return;
+  const estimatedPomodoros = Math.max(
+    existing.completedPomodoros,
+    sanitizeTaskInput(input).estimatedPomodoros
+  );
+  const increasedEstimate = estimatedPomodoros > existing.estimatedPomodoros;
+  const next = {
+    ...existing,
+    ...sanitizeTaskInput({ ...input, estimatedPomodoros }),
+    completed: (existing.completed && !increasedEstimate) ||
+      existing.completedPomodoros >= estimatedPomodoros,
+    updatedAt: Date.now()
+  };
+  await db.tasks.put(next);
+  enqueueOutbox('tasks', id, 'upsert', next);
+}
+
 export async function toggleTask(id: string): Promise<void> {
   const existing = await db.tasks.get(id);
   if (!existing) return;
@@ -75,12 +94,13 @@ async function incrementCompletedPomodoros(taskId: string, delta: number): Promi
   enqueueOutbox('tasks', taskId, 'upsert', next);
 }
 
-export async function logSession(durationMinutes: number, taskId?: string): Promise<FocusSession> {
+export async function logSession(durationSeconds: number, taskId?: string): Promise<FocusSession> {
   const now = Date.now();
   const row = {
     id: makeId('s'),
     date: format(new Date(), 'yyyy-MM-dd'),
-    durationMinutes,
+    durationMinutes: durationSeconds / 60,
+    durationSeconds,
     type: 'focus' as const,
     completed: true,
     taskId,

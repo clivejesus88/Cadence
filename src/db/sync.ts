@@ -33,7 +33,8 @@ function sessionToRemote(row: SessionRow, uid: string): Record<string, unknown> 
     id: row.id,
     user_id: uid,
     date: row.date,
-    duration_minutes: row.durationMinutes,
+    duration_minutes: Math.floor((row.durationSeconds ?? row.durationMinutes * 60) / 60),
+    duration_seconds: row.durationSeconds ?? Math.round(row.durationMinutes * 60),
     type: row.type,
     completed: row.completed,
     task_id: row.taskId ?? null,
@@ -143,7 +144,10 @@ async function applyRemote(remote: Record<string, unknown>): Promise<void> {
       id,
       userId: String(remote.user_id),
       date: String(remote.date),
-      durationMinutes: Number(remote.duration_minutes),
+      durationMinutes: Number(remote.duration_seconds ?? Number(remote.duration_minutes) * 60) / 60,
+      durationSeconds: remote.duration_seconds == null
+        ? Number(remote.duration_minutes) * 60
+        : Number(remote.duration_seconds),
       type: remote.type === 'break' ? 'break' : 'focus',
       completed: Boolean(remote.completed),
       taskId: remote.task_id ? String(remote.task_id) : undefined,

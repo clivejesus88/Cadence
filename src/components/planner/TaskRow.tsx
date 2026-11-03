@@ -1,14 +1,15 @@
 
-import { CheckIcon, PlayIcon } from 'lucide-react';
+import { CheckIcon, PencilIcon, PlayIcon } from 'lucide-react';
 import { Task } from '../../types/task';
 
 interface TaskRowProps {
   task: Task;
   onToggle: () => void;
   onStartFocus: () => void;
+  onEdit: () => void;
 }
 
-export function TaskRow({ task, onToggle, onStartFocus }: TaskRowProps) {
+export function TaskRow({ task, onToggle, onStartFocus, onEdit }: TaskRowProps) {
   return (
     <div className="group flex items-center gap-3 border-b border-white/[0.06] px-1 py-3.5 transition-colors last:border-b-0 hover:bg-white/[0.02]">
       <button
@@ -41,6 +42,12 @@ export function TaskRow({ task, onToggle, onStartFocus }: TaskRowProps) {
           <PlayIcon className="h-3.5 w-3.5" />
         </button>
       )}
+      <button
+        onClick={onEdit}
+        aria-label={`Edit ${task.title}`}
+        className="hit-slop flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/[0.06] hover:text-ember-300 active:scale-90">
+        <PencilIcon className="h-3.5 w-3.5" />
+      </button>
     </div>);
 
 }

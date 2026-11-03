@@ -7,6 +7,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { formatMinutes } from '../utils/time';
 import { TaskRow } from '../components/planner/TaskRow';
 import { AddTaskSheet } from '../components/planner/AddTaskSheet';
+import { Task } from '../types/task';
 
 export function Planner() {
   const { tasks, toggleTask, setActiveTaskId } = useAppData();
@@ -14,6 +15,7 @@ export function Planner() {
   const navigate = useNavigate();
   const [showAdd, setShowAdd] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const { groups, completedTasks, completedToday, totalToday, remainingFocusMinutes } = useMemo(() => {
     const activeTasks = tasks.filter((task) => !task.completed);
@@ -115,6 +117,7 @@ export function Planner() {
                   task={task}
                   onToggle={() => toggleTask(task.id)}
                   onStartFocus={() => startFocusOn(task.id)}
+                  onEdit={() => setEditingTask(task)}
                 />
               )}
             </div>
@@ -140,6 +143,7 @@ export function Planner() {
                     task={task}
                     onToggle={() => toggleTask(task.id)}
                     onStartFocus={() => startFocusOn(task.id)}
+                    onEdit={() => setEditingTask(task)}
                   />
                 )}
               </div>
@@ -168,6 +172,7 @@ export function Planner() {
                   task={task}
                   onToggle={() => toggleTask(task.id)}
                   onStartFocus={() => startFocusOn(task.id)}
+                  onEdit={() => setEditingTask(task)}
                 />
               )}
             </div>
@@ -176,6 +181,7 @@ export function Planner() {
       )}
 
       {showAdd && <AddTaskSheet onClose={() => setShowAdd(false)} />}
+      {editingTask && <AddTaskSheet task={editingTask} onClose={() => setEditingTask(null)} />}
     </div>);
 
 }

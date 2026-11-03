@@ -9,7 +9,7 @@ export interface LeaderboardProfile {
 export interface LeaderboardEntry {
   rank: number;
   alias: string;
-  focusMinutes: number;
+  focusSeconds: number;
   isCurrentUser: boolean;
   avatarUrl: string;
   leagueTier: number;
@@ -74,7 +74,7 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       row === null ||
       !('rank_position' in row) ||
       !('display_alias' in row) ||
-      !('focus_minutes' in row) ||
+      !('focus_seconds' in row) ||
       !('is_current_user' in row) ||
       !('league_tier' in row) ||
       !('league_rank' in row) ||
@@ -83,7 +83,7 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       !('week_start' in row) ||
       typeof row.rank_position !== 'number' ||
       typeof row.display_alias !== 'string' ||
-      typeof row.focus_minutes !== 'number' ||
+      typeof row.focus_seconds !== 'number' ||
       typeof row.is_current_user !== 'boolean' ||
       typeof row.league_tier !== 'number' ||
       typeof row.league_rank !== 'number' ||
@@ -91,7 +91,7 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
       typeof row.promoted !== 'boolean' ||
       typeof row.week_start !== 'string' ||
       !Number.isInteger(row.rank_position) ||
-      !Number.isInteger(row.focus_minutes) ||
+      !Number.isInteger(row.focus_seconds) ||
       !Number.isInteger(row.league_tier) ||
       !Number.isInteger(row.league_rank) ||
       !Number.isInteger(row.league_size)
@@ -106,7 +106,7 @@ export async function getWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
     return {
       rank: row.rank_position,
       alias: row.display_alias,
-      focusMinutes: row.focus_minutes,
+      focusSeconds: row.focus_seconds,
       isCurrentUser: row.is_current_user,
       avatarUrl: avatarUrl || 'preset:adventurer-ember',
       leagueTier: row.league_tier,

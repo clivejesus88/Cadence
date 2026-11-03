@@ -16,6 +16,7 @@ import { TaskPreviewList } from '../components/home/TaskPreviewList';
 import { Avatar } from '../components/profile/Avatar';
 import { getWeeklyLeaderboard, LeaderboardEntry } from '../utils/leaderboard';
 import { RankCrown } from '../components/leaderboard/RankCrown';
+import { formatFocusTime } from '../utils/time';
 
 export function Home() {
   const navigate = useNavigate();
@@ -254,7 +255,7 @@ export function Home() {
                     </div>
                     <span className="truncate text-sm text-white">{entry.alias}{entry.isCurrentUser ? ' (you)' : ''}</span>
                   </div>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums text-neutral-200">{entry.focusMinutes} min</span>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-neutral-200">{formatFocusTime(entry.focusSeconds)}</span>
                 </div>
               ))}
             </div>
