@@ -71,6 +71,28 @@ export async function updateTask(id: string, input: TaskEditInput): Promise<void
   enqueueOutbox('tasks', id, 'upsert', next);
 }
 
+export async function clearCompletedTasks(): Promise<number> {
+  const updatedAt = Date.now();
+  return db.transaction('rw', db.tasks, db.syncQueue, async () => {
+    const completed = await db.tasks
+      .filter((task) => task.userId === userId && task.completed && !task.deleted)
+      .toArray();
+    if (completed.length === 0) return 0;
+
+    const deleted = completed.map((task) => ({ ...task, deleted: true, updatedAt }));
+    await db.tasks.bulkPut(deleted);
+    await db.syncQueue.bulkAdd(deleted.map((task) => ({
+      table: 'tasks' as const,
+      entityId: task.id,
+      op: 'upsert' as const,
+      payload: task,
+      userId,
+      updatedAt
+    })));
+    return deleted.length;
+  });
+}
+
 export async function toggleTask(id: string): Promise<void> {
   const existing = await db.tasks.get(id);
   if (!existing) return;

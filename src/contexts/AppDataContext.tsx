@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { addTask, updateTask, toggleTask, logSession } from '../db/repo';
+import { addTask, updateTask, clearCompletedTasks, toggleTask, logSession } from '../db/repo';
 import { scheduleSync } from '../db/sync';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
@@ -14,6 +14,7 @@ interface AppDataContextValue {
   tasks: Task[];
   addTask: (task: Omit<Task, 'id' | 'completedPomodoros' | 'completed'>) => void;
   updateTask: (id: string, task: TaskEditInput) => void;
+  clearCompletedTasks: () => Promise<number>;
   toggleTask: (id: string) => void;
   sessions: FocusSession[];
   logSession: (durationSeconds: number, taskId?: string) => void;
@@ -67,6 +68,12 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
     void updateTask(id, task).then(() => scheduleSync());
   };
 
+  const handleClearCompletedTasks = async () => {
+    const clearedCount = await clearCompletedTasks();
+    if (clearedCount > 0) scheduleSync();
+    return clearedCount;
+  };
+
   const handleToggleTask = (id: string) => {
     void toggleTask(id).then(() => scheduleSync());
   };
@@ -98,6 +105,7 @@ export function AppDataProvider({ children }: {children: ReactNode;}) {
     tasks,
     addTask: handleAddTask,
     updateTask: handleUpdateTask,
+    clearCompletedTasks: handleClearCompletedTasks,
     toggleTask: handleToggleTask,
     sessions,
     logSession: handleLogSession,

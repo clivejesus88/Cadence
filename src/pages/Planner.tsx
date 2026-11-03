@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDownIcon, PlusIcon } from 'lucide-react';
+import { ChevronDownIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
 import { useAppData } from '../contexts/AppDataContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -8,14 +8,18 @@ import { formatMinutes } from '../utils/time';
 import { TaskRow } from '../components/planner/TaskRow';
 import { AddTaskSheet } from '../components/planner/AddTaskSheet';
 import { Task } from '../types/task';
+import { Modal, ModalHeader } from '../components/ui/Modal';
+import { notifyError, notifySuccess } from '../utils/notify';
 
 export function Planner() {
-  const { tasks, toggleTask, setActiveTaskId } = useAppData();
+  const { tasks, toggleTask, clearCompletedTasks, setActiveTaskId } = useAppData();
   const { preferences } = useSettings();
   const navigate = useNavigate();
   const [showAdd, setShowAdd] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const { groups, completedTasks, completedToday, totalToday, remainingFocusMinutes } = useMemo(() => {
     const activeTasks = tasks.filter((task) => !task.completed);
@@ -54,6 +58,23 @@ export function Planner() {
   const startFocusOn = (taskId: string) => {
     setActiveTaskId(taskId);
     navigate('/app/focus');
+  };
+
+  const handleClearCompleted = async () => {
+    setIsClearing(true);
+    try {
+      const count = await clearCompletedTasks();
+      setConfirmClear(false);
+      setShowCompleted(false);
+      notifySuccess('Completed tasks cleared', `${count} task${count === 1 ? '' : 's'} removed from your planner.`);
+    } catch (error) {
+      notifyError(
+        'Could not clear completed tasks',
+        error instanceof Error ? error.message : 'Please try again.'
+      );
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const todayProgress = totalToday > 0 ? completedToday / totalToday : 0;
@@ -154,16 +175,25 @@ export function Planner() {
 
       {completedTasks.length > 0 && (
         <section className="mt-7 border-t border-white/[0.07] pt-4">
-          <button
-            type="button"
-            onClick={() => setShowCompleted((shown) => !shown)}
-            aria-expanded={showCompleted}
-            className="flex w-full items-center justify-between py-2 text-left">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
-              Completed <span className="ml-1 text-neutral-600">{completedTasks.length}</span>
-            </span>
-            <ChevronDownIcon className={`h-4 w-4 text-neutral-500 transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
-          </button>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setShowCompleted((shown) => !shown)}
+              aria-expanded={showCompleted}
+              className="flex min-w-0 flex-1 items-center justify-between py-2 text-left">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+                Completed <span className="ml-1 text-neutral-600">{completedTasks.length}</span>
+              </span>
+              <ChevronDownIcon className={`h-4 w-4 text-neutral-500 transition-transform ${showCompleted ? 'rotate-180' : ''}`} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmClear(true)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-2 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/[0.05] hover:text-rose-300">
+              <Trash2Icon className="h-3.5 w-3.5" />
+              Clear
+            </button>
+          </div>
           {showCompleted && (
             <div className="mt-2 space-y-2">
               {completedTasks.map((task) =>
@@ -182,6 +212,32 @@ export function Planner() {
 
       {showAdd && <AddTaskSheet onClose={() => setShowAdd(false)} />}
       {editingTask && <AddTaskSheet task={editingTask} onClose={() => setEditingTask(null)} />}
+      {confirmClear && (
+        <Modal open onClose={() => setConfirmClear(false)} variant="center">
+          <ModalHeader
+            eyebrow="Planner"
+            title="Clear completed tasks?"
+            subtitle={`This will remove ${completedTasks.length} completed task${completedTasks.length === 1 ? '' : 's'} from your planner.`}
+            onClose={() => setConfirmClear(false)}
+          />
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setConfirmClear(false)}
+              disabled={isClearing}
+              className="glass flex-1 rounded-full py-3.5 text-sm font-semibold text-neutral-200 disabled:opacity-50">
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleClearCompleted()}
+              disabled={isClearing}
+              className="flex-1 rounded-full bg-rose-500 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-rose-400 disabled:opacity-50">
+              {isClearing ? 'Clearing…' : 'Clear tasks'}
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>);
 
 }
