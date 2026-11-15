@@ -1,5 +1,5 @@
 export function formatCountdown(totalSeconds: number): string {
-  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
   const h = Math.floor(safeSeconds / 3600);
   const m = Math.floor(safeSeconds % 3600 / 60);
   const s = safeSeconds % 60;
@@ -22,7 +22,7 @@ export function formatMinutes(totalMinutes: number): string {
 }
 
 export function formatFocusTime(totalSeconds: number): string {
-  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
   const hours = Math.floor(safeSeconds / 3600);
   const minutes = Math.floor((safeSeconds % 3600) / 60);
   const seconds = safeSeconds % 60;

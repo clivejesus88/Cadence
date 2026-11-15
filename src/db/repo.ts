@@ -118,11 +118,12 @@ async function incrementCompletedPomodoros(taskId: string, delta: number): Promi
 
 export async function logSession(durationSeconds: number, taskId?: string): Promise<FocusSession> {
   const now = Date.now();
+  const roundedDurationSeconds = Math.max(0, Math.round(durationSeconds));
   const row = {
     id: makeId('s'),
     date: format(new Date(), 'yyyy-MM-dd'),
-    durationMinutes: durationSeconds / 60,
-    durationSeconds,
+    durationMinutes: roundedDurationSeconds / 60,
+    durationSeconds: roundedDurationSeconds,
     type: 'focus' as const,
     completed: true,
     taskId,

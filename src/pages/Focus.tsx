@@ -88,12 +88,16 @@ export function Focus() {
     };
   }, [shieldActive]);
 
-  const computeElapsed = useCallback((): number => {
+  const computeElapsedMilliseconds = useCallback((): number => {
     if (startedAtRef.current == null) return 0;
     const now = Date.now();
     const pausedMs = pausedTotalRef.current + (pauseStartedAtRef.current != null ? now - pauseStartedAtRef.current : 0);
-    return Math.max(0, Math.floor((now - startedAtRef.current - pausedMs) / 1000));
+    return Math.max(0, now - startedAtRef.current - pausedMs);
   }, []);
+  const computeElapsed = useCallback(
+    () => Math.round(computeElapsedMilliseconds() / 1000),
+    [computeElapsedMilliseconds]
+  );
 
   // Re-render tick — only while actively running.
   useEffect(() => {
@@ -109,7 +113,7 @@ export function Focus() {
     if (phase !== 'running') return;
 
     if (sessionType === 'break') {
-      if (elapsedSeconds >= targetSeconds) {
+      if (computeElapsedMilliseconds() >= targetSeconds * 1000) {
         notifyBreakEnded();
         setElapsedSeconds(0);
         startedAtRef.current = null;
@@ -119,12 +123,12 @@ export function Focus() {
       return;
     }
 
-    if (!overtimeNotifiedRef.current && elapsedSeconds >= targetSeconds) {
+    if (!overtimeNotifiedRef.current && computeElapsedMilliseconds() >= targetSeconds * 1000) {
       overtimeNotifiedRef.current = true;
       notifyOvertime();
     }
 
-  }, [elapsedSeconds, phase, sessionType, targetSeconds]);
+  }, [computeElapsedMilliseconds, elapsedSeconds, phase, sessionType, targetSeconds]);
 
   const startSession = (minutes: number) => {
     overtimeNotifiedRef.current = false;
